@@ -1,68 +1,70 @@
 package com.pet.web;
 
-import com.pet.domain.SitterRecord;
-import com.pet.repository.SitterRecordRepository;
+import com.pet.dto.CreateSitterRecordDto;
+import com.pet.dto.SitterRecordDto;
+import com.pet.dto.UpdateSitterRecordDto;
+import com.pet.dto.response.ApiResponse;
+import com.pet.service.SitterRecordService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/records")
 public class SitterRecordController {
 
-    private final SitterRecordRepository sitterRecordRepository;
+    private final SitterRecordService sitterRecordService;
 
-    public SitterRecordController(SitterRecordRepository sitterRecordRepository) {
-        this.sitterRecordRepository = sitterRecordRepository;
+    public SitterRecordController(SitterRecordService sitterRecordService) {
+        this.sitterRecordService = sitterRecordService;
     }
 
     @GetMapping
-    public List<SitterRecord> getAllRecords() {
-        return sitterRecordRepository.findAll();
+    public ResponseEntity<ApiResponse<List<SitterRecordDto>>> getAllRecords() {
+        List<SitterRecordDto> records = sitterRecordService.getAllRecords();
+        return ResponseEntity.ok(ApiResponse.success(records));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SitterRecord> getRecord(@PathVariable Long id) {
-        return sitterRecordRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<SitterRecordDto>> getRecord(@PathVariable Long id) {
+        SitterRecordDto record = sitterRecordService.getRecordById(id);
+        return ResponseEntity.ok(ApiResponse.success(record));
     }
 
     @GetMapping("/pet/{petId}")
-    public List<SitterRecord> getRecordsByPet(@PathVariable Long petId) {
-        return sitterRecordRepository.findByPetId(petId);
+    public ResponseEntity<ApiResponse<List<SitterRecordDto>>> getRecordsByPet(@PathVariable Long petId) {
+        List<SitterRecordDto> records = sitterRecordService.getRecordsByPetId(petId);
+        return ResponseEntity.ok(ApiResponse.success(records));
     }
 
     @GetMapping("/sitter/{sitterId}")
-    public List<SitterRecord> getRecordsBySitter(@PathVariable Long sitterId) {
-        return sitterRecordRepository.findBySitterId(sitterId);
+    public ResponseEntity<ApiResponse<List<SitterRecordDto>>> getRecordsBySitter(@PathVariable Long sitterId) {
+        List<SitterRecordDto> records = sitterRecordService.getRecordsBySitterId(sitterId);
+        return ResponseEntity.ok(ApiResponse.success(records));
     }
 
     @PostMapping
-    public ResponseEntity<SitterRecord> createRecord(@RequestBody SitterRecord record) throws URISyntaxException {
-        if (record.getId() != null) {
-            return ResponseEntity.badRequest().build();
-        }
-        SitterRecord result = sitterRecordRepository.save(record);
-        return ResponseEntity.created(new URI("/api/records/" + result.getId())).body(result);
+    public ResponseEntity<ApiResponse<SitterRecordDto>> createRecord(
+            @Valid @RequestBody CreateSitterRecordDto createDto) {
+        SitterRecordDto createdRecord = sitterRecordService.createRecord(createDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("記錄創建成功", createdRecord));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SitterRecord> updateRecord(@PathVariable Long id, @RequestBody SitterRecord record) {
-        if (!sitterRecordRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        record.setId(id);
-        SitterRecord result = sitterRecordRepository.save(record);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<ApiResponse<SitterRecordDto>> updateRecord(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSitterRecordDto updateDto) {
+        SitterRecordDto updatedRecord = sitterRecordService.updateRecord(id, updateDto);
+        return ResponseEntity.ok(ApiResponse.success("記錄更新成功", updatedRecord));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRecord(@PathVariable Long id) {
-        sitterRecordRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ApiResponse<Void>> deleteRecord(@PathVariable Long id) {
+        sitterRecordService.deleteRecord(id);
+        return ResponseEntity.ok(ApiResponse.success("記錄刪除成功", null));
     }
 }

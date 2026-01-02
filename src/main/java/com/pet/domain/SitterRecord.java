@@ -1,6 +1,7 @@
 package com.pet.domain;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity

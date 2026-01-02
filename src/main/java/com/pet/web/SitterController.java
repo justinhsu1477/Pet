@@ -1,58 +1,55 @@
 package com.pet.web;
 
-import com.pet.domain.Sitter;
-import com.pet.repository.SitterRepository;
+import com.pet.dto.SitterDto;
+import com.pet.dto.response.ApiResponse;
+import com.pet.service.SitterService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/sitters")
 public class SitterController {
 
-    private final SitterRepository sitterRepository;
+    private final SitterService sitterService;
 
-    public SitterController(SitterRepository sitterRepository) {
-        this.sitterRepository = sitterRepository;
+    public SitterController(SitterService sitterService) {
+        this.sitterService = sitterService;
     }
 
     @GetMapping
-    public List<Sitter> getAllSitters() {
-        return sitterRepository.findAll();
+    public ResponseEntity<ApiResponse<List<SitterDto>>> getAllSitters() {
+        List<SitterDto> sitters = sitterService.getAllSitters();
+        return ResponseEntity.ok(ApiResponse.success(sitters));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Sitter> getSitter(@PathVariable Long id) {
-        return sitterRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<SitterDto>> getSitter(@PathVariable Long id) {
+        SitterDto sitter = sitterService.getSitterById(id);
+        return ResponseEntity.ok(ApiResponse.success(sitter));
     }
 
     @PostMapping
-    public ResponseEntity<Sitter> createSitter(@RequestBody Sitter sitter) throws URISyntaxException {
-        if (sitter.getId() != null) {
-            return ResponseEntity.badRequest().build();
-        }
-        Sitter result = sitterRepository.save(sitter);
-        return ResponseEntity.created(new URI("/api/sitters/" + result.getId())).body(result);
+    public ResponseEntity<ApiResponse<SitterDto>> createSitter(@Valid @RequestBody SitterDto sitterDto) {
+        SitterDto createdSitter = sitterService.createSitter(sitterDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("保母創建成功", createdSitter));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Sitter> updateSitter(@PathVariable Long id, @RequestBody Sitter sitter) {
-        if (!sitterRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        sitter.setId(id);
-        Sitter result = sitterRepository.save(sitter);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<ApiResponse<SitterDto>> updateSitter(
+            @PathVariable Long id,
+            @Valid @RequestBody SitterDto sitterDto) {
+        SitterDto updatedSitter = sitterService.updateSitter(id, sitterDto);
+        return ResponseEntity.ok(ApiResponse.success("保母更新成功", updatedSitter));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSitter(@PathVariable Long id) {
-        sitterRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ApiResponse<Void>> deleteSitter(@PathVariable Long id) {
+        sitterService.deleteSitter(id);
+        return ResponseEntity.ok(ApiResponse.success("保母刪除成功", null));
     }
 }

@@ -1,58 +1,55 @@
 package com.pet.web;
 
-import com.pet.domain.Pet;
-import com.pet.repository.PetRepository;
+import com.pet.dto.PetDto;
+import com.pet.dto.response.ApiResponse;
+import com.pet.service.PetService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/pets")
 public class PetController {
 
-    private final PetRepository petRepository;
+    private final PetService petService;
 
-    public PetController(PetRepository petRepository) {
-        this.petRepository = petRepository;
+    public PetController(PetService petService) {
+        this.petService = petService;
     }
 
     @GetMapping
-    public List<Pet> getAllPets() {
-        return petRepository.findAll();
+    public ResponseEntity<ApiResponse<List<PetDto>>> getAllPets() {
+        List<PetDto> pets = petService.getAllPets();
+        return ResponseEntity.ok(ApiResponse.success(pets));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Pet> getPet(@PathVariable Long id) {
-        return petRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<PetDto>> getPet(@PathVariable Long id) {
+        PetDto pet = petService.getPetById(id);
+        return ResponseEntity.ok(ApiResponse.success(pet));
     }
 
     @PostMapping
-    public ResponseEntity<Pet> createPet(@RequestBody Pet pet) throws URISyntaxException {
-        if (pet.getId() != null) {
-            return ResponseEntity.badRequest().build();
-        }
-        Pet result = petRepository.save(pet);
-        return ResponseEntity.created(new URI("/api/pets/" + result.getId())).body(result);
+    public ResponseEntity<ApiResponse<PetDto>> createPet(@Valid @RequestBody PetDto petDto) {
+        PetDto createdPet = petService.createPet(petDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("寵物創建成功", createdPet));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pet> updatePet(@PathVariable Long id, @RequestBody Pet pet) {
-        if (!petRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        pet.setId(id);
-        Pet result = petRepository.save(pet);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<ApiResponse<PetDto>> updatePet(
+            @PathVariable Long id,
+            @Valid @RequestBody PetDto petDto) {
+        PetDto updatedPet = petService.updatePet(id, petDto);
+        return ResponseEntity.ok(ApiResponse.success("寵物更新成功", updatedPet));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePet(@PathVariable Long id) {
-        petRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ApiResponse<Void>> deletePet(@PathVariable Long id) {
+        petService.deletePet(id);
+        return ResponseEntity.ok(ApiResponse.success("寵物刪除成功", null));
     }
 }
