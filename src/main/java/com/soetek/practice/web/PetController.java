@@ -2,7 +2,6 @@ package com.soetek.practice.web;
 
 import com.soetek.practice.domain.Pet;
 import com.soetek.practice.repository.PetRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/pets")
-@RequiredArgsConstructor
 public class PetController {
 
     private final PetRepository petRepository;
+
+    public PetController(PetRepository petRepository) {
+        this.petRepository = petRepository;
+    }
 
     @GetMapping
     public List<Pet> getAllPets() {

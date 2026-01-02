@@ -2,7 +2,6 @@ package com.soetek.practice.web;
 
 import com.soetek.practice.domain.Cat;
 import com.soetek.practice.repository.CatRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cats")
-@RequiredArgsConstructor
 public class CatController {
 
     private final CatRepository catRepository;
+
+    public CatController(CatRepository catRepository) {
+        this.catRepository = catRepository;
+    }
 
     @GetMapping
     public List<Cat> getAllCats() {

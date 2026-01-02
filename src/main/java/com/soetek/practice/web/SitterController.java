@@ -2,7 +2,6 @@ package com.soetek.practice.web;
 
 import com.soetek.practice.domain.Sitter;
 import com.soetek.practice.repository.SitterRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sitters")
-@RequiredArgsConstructor
 public class SitterController {
 
     private final SitterRepository sitterRepository;
+
+    public SitterController(SitterRepository sitterRepository) {
+        this.sitterRepository = sitterRepository;
+    }
 
     @GetMapping
     public List<Sitter> getAllSitters() {
