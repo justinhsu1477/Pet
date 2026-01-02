@@ -1,7 +1,7 @@
-package com.soetek.practice.web;
+package com.pet.web;
 
-import com.soetek.practice.domain.Cat;
-import com.soetek.practice.repository.CatRepository;
+import com.pet.domain.Cat;
+import com.pet.repository.CatRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

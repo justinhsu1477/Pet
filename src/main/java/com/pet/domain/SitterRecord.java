@@ -1,4 +1,4 @@
-package com.soetek.practice.domain;
+package com.pet.domain;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

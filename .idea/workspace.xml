@@ -4,10 +4,39 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e0077c18-1a66-4aea-bdc1-16b896e464ba" name="Changes" comment="feat:entity">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+    <list default="true" id="e0077c18-1a66-4aea-bdc1-16b896e464ba" name="Changes" comment="feat: add initial project files and configuration">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/PracticeApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/PracticeApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/domain/Cat.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Cat.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/domain/Pet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Pet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/domain/Sitter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Sitter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/domain/SitterRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/SitterRecord.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/repository/CatRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/repository/CatRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/repository/PetRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/repository/PetRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/repository/SitterRecordRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/repository/SitterRecordRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/repository/SitterRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/repository/SitterRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/web/CatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/web/CatController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/web/PetController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/web/PetController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/web/SitterController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/web/SitterController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/soetek/practice/web/SitterRecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/web/SitterRecordController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/PracticeApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/domain/Cat.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/domain/Pet.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/domain/Sitter.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/domain/SitterRecord.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/repository/CatRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/repository/PetRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/repository/SitterRecordRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/repository/SitterRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/web/CatController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/web/PetController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/web/SitterController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/soetek/practice/web/SitterRecordController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,44 +59,72 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;HTTP Request.generated-requests | #67.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;Spring Boot.PracticeApplication.executor&quot;: &quot;Run&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/justinhsu/Desktop/justin/h2-practice&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "HTTP Request.generated-requests | #67.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.PracticeApplication.executor": "Run",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/justinhsu/Desktop/justin/pet",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.29681978",
+    "settings.editor.selected.configurable": "project.scopes",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;h2&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "h2"
     ]
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
   <component name="RunManager" selected="Spring Boot.PracticeApplication">
     <configuration name="generated-requests | #67" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#67" index="67" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="PracticeApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="h2-practice" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.soetek.practice.PracticeApplication" />
+      <module name="petSystem" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.pet.PracticeApplication" />
+      <extension name="net.ashald.envfile">
+        <option name="IS_ENABLED" value="false" />
+        <option name="IS_SUBST" value="false" />
+        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+        <option name="IS_IGNORE_MISSING_FILES" value="false" />
+        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+        <ENTRIES>
+          <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+        </ENTRIES>
+      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="HTTP Request.generated-requests | #67" />
+      <item itemvalue="Spring Boot.PracticeApplication" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="HTTP Request.generated-requests | #67" />
@@ -89,7 +146,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1767343692868</updated>
-      <workItem from="1767343694046" duration="1571000" />
+      <workItem from="1767343694046" duration="1974000" />
+      <workItem from="1767345708654" duration="1219000" />
     </task>
     <task id="LOCAL-00001" summary="feat:新增寵物保母紀錄系統功能 &amp; 基本 crud">
       <option name="closed" value="true" />
@@ -107,7 +165,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767345195289</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="feat: add initial project files and configuration">
+      <option name="closed" value="true" />
+      <created>1767345297406</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1767345297406</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -127,7 +193,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat:新增寵物保母紀錄系統功能 &amp; 基本 crud" />
     <MESSAGE value="feat:entity" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat:entity" />
+    <MESSAGE value="feat: add initial project files and configuration" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add initial project files and configuration" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

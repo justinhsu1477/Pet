@@ -1,7 +1,7 @@
-package com.soetek.practice.web;
+package com.pet.web;
 
-import com.soetek.practice.domain.SitterRecord;
-import com.soetek.practice.repository.SitterRecordRepository;
+import com.pet.domain.SitterRecord;
+import com.pet.repository.SitterRecordRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,6 +1,6 @@
-package com.soetek.practice.repository;
+package com.pet.repository;
 
-import com.soetek.practice.domain.Cat;
+import com.pet.domain.Cat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
