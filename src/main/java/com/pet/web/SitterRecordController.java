@@ -68,4 +68,5 @@ public class SitterRecordController {
         sitterRecordService.deleteRecord(id);
         return ResponseEntity.ok(ApiResponse.success("記錄刪除成功", null));
     }
+
 }

@@ -3,10 +3,13 @@ package com.pet.android.di
 import com.pet.android.data.api.AuthApi
 import com.pet.android.data.api.PetApi
 import com.pet.android.data.api.SitterApi
+import com.pet.android.data.preferences.EnvironmentManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -17,8 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val BASE_URL = "http://10.0.2.2:8080/" // Android emulator localhost
 
     @Provides
     @Singleton
@@ -37,9 +38,17 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        environmentManager: EnvironmentManager
+    ): Retrofit {
+        // Get current environment's BASE_URL
+        val baseUrl = runBlocking {
+            environmentManager.currentEnvironment.first().baseUrl
+        }
+        
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
