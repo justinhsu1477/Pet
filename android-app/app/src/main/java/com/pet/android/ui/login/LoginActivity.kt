@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import com.pet.android.databinding.ActivityLoginBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.ui.pet.PetListActivity
+import com.pet.android.ui.setting.SettingActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,6 +30,10 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
             val username = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
             viewModel.login(username, password)
+        }
+        binding.ivLogo.setOnClickListener {
+            val intent = Intent(this, SettingActivity::class.java)
+            startActivity(intent)
         }
     }
 
