@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PetCare</string>
+
+    <!-- 登入頁面 -->
+    <string name="login_title">寵物照護系統</string>
+    <string name="username">帳號</string>
+    <string name="password">密碼</string>
+    <string name="login">登入</string>
+    <string name="login_success">登入成功</string>
+    <string name="login_failed">登入失敗</string>
+
+    <!-- 寵物管理 -->
+    <string name="pet_list_title">寵物清單</string>
+    <string name="pet_name">寵物名稱</string>
+    <string name="pet_type">寵物類型</string>
+    <string name="pet_age">年齡</string>
+    <string name="pet_breed">品種</string>
+    <string name="owner_name">飼主姓名</string>
+    <string name="owner_phone">飼主電話</string>
+
+    <!-- 保母管理 -->
+    <string name="sitter_list_title">保母清單</string>
+    <string name="sitter_name">保母姓名</string>
+    <string name="sitter_phone">電話</string>
+    <string name="sitter_email">Email</string>
+    <string name="sitter_experience">經驗</string>
+
+    <!-- 通用 -->
+    <string name="cancel">取消</string>
+    <string name="confirm">確認</string>
+    <string name="add">新增</string>
+    <string name="edit">編輯</string>
+    <string name="delete">刪除</string>
+    <string name="save">儲存</string>
+    <string name="loading">載入中...</string>
+    <string name="error">發生錯誤</string>
+</resources>
