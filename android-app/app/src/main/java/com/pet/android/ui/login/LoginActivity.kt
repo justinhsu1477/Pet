@@ -36,17 +36,17 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
         viewModel.loginState.observe(this) { resource ->
             when (resource) {
                 is Resource.Loading -> {
-                    binding.progressBar.visibility = View.VISIBLE
+                    binding.loadingOverlay.visibility = View.VISIBLE
                     binding.btnLogin.isEnabled = false
                 }
                 is Resource.Success -> {
-                    binding.progressBar.visibility = View.GONE
+                    binding.loadingOverlay.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
                     Toast.makeText(this, "登入成功", Toast.LENGTH_SHORT).show()
                     navigateToPetList()
                 }
                 is Resource.Error -> {
-                    binding.progressBar.visibility = View.GONE
+                    binding.loadingOverlay.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
                     Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
                 }

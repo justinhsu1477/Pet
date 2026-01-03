@@ -3,10 +3,13 @@
     <string name="app_name">PetCare</string>
 
     <!-- 登入頁面 -->
-    <string name="login_title">寵物照護系統</string>
+    <string name="login_title">寵物保母系統</string>
+    <string name="welcome_back">歡迎回來</string>
+    <string name="login_subtitle">登入以管理您的寵物照護</string>
     <string name="username">帳號</string>
     <string name="password">密碼</string>
     <string name="login">登入</string>
+    <string name="logging_in">登入中...</string>
     <string name="login_success">登入成功</string>
     <string name="login_failed">登入失敗</string>
 

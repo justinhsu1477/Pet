@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Main paw pad -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,18c-2.21,0-4-1.79-4-4s1.79-4,4-4 4,1.79 4,4 -1.79,4-4,4z"/>
+    
+    <!-- Top left toe -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M7,9c-1.1,0-2-0.9-2-2s0.9-2,2-2 2,0.9 2,2 -0.9,2-2,2z"/>
+    
+    <!-- Top center toe -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,7c-1.1,0-2-0.9-2-2s0.9-2,2-2 2,0.9 2,2 -0.9,2-2,2z"/>
+    
+    <!-- Top right toe -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M17,9c-1.1,0-2-0.9-2-2s0.9-2,2-2 2,0.9 2,2 -0.9,2-2,2z"/>
+</vector>
