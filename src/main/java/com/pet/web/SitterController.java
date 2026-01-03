@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/sitters")
@@ -27,7 +28,7 @@ public class SitterController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SitterDto>> getSitter(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SitterDto>> getSitter(@PathVariable UUID id) {
         SitterDto sitter = sitterService.getSitterById(id);
         return ResponseEntity.ok(ApiResponse.success(sitter));
     }
@@ -41,14 +42,14 @@ public class SitterController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SitterDto>> updateSitter(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody SitterDto sitterDto) {
         SitterDto updatedSitter = sitterService.updateSitter(id, sitterDto);
         return ResponseEntity.ok(ApiResponse.success("保母更新成功", updatedSitter));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteSitter(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteSitter(@PathVariable UUID id) {
         sitterService.deleteSitter(id);
         return ResponseEntity.ok(ApiResponse.success("保母刪除成功", null));
     }

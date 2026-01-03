@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/cats")
@@ -34,7 +35,7 @@ public class CatController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cat> updateCat(@PathVariable Long id, @RequestBody Cat cat) {
+    public ResponseEntity<Cat> updateCat(@PathVariable UUID id, @RequestBody Cat cat) {
         if (!catRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -44,7 +45,7 @@ public class CatController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCat(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCat(@PathVariable UUID id) {
         catRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

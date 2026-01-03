@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +27,7 @@ public class PetService {
                 .collect(Collectors.toList());
     }
 
-    public PetDto getPetById(Long id) {
+    public PetDto getPetById(UUID id) {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("寵物", "id", id));
         return convertToDto(pet);
@@ -38,7 +39,7 @@ public class PetService {
         return convertToDto(savedPet);
     }
 
-    public PetDto updatePet(Long id, PetDto petDto) {
+    public PetDto updatePet(UUID id, PetDto petDto) {
         if (!petRepository.existsById(id)) {
             throw new ResourceNotFoundException("寵物", "id", id);
         }
@@ -48,7 +49,7 @@ public class PetService {
         return convertToDto(updatedPet);
     }
 
-    public void deletePet(Long id) {
+    public void deletePet(UUID id) {
         if (!petRepository.existsById(id)) {
             throw new ResourceNotFoundException("寵物", "id", id);
         }
@@ -56,7 +57,7 @@ public class PetService {
     }
 
     // 內部方法:用於其他 Service 取得 Pet Entity
-    public Pet getPetEntityById(Long id) {
+    public Pet getPetEntityById(UUID id) {
         return petRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("寵物", "id", id));
     }

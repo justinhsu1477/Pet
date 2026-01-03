@@ -1,13 +1,23 @@
+-- User 表
+CREATE TABLE IF NOT EXISTS user (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    role VARCHAR(20)
+);
+
 -- Cat 表
 CREATE TABLE IF NOT EXISTS cat (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
     name VARCHAR(255),
     age INT
 );
 
 -- Pet 表
 CREATE TABLE IF NOT EXISTS pet (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
     name VARCHAR(255),
     type VARCHAR(255),
     age INT,
@@ -19,7 +29,7 @@ CREATE TABLE IF NOT EXISTS pet (
 
 -- Sitter 表
 CREATE TABLE IF NOT EXISTS sitter (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
     name VARCHAR(255),
     phone VARCHAR(255),
     email VARCHAR(255),
@@ -28,9 +38,9 @@ CREATE TABLE IF NOT EXISTS sitter (
 
 -- SitterRecord 表
 CREATE TABLE IF NOT EXISTS sitter_record (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pet_id BIGINT,
-    sitter_id BIGINT,
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    pet_id UUID,
+    sitter_id UUID,
     record_time TIMESTAMP,
     activity VARCHAR(255),
     fed BOOLEAN,

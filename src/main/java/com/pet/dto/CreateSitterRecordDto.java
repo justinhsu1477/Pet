@@ -2,10 +2,12 @@ package com.pet.dto;
 
 import jakarta.validation.constraints.*;
 
-public record CreateSitterRecordDto(
-        @NotNull(message = "寵物 ID 不能為空") Long petId,
+import java.util.UUID;
 
-        @NotNull(message = "保母 ID 不能為空") Long sitterId,
+public record CreateSitterRecordDto(
+        @NotNull(message = "寵物 ID 不能為空") UUID petId,
+
+        @NotNull(message = "保母 ID 不能為空") UUID sitterId,
 
         @Size(max = 200, message = "活動描述長度不能超過200個字元") String activity,
 

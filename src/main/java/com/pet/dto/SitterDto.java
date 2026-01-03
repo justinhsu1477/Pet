@@ -2,8 +2,10 @@ package com.pet.dto;
 
 import jakarta.validation.constraints.*;
 
+import java.util.UUID;
+
 public record SitterDto(
-        Long id,
+        UUID id,
 
         @NotBlank(message = "保母姓名不能為空") @Size(max = 100, message = "保母姓名長度不能超過100個字元") String name,
 

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/pets")
@@ -20,6 +21,7 @@ public class PetController {
         this.petService = petService;
     }
 
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<PetDto>>> getAllPets() {
         List<PetDto> pets = petService.getAllPets();
@@ -27,7 +29,7 @@ public class PetController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PetDto>> getPet(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PetDto>> getPet(@PathVariable UUID id) {
         PetDto pet = petService.getPetById(id);
         return ResponseEntity.ok(ApiResponse.success(pet));
     }
@@ -41,14 +43,14 @@ public class PetController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PetDto>> updatePet(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody PetDto petDto) {
         PetDto updatedPet = petService.updatePet(id, petDto);
         return ResponseEntity.ok(ApiResponse.success("寵物更新成功", updatedPet));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deletePet(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deletePet(@PathVariable UUID id) {
         petService.deletePet(id);
         return ResponseEntity.ok(ApiResponse.success("寵物刪除成功", null));
     }

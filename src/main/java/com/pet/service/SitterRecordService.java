@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,13 +38,13 @@ public class SitterRecordService {
                 .collect(Collectors.toList());
     }
 
-    public SitterRecordDto getRecordById(Long id) {
+    public SitterRecordDto getRecordById(UUID id) {
         SitterRecord record = sitterRecordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("保母記錄", "id", id));
         return convertToDto(record);
     }
 
-    public List<SitterRecordDto> getRecordsByPetId(Long petId) {
+    public List<SitterRecordDto> getRecordsByPetId(UUID petId) {
         // 驗證寵物是否存在
         petService.getPetEntityById(petId);
         return sitterRecordRepository.findByPetId(petId).stream()
@@ -51,7 +52,7 @@ public class SitterRecordService {
                 .collect(Collectors.toList());
     }
 
-    public List<SitterRecordDto> getRecordsBySitterId(Long sitterId) {
+    public List<SitterRecordDto> getRecordsBySitterId(UUID sitterId) {
         // 驗證保母是否存在
         sitterService.getSitterEntityById(sitterId);
         return sitterRecordRepository.findBySitterId(sitterId).stream()
@@ -79,7 +80,7 @@ public class SitterRecordService {
         return convertToDto(savedRecord);
     }
 
-    public SitterRecordDto updateRecord(Long id, UpdateSitterRecordDto updateDto) {
+    public SitterRecordDto updateRecord(UUID id, UpdateSitterRecordDto updateDto) {
         SitterRecord record = sitterRecordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("保母記錄", "id", id));
 
@@ -107,7 +108,7 @@ public class SitterRecordService {
         return convertToDto(updatedRecord);
     }
 
-    public void deleteRecord(Long id) {
+    public void deleteRecord(UUID id) {
         if (!sitterRecordRepository.existsById(id)) {
             throw new ResourceNotFoundException("保母記錄", "id", id);
         }

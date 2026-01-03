@@ -1,9 +1,10 @@
 package com.pet.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record SitterRecordDto(
-        Long id,
+        UUID id,
         PetDto pet,
         SitterDto sitter,
         LocalDateTime recordTime,

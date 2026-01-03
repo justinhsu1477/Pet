@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/records")
@@ -29,19 +30,19 @@ public class SitterRecordController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SitterRecordDto>> getRecord(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SitterRecordDto>> getRecord(@PathVariable UUID id) {
         SitterRecordDto record = sitterRecordService.getRecordById(id);
         return ResponseEntity.ok(ApiResponse.success(record));
     }
 
     @GetMapping("/pet/{petId}")
-    public ResponseEntity<ApiResponse<List<SitterRecordDto>>> getRecordsByPet(@PathVariable Long petId) {
+    public ResponseEntity<ApiResponse<List<SitterRecordDto>>> getRecordsByPet(@PathVariable UUID petId) {
         List<SitterRecordDto> records = sitterRecordService.getRecordsByPetId(petId);
         return ResponseEntity.ok(ApiResponse.success(records));
     }
 
     @GetMapping("/sitter/{sitterId}")
-    public ResponseEntity<ApiResponse<List<SitterRecordDto>>> getRecordsBySitter(@PathVariable Long sitterId) {
+    public ResponseEntity<ApiResponse<List<SitterRecordDto>>> getRecordsBySitter(@PathVariable UUID sitterId) {
         List<SitterRecordDto> records = sitterRecordService.getRecordsBySitterId(sitterId);
         return ResponseEntity.ok(ApiResponse.success(records));
     }
@@ -56,14 +57,14 @@ public class SitterRecordController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SitterRecordDto>> updateRecord(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateSitterRecordDto updateDto) {
         SitterRecordDto updatedRecord = sitterRecordService.updateRecord(id, updateDto);
         return ResponseEntity.ok(ApiResponse.success("記錄更新成功", updatedRecord));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteRecord(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteRecord(@PathVariable UUID id) {
         sitterRecordService.deleteRecord(id);
         return ResponseEntity.ok(ApiResponse.success("記錄刪除成功", null));
     }

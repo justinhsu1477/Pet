@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +27,7 @@ public class SitterService {
                 .collect(Collectors.toList());
     }
 
-    public SitterDto getSitterById(Long id) {
+    public SitterDto getSitterById(UUID id) {
         Sitter sitter = sitterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("保母", "id", id));
         return convertToDto(sitter);
@@ -38,7 +39,7 @@ public class SitterService {
         return convertToDto(savedSitter);
     }
 
-    public SitterDto updateSitter(Long id, SitterDto sitterDto) {
+    public SitterDto updateSitter(UUID id, SitterDto sitterDto) {
         if (!sitterRepository.existsById(id)) {
             throw new ResourceNotFoundException("保母", "id", id);
         }
@@ -48,7 +49,7 @@ public class SitterService {
         return convertToDto(updatedSitter);
     }
 
-    public void deleteSitter(Long id) {
+    public void deleteSitter(UUID id) {
         if (!sitterRepository.existsById(id)) {
             throw new ResourceNotFoundException("保母", "id", id);
         }
@@ -56,7 +57,7 @@ public class SitterService {
     }
 
     // 內部方法:用於其他 Service 取得 Sitter Entity
-    public Sitter getSitterEntityById(Long id) {
+    public Sitter getSitterEntityById(UUID id) {
         return sitterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("保母", "id", id));
     }

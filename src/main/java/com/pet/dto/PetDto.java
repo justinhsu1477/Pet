@@ -2,8 +2,10 @@ package com.pet.dto;
 
 import jakarta.validation.constraints.*;
 
+import java.util.UUID;
+
 public record PetDto(
-        Long id,
+        UUID id,
 
         @NotBlank(message = "寵物名稱不能為空") @Size(max = 100, message = "寵物名稱長度不能超過100個字元") String name,
 

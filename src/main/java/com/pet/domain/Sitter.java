@@ -1,12 +1,13 @@
 package com.pet.domain;
 
 import jakarta.persistence.*;
+import java.util.UUID;
 
 @Entity
 public class Sitter {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private String name;
     private String phone;
@@ -15,11 +16,11 @@ public class Sitter {
     @Column(length = 500)
     private String experience;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

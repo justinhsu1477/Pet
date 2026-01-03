@@ -23,6 +23,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
+                "RESOURCE_NOT_FOUND",
                 "Not Found",
                 ex.getMessage(),
                 request.getRequestURI());
@@ -43,6 +44,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
+                "VALIDATION_FAILED",
                 "Validation Failed",
                 "輸入資料驗證失敗",
                 request.getRequestURI(),
@@ -57,6 +59,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL_SERVER_ERROR",
                 "Internal Server Error",
                 "伺服器內部錯誤: " + ex.getMessage(),
                 request.getRequestURI());
