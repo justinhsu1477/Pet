@@ -1,33 +1,40 @@
 package com.pet.service;
 
-import com.pet.domain.User;
+import com.pet.domain.Users;
 import com.pet.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class AuthenticationService {
 
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
 
+    public AuthenticationService(
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            UserRepository userRepository) {
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+    }
 
-    public User authenticate(String username, String password) {
-        User user = userRepository.findByUsername(username).orElse(null);
-        if (user == null) {
+
+    public Users authenticate(String username, String password) {
+        Users users = userRepository.findByUsername(username).orElse(null);
+        if (users == null) {
             return null;
         }
 
-        if (passwordEncoder.matches(password, user.getPassword())) {
+        if (passwordEncoder.matches(password, users.getPassword())) {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(username, password);
             authenticationManager.authenticate(authenticationToken);
-            return user;
+            return users;
         } else {
             return null;
         }

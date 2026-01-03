@@ -1,6 +1,6 @@
 package com.pet.service;
 
-import com.pet.domain.User;
+import com.pet.domain.Users;
 import com.pet.dto.UserDto;
 import com.pet.exception.ResourceNotFoundException;
 import com.pet.repository.UserRepository;
@@ -31,29 +31,29 @@ public class UserService {
     }
 
     public UserDto getUserById(UUID id) {
-        User user = userRepository.findById(id)
+        Users users = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("用戶", "id", id));
-        return convertToDto(user);
+        return convertToDto(users);
     }
 
     public UserDto createUser(UserDto userDto, String password) {
-        User user = convertToEntity(userDto);
-        user.setPassword(passwordEncoder.encode(password));
-        User savedUser = userRepository.save(user);
-        return convertToDto(savedUser);
+        Users users = convertToEntity(userDto);
+        users.setPassword(passwordEncoder.encode(password));
+        Users savedUsers = userRepository.save(users);
+        return convertToDto(savedUsers);
     }
 
     public UserDto updateUser(UUID id, UserDto userDto) {
-        User existingUser = userRepository.findById(id)
+        Users existingUsers = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("用戶", "id", id));
 
-        existingUser.setUsername(userDto.username());
-        existingUser.setEmail(userDto.email());
-        existingUser.setPhone(userDto.phone());
-        existingUser.setRole(userDto.role());
+        existingUsers.setUsername(userDto.username());
+        existingUsers.setEmail(userDto.email());
+        existingUsers.setPhone(userDto.phone());
+        existingUsers.setRole(userDto.role());
 
-        User updatedUser = userRepository.save(existingUser);
-        return convertToDto(updatedUser);
+        Users updatedUsers = userRepository.save(existingUsers);
+        return convertToDto(updatedUsers);
     }
 
     public void deleteUser(UUID id) {
@@ -63,22 +63,22 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    private UserDto convertToDto(User user) {
+    private UserDto convertToDto(Users users) {
         return new UserDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getRole()
+                users.getId(),
+                users.getUsername(),
+                users.getEmail(),
+                users.getPhone(),
+                users.getRole()
         );
     }
 
-    private User convertToEntity(UserDto dto) {
-        User user = new User();
-        user.setUsername(dto.username());
-        user.setEmail(dto.email());
-        user.setPhone(dto.phone());
-        user.setRole(dto.role());
-        return user;
+    private Users convertToEntity(UserDto dto) {
+        Users users = new Users();
+        users.setUsername(dto.username());
+        users.setEmail(dto.email());
+        users.setPhone(dto.phone());
+        users.setRole(dto.role());
+        return users;
     }
 }

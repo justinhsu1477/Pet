@@ -1,6 +1,6 @@
 package com.pet.web;
 
-import com.pet.domain.User;
+import com.pet.domain.Users;
 import com.pet.dto.LoginRequestDto;
 import com.pet.dto.LoginResponseDto;
 import com.pet.dto.response.ApiResponse;
@@ -23,18 +23,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequest) {
-        User user = authenticationService.authenticate(loginRequest.username(), loginRequest.password());
+        Users users = authenticationService.authenticate(loginRequest.username(), loginRequest.password());
 
-        if (user == null) {
+        if (users == null) {
             throw new AuthenticationException(ErrorCode.INVALID_PASSWORD);
         }
 
         LoginResponseDto loginResponse = new LoginResponseDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getRole(),
+                users.getId(),
+                users.getUsername(),
+                users.getEmail(),
+                users.getPhone(),
+                users.getRole(),
                 "登入成功"
         );
 

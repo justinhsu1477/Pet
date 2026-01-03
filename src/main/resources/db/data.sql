@@ -1,15 +1,15 @@
 -- 插入 User 測試資料（密碼已使用 BCrypt 加密）
 -- admin / admin123
-INSERT INTO user (id, username, password, email, phone, role)
-VALUES (RANDOM_UUID(), 'admin', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'admin@petcare.com', '0900-000-001', 'ADMIN');
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (RANDOM_UUID(), 'admin', '$2a$10$ioaaP9Nongaib.l8BoFY1ehNWJBG7OvBW92w4/O1oADnWMF6PrY8O', 'admin@petcare.com', '0900-000-001', 'ADMIN');
 
 -- user01 / password123
-INSERT INTO user (id, username, password, email, phone, role)
-VALUES (RANDOM_UUID(), 'user01', '$2a$10$EblZqNptyYvcLm/VwDCVAuBjzZOI7khzdyGPBr/VLU.0qQXk1uJPa', 'user01@example.com', '0911-222-333', 'USER');
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (RANDOM_UUID(), 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user01@example.com', '0911-222-333', 'USER');
 
 -- sitter01 / sitter123
-INSERT INTO user (id, username, password, email, phone, role)
-VALUES (RANDOM_UUID(), 'sitter01', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi2', 'sitter01@example.com', '0922-333-444', 'SITTER');
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (RANDOM_UUID(), 'sitter01', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter01@example.com', '0922-333-444', 'SITTER');
 
 -- 插入 Cat 測試資料
 INSERT INTO cat (id, name, age) VALUES (RANDOM_UUID(), '小咪', 2);
