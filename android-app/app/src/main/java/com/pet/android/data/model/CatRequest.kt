@@ -3,6 +3,7 @@ package com.pet.android.data.model
 import com.google.gson.annotations.SerializedName
 
 data class CatRequest(
+    val id: String? = null,
     val name: String,
     val age: Int?,
     val breed: String?,
