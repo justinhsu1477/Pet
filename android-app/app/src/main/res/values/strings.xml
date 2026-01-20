@@ -22,6 +22,88 @@
     <string name="owner_name">飼主姓名</string>
     <string name="owner_phone">飼主電話</string>
 
+    <!-- 新增寵物 - 選擇頁面 -->
+    <string name="create_pet_title">新增寵物</string>
+    <string name="choose_pet_type_title">選擇寵物類型</string>
+    <string name="choose_species">請選擇要新增狗狗或是貓咪</string>
+    <string name="dog">狗狗</string>
+    <string name="dog_desc">建立狗狗的基本資料，例如名稱、品種、年齡等</string>
+    <string name="dog_desc_short">忠誠的好夥伴</string>
+    <string name="cat">貓咪</string>
+    <string name="cat_desc">建立貓咪的基本資料，例如名稱、品種、年齡等</string>
+    <string name="cat_desc_short">優雅的小精靈</string>
+    <string name="tap_to_continue">點擊卡片繼續</string>
+    <string name="select">選擇</string>
+    <string name="emoji_dog">🐶</string>
+    <string name="emoji_cat">🐱</string>
+
+    <!-- 新增寵物 - 表單頁面 -->
+    <string name="create_dog_title">新增狗狗</string>
+    <string name="create_cat_title">新增貓咪</string>
+    <string name="form_title_dog">填寫狗狗資料</string>
+    <string name="form_title_cat">填寫貓咪資料</string>
+    <string name="submit_create">確認新增</string>
+
+    <!-- 表單區塊標題 -->
+    <string name="section_basic_info">基本資料</string>
+    <string name="section_owner_info">飼主資訊</string>
+    <string name="section_health_info">健康資訊</string>
+    <string name="section_dog_specific">狗狗專屬資訊</string>
+    <string name="section_cat_specific">貓咪專屬資訊</string>
+
+    <!-- 表單欄位 -->
+    <string name="pet_name_required">寵物名稱 *</string>
+    <string name="pet_age_hint">年齡</string>
+    <string name="years_old">歲</string>
+    <string name="gender">性別</string>
+    <string name="male">公</string>
+    <string name="female">母</string>
+    <string name="is_neutered">已結紮</string>
+    <string name="owner_name_required">飼主姓名 *</string>
+    <string name="owner_phone_required">飼主電話 *</string>
+    <string name="vaccine_status">疫苗接種狀況</string>
+    <string name="special_needs">特殊需求或備註</string>
+
+    <!-- 狗狗專屬欄位 -->
+    <string name="dog_size">體型大小</string>
+    <string name="size_small">小型犬</string>
+    <string name="size_medium">中型犬</string>
+    <string name="size_large">大型犬</string>
+    <string name="size_giant">巨型犬</string>
+    <string name="training_level">訓練程度</string>
+    <string name="training_none">未訓練</string>
+    <string name="training_basic">基礎</string>
+    <string name="training_intermediate">中級</string>
+    <string name="training_advanced">進階</string>
+    <string name="walk_required">需要遛狗</string>
+    <string name="walk_frequency">每日遛狗次數</string>
+    <string name="times_per_day">次/天</string>
+    <string name="friendly_with">友善程度</string>
+    <string name="friendly_with_dogs">對其他狗狗友善</string>
+    <string name="friendly_with_people">對陌生人友善</string>
+    <string name="friendly_with_children">對小孩友善</string>
+
+    <!-- 貓咪專屬欄位 -->
+    <string name="is_indoor">室內貓</string>
+    <string name="litter_box_type">貓砂盆類型</string>
+    <string name="litter_open">開放式</string>
+    <string name="litter_covered">有蓋式</string>
+    <string name="litter_automatic">自動清理</string>
+    <string name="litter_top_entry">上開式</string>
+    <string name="scratching_habit">抓撓習慣</string>
+    <string name="scratch_low">很少抓</string>
+    <string name="scratch_moderate">中等</string>
+    <string name="scratch_high">經常抓</string>
+
+    <!-- 表單驗證錯誤訊息 -->
+    <string name="error_name_required">請輸入寵物名稱</string>
+    <string name="error_owner_name_required">請輸入飼主姓名</string>
+    <string name="error_owner_phone_required">請輸入飼主電話</string>
+
+    <!-- 成功訊息 -->
+    <string name="dog_created_success">狗狗資料新增成功</string>
+    <string name="cat_created_success">貓咪資料新增成功</string>
+
     <!-- 保母管理 -->
     <string name="sitter_list_title">保母清單</string>
     <string name="sitter_name">保母姓名</string>
