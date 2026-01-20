@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pet.android.R
+import com.pet.android.data.model.Pet
 import com.pet.android.databinding.ActivityPetListBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.ui.create.CreatePetActivity
@@ -30,6 +31,15 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
         }
     }
 
+    private val editPetLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Refresh the list when a pet is updated
+            viewModel.loadPets()
+        }
+    }
+
     override fun getViewBinding() = ActivityPetListBinding.inflate(layoutInflater)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,14 +52,33 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
     }
 
     private fun setupRecyclerView() {
-        petAdapter = PetAdapter { pet ->
-            // Handle pet item click
-            Toast.makeText(this, "點擊: ${pet.name}", Toast.LENGTH_SHORT).show()
-        }
+        petAdapter = PetAdapter(
+            onItemClick = { pet ->
+                // Handle pet item click - show activity quick dialog
+                showActivityQuickDialog(pet)
+            },
+            onItemLongClick = { pet ->
+                // Handle pet item long click - go to edit page
+                openEditPetActivity(pet)
+            }
+        )
         binding.rvPets.apply {
             layoutManager = LinearLayoutManager(this@PetListActivity)
             adapter = petAdapter
         }
+    }
+
+    private fun showActivityQuickDialog(pet: Pet) {
+        val dialog = ActivityQuickDialog.newInstance(pet)
+        dialog.show(supportFragmentManager, ActivityQuickDialog.TAG)
+    }
+
+    private fun openEditPetActivity(pet: Pet) {
+        val intent = Intent(this, EditPetActivity::class.java).apply {
+            putExtra(EditPetActivity.EXTRA_PET_ID, pet.id)
+            putExtra(EditPetActivity.EXTRA_PET_TYPE, pet.type)
+        }
+        editPetLauncher.launch(intent)
     }
 
     private fun setupViews() {

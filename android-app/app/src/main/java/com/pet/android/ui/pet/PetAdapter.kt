@@ -10,7 +10,8 @@ import com.pet.android.data.model.Pet
 import com.pet.android.databinding.ItemPetBinding
 
 class PetAdapter(
-    private val onItemClick: (Pet) -> Unit
+    private val onItemClick: (Pet) -> Unit,
+    private val onItemLongClick: (Pet) -> Unit = {}
 ) : ListAdapter<Pet, PetAdapter.PetViewHolder>(PetDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PetViewHolder {
@@ -60,6 +61,11 @@ class PetAdapter(
 
                 root.setOnClickListener {
                     onItemClick(pet)
+                }
+
+                root.setOnLongClickListener {
+                    onItemLongClick(pet)
+                    true
                 }
             }
         }

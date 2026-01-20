@@ -42,6 +42,36 @@ class DogRepository @Inject constructor(
         }
     }
 
+    suspend fun getDogById(id: String): Resource<DogRequest> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = dogApi.getDogById(id)
+                if (response.success && response.data != null) {
+                    Resource.Success(response.data)
+                } else {
+                    Resource.Error(response.message ?: "取得狗狗資料失敗")
+                }
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "網路錯誤")
+            }
+        }
+    }
+
+    suspend fun updateDog(id: String, dog: DogRequest): Resource<DogRequest> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = dogApi.updateDog(id, dog)
+                if (response.success && response.data != null) {
+                    Resource.Success(response.data)
+                } else {
+                    Resource.Error(response.message ?: "更新狗狗失敗")
+                }
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "網路錯誤")
+            }
+        }
+    }
+
     suspend fun deleteDog(id: String): Resource<Unit> {
         return withContext(Dispatchers.IO) {
             try {

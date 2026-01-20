@@ -35,4 +35,7 @@
     <color name="background_light">#FAFAFA</color>
     <color name="surface">#FFFFFF</color>
     <color name="surface_variant">#FFF8E1</color>
+
+    <!-- Divider -->
+    <color name="divider">#E0E0E0</color>
 </resources>

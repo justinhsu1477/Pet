@@ -4,6 +4,7 @@ import com.pet.android.data.api.AuthApi
 import com.pet.android.data.api.CatApi
 import com.pet.android.data.api.DogApi
 import com.pet.android.data.api.PetApi
+import com.pet.android.data.api.PetActivityApi
 import com.pet.android.data.api.SitterApi
 import com.pet.android.data.preferences.EnvironmentManager
 import dagger.Module
@@ -104,5 +105,11 @@ object NetworkModule {
     @Singleton
     fun provideDogApi(retrofit: Retrofit): DogApi {
         return retrofit.create(DogApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providePetActivityApi(retrofit: Retrofit): PetActivityApi {
+        return retrofit.create(PetActivityApi::class.java)
     }
 }

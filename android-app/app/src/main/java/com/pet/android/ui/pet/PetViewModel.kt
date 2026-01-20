@@ -7,12 +7,17 @@ import androidx.lifecycle.viewModelScope
 import com.pet.android.data.model.CatRequest
 import com.pet.android.data.model.DogRequest
 import com.pet.android.data.model.Pet
+import com.pet.android.data.model.PetActivityResponse
+import com.pet.android.data.model.RecordActivityRequest
 import com.pet.android.data.repository.CatRepository
 import com.pet.android.data.repository.DogRepository
+import com.pet.android.data.repository.PetActivityRepository
 import com.pet.android.data.repository.PetRepository
 import com.pet.android.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 enum class PetFilter {
@@ -23,7 +28,8 @@ enum class PetFilter {
 class PetViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val dogRepository: DogRepository,
-    private val catRepository: CatRepository
+    private val catRepository: CatRepository,
+    private val petActivityRepository: PetActivityRepository
 ) : ViewModel() {
 
     private val _petsState = MutableLiveData<Resource<List<Pet>>>()
@@ -31,6 +37,12 @@ class PetViewModel @Inject constructor(
 
     private val _currentFilter = MutableLiveData(PetFilter.ALL)
     val currentFilter: LiveData<PetFilter> = _currentFilter
+
+    private val _todayActivityState = MutableLiveData<Resource<PetActivityResponse>>()
+    val todayActivityState: LiveData<Resource<PetActivityResponse>> = _todayActivityState
+
+    private val _recordActivityState = MutableLiveData<Resource<PetActivityResponse>>()
+    val recordActivityState: LiveData<Resource<PetActivityResponse>> = _recordActivityState
 
     private var allPets: List<Pet> = emptyList()
 
@@ -117,5 +129,27 @@ class PetViewModel @Inject constructor(
             ownerPhone = this.ownerPhone,
             specialNeeds = this.specialNeeds
         )
+    }
+
+    fun loadTodayActivity(petId: String) {
+        viewModelScope.launch {
+            _todayActivityState.value = Resource.Loading
+            _todayActivityState.value = petActivityRepository.getTodayActivity(petId)
+        }
+    }
+
+    fun recordActivity(petId: String, walked: Boolean, fed: Boolean) {
+        viewModelScope.launch {
+            _recordActivityState.value = Resource.Loading
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val today = dateFormat.format(Date())
+            val request = RecordActivityRequest(
+                petId = petId,
+                activityDate = today,
+                walked = walked,
+                fed = fed
+            )
+            _recordActivityState.value = petActivityRepository.recordActivity(petId, request)
+        }
     }
 }

@@ -130,4 +130,19 @@
     <string name="save">儲存</string>
     <string name="loading">載入中...</string>
     <string name="error">發生錯誤</string>
+
+    <!-- 編輯寵物 -->
+    <string name="edit_dog_title">編輯狗狗</string>
+    <string name="edit_cat_title">編輯貓咪</string>
+    <string name="edit_dog_form_title">編輯狗狗資料</string>
+    <string name="edit_cat_form_title">編輯貓咪資料</string>
+    <string name="pet_updated_success">寵物資料更新成功</string>
+
+    <!-- 活動紀錄 -->
+    <string name="activity_walked">今天已遛狗</string>
+    <string name="activity_fed">今天已餵食</string>
+    <string name="walked_at">遛狗時間: %s</string>
+    <string name="fed_at">餵食時間: %s</string>
+    <string name="activity_recorded">活動紀錄成功</string>
+    <string name="today_activity">今日活動</string>
 </resources>

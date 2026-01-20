@@ -1,8 +1,5 @@
 package com.pet.exception;
 
-import lombok.Getter;
-
-@Getter
 public class ResourceNotFoundException extends RuntimeException {
     private final String resourceName;
     private final String fieldName;
@@ -34,5 +31,21 @@ public class ResourceNotFoundException extends RuntimeException {
             return ErrorCode.RECORD_NOT_FOUND;
         }
         return ErrorCode.RESOURCE_NOT_FOUND;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public Object getFieldValue() {
+        return fieldValue;
     }
 }

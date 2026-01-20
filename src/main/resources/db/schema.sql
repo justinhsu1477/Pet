@@ -1,4 +1,5 @@
 -- 刪除舊表（注意順序，先刪除有 FK 的表）
+DROP TABLE IF EXISTS pet_activity;
 DROP TABLE IF EXISTS sitter_record;
 DROP TABLE IF EXISTS dog;
 DROP TABLE IF EXISTS cat;
@@ -76,4 +77,18 @@ CREATE TABLE IF NOT EXISTS sitter_record (
     photos VARCHAR(500),
     FOREIGN KEY (pet_id) REFERENCES pet(id),
     FOREIGN KEY (sitter_id) REFERENCES sitter(id)
+);
+
+-- PetActivity 表 (寵物每日活動紀錄)
+CREATE TABLE IF NOT EXISTS pet_activity (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    pet_id UUID NOT NULL,
+    activity_date DATE NOT NULL,
+    walked BOOLEAN DEFAULT FALSE,
+    walk_time TIMESTAMP,
+    fed BOOLEAN DEFAULT FALSE,
+    feed_time TIMESTAMP,
+    notes VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pet_id) REFERENCES pet(id) ON DELETE CASCADE
 );

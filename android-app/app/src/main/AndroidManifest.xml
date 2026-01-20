@@ -44,6 +44,10 @@
             android:name=".ui.create.CreatePetFormActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".ui.pet.EditPetActivity"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>
