@@ -1,42 +1,39 @@
 package com.pet.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.UUID;
-
+@Getter
+@Setter
 @Entity
-public class Cat {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+@DiscriminatorValue("CAT")
+public class Cat extends Pet {
 
-    private String name;
-    private Integer age;
+    // 貓特有屬性
+    private Boolean isIndoor;
 
-    public UUID getId() {
-        return id;
+    @Enumerated(EnumType.STRING)
+    private LitterBoxType litterBoxType;
+
+    @Enumerated(EnumType.STRING)
+    private ScratchingHabit scratchingHabit;
+
+    @Override
+    public String getPetTypeName() {
+        return "貓";
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public enum LitterBoxType {
+        OPEN,           // 開放式
+        COVERED,        // 有蓋式
+        AUTOMATIC,      // 自動清理
+        TOP_ENTRY       // 上開式
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
+    public enum ScratchingHabit {
+        LOW,            // 很少抓
+        MODERATE,       // 中等
+        HIGH            // 經常抓
     }
 }

@@ -1,52 +1,84 @@
 package com.pet.web;
 
 import com.pet.domain.Cat;
-import com.pet.repository.CatRepository;
+import com.pet.dto.CatDto;
+import com.pet.dto.response.ApiResponse;
+import com.pet.service.CatService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/cats")
 public class CatController {
 
-    private final CatRepository catRepository;
+    private final CatService catService;
 
-    public CatController(CatRepository catRepository) {
-        this.catRepository = catRepository;
-    }
 
     @GetMapping
-    public List<Cat> getAllCats() {
-        return catRepository.findAll();
+    public ResponseEntity<ApiResponse<List<CatDto>>> getAllCats() {
+        List<CatDto> cats = catService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(cats));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CatDto>> getCat(@PathVariable UUID id) {
+        CatDto cat = catService.getById(id);
+        return ResponseEntity.ok(ApiResponse.success(cat));
     }
 
     @PostMapping
-    public ResponseEntity<Cat> createCat(@RequestBody Cat cat) throws URISyntaxException {
-        if (cat.getId() != null) {
-            return ResponseEntity.badRequest().build();
-        }
-        Cat result = catRepository.save(cat);
-        return ResponseEntity.created(new URI("/api/cats/" + result.getId())).body(result);
+    public ResponseEntity<ApiResponse<CatDto>> createCat(@Valid @RequestBody CatDto catDto) {
+        CatDto createdCat = catService.create(catDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("貓咪創建成功", createdCat));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cat> updateCat(@PathVariable UUID id, @RequestBody Cat cat) {
-        if (!catRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        cat.setId(id);
-        Cat result = catRepository.save(cat);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<ApiResponse<CatDto>> updateCat(
+            @PathVariable UUID id,
+            @Valid @RequestBody CatDto catDto) {
+        CatDto updatedCat = catService.update(id, catDto);
+        return ResponseEntity.ok(ApiResponse.success("貓咪更新成功", updatedCat));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCat(@PathVariable UUID id) {
-        catRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ApiResponse<Void>> deleteCat(@PathVariable UUID id) {
+        catService.delete(id);
+        return ResponseEntity.ok(ApiResponse.success("貓咪刪除成功", null));
+    }
+
+    // ========== 貓特有的 API ==========
+
+    @GetMapping("/indoor")
+    public ResponseEntity<ApiResponse<List<CatDto>>> getIndoorCats() {
+        List<CatDto> cats = catService.getIndoorCats();
+        return ResponseEntity.ok(ApiResponse.success(cats));
+    }
+
+    @GetMapping("/outdoor")
+    public ResponseEntity<ApiResponse<List<CatDto>>> getOutdoorCats() {
+        List<CatDto> cats = catService.getOutdoorCats();
+        return ResponseEntity.ok(ApiResponse.success(cats));
+    }
+
+    @GetMapping("/litter-box-type/{type}")
+    public ResponseEntity<ApiResponse<List<CatDto>>> getByLitterBoxType(
+            @PathVariable Cat.LitterBoxType type) {
+        List<CatDto> cats = catService.getByLitterBoxType(type);
+        return ResponseEntity.ok(ApiResponse.success(cats));
+    }
+
+    @GetMapping("/scratching-habit/{habit}")
+    public ResponseEntity<ApiResponse<List<CatDto>>> getByScratchingHabit(
+            @PathVariable Cat.ScratchingHabit habit) {
+        List<CatDto> cats = catService.getByScratchingHabit(habit);
+        return ResponseEntity.ok(ApiResponse.success(cats));
     }
 }

@@ -1,11 +1,12 @@
 package com.pet.dto;
 
+import com.pet.domain.Dog;
 import com.pet.domain.Pet;
 import jakarta.validation.constraints.*;
 
 import java.util.UUID;
 
-public record PetDto(
+public record DogDto(
         UUID id,
 
         @NotBlank(message = "寵物名稱不能為空")
@@ -13,7 +14,7 @@ public record PetDto(
         String name,
 
         @Min(value = 0, message = "年齡不能為負數")
-        @Max(value = 50, message = "年齡不能超過50歲")
+        @Max(value = 25, message = "狗狗年齡不能超過25歲")
         Integer age,
 
         @Size(max = 100, message = "品種長度不能超過100個字元")
@@ -37,10 +38,21 @@ public record PetDto(
 
         String vaccineStatus,
 
-        // 寵物類型 (CAT/DOG)
-        String petType,
+        // 狗特有屬性
+        Dog.Size size,
 
-        // 寵物類型名稱 (貓/狗)
-        String petTypeName
+        Boolean isWalkRequired,
+
+        @Min(value = 0, message = "遛狗次數不能為負數")
+        @Max(value = 10, message = "每日遛狗次數不能超過10次")
+        Integer walkFrequencyPerDay,
+
+        Dog.TrainingLevel trainingLevel,
+
+        Boolean isFriendlyWithDogs,
+
+        Boolean isFriendlyWithPeople,
+
+        Boolean isFriendlyWithChildren
 ) {
 }

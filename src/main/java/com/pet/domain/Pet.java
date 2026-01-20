@@ -1,85 +1,43 @@
 package com.pet.domain;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
 @Entity
-public class Pet {
+@Data
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "pet_type", discriminatorType = DiscriminatorType.STRING)
+public abstract class Pet {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;
-    private String type;
     private Integer age;
     private String breed;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
     private String ownerName;
     private String ownerPhone;
 
     @Column(length = 500)
     private String specialNeeds;
 
-    public UUID getId() {
-        return id;
-    }
+    private Boolean isNeutered;
+    private String vaccineStatus;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+    /**
+     * 取得寵物類型名稱
+     */
+    public abstract String getPetTypeName();
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getBreed() {
-        return breed;
-    }
-
-    public void setBreed(String breed) {
-        this.breed = breed;
-    }
-
-    public String getOwnerName() {
-        return ownerName;
-    }
-
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
-    }
-
-    public String getOwnerPhone() {
-        return ownerPhone;
-    }
-
-    public void setOwnerPhone(String ownerPhone) {
-        this.ownerPhone = ownerPhone;
-    }
-
-    public String getSpecialNeeds() {
-        return specialNeeds;
-    }
-
-    public void setSpecialNeeds(String specialNeeds) {
-        this.specialNeeds = specialNeeds;
+    public enum Gender {
+        MALE, FEMALE
     }
 }

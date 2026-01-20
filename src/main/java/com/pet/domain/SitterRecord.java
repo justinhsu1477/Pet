@@ -1,11 +1,13 @@
 package com.pet.domain;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Data
 public class SitterRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,83 +33,4 @@ public class SitterRecord {
     @Column(length = 500)
     private String photos;
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public Pet getPet() {
-        return pet;
-    }
-
-    public void setPet(Pet pet) {
-        this.pet = pet;
-    }
-
-    public Sitter getSitter() {
-        return sitter;
-    }
-
-    public void setSitter(Sitter sitter) {
-        this.sitter = sitter;
-    }
-
-    public LocalDateTime getRecordTime() {
-        return recordTime;
-    }
-
-    public void setRecordTime(LocalDateTime recordTime) {
-        this.recordTime = recordTime;
-    }
-
-    public String getActivity() {
-        return activity;
-    }
-
-    public void setActivity(String activity) {
-        this.activity = activity;
-    }
-
-    public Boolean getFed() {
-        return fed;
-    }
-
-    public void setFed(Boolean fed) {
-        this.fed = fed;
-    }
-
-    public Boolean getWalked() {
-        return walked;
-    }
-
-    public void setWalked(Boolean walked) {
-        this.walked = walked;
-    }
-
-    public String getMoodStatus() {
-        return moodStatus;
-    }
-
-    public void setMoodStatus(String moodStatus) {
-        this.moodStatus = moodStatus;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public String getPhotos() {
-        return photos;
-    }
-
-    public void setPhotos(String photos) {
-        this.photos = photos;
-    }
 }
