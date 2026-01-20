@@ -11,32 +11,54 @@ VALUES (RANDOM_UUID(), 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZ
 INSERT INTO users (id, username, password, email, phone, role)
 VALUES (RANDOM_UUID(), 'sitter01', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter01@example.com', '0922-333-444', 'SITTER');
 
+-- 插入 Dog 測試資料 (使用 JOINED 繼承策略)
+SET @dog1_id = RANDOM_UUID();
+SET @dog2_id = RANDOM_UUID();
+
+-- 先插入 Pet 父類別資料
+INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@dog1_id, 'DOG', '阿福', 5, '黃金獵犬', 'MALE', '王小明', '0912-345-678', '需要每天散步兩次', true, '已完成年度疫苗');
+
+INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@dog2_id, 'DOG', '皮皮', 2, '柴犬', 'FEMALE', '陳小美', '0945-678-901', NULL, false, '已完成基本疫苗');
+
+-- 再插入 Dog 子類別資料
+INSERT INTO dog (id, size, is_walk_required, walk_frequency_per_day, training_level, is_friendly_with_dogs, is_friendly_with_people, is_friendly_with_children)
+VALUES (@dog1_id, 'LARGE', true, 2, 'BASIC', true, true, true);
+
+INSERT INTO dog (id, size, is_walk_required, walk_frequency_per_day, training_level, is_friendly_with_dogs, is_friendly_with_people, is_friendly_with_children)
+VALUES (@dog2_id, 'MEDIUM', true, 3, 'INTERMEDIATE', true, true, false);
+
 -- 插入 Cat 測試資料
-INSERT INTO cat (id, name, age) VALUES (RANDOM_UUID(), '小咪', 2);
-INSERT INTO cat (id, name, age) VALUES (RANDOM_UUID(), '大橘', 3);
-INSERT INTO cat (id, name, age) VALUES (RANDOM_UUID(), '花花', 1);
+SET @cat1_id = RANDOM_UUID();
+SET @cat2_id = RANDOM_UUID();
+SET @cat3_id = RANDOM_UUID();
 
--- 插入 Pet 測試資料 (先存儲 UUID 以便在 SitterRecord 中引用)
-SET @pet1_id = RANDOM_UUID();
-SET @pet2_id = RANDOM_UUID();
-SET @pet3_id = RANDOM_UUID();
-SET @pet4_id = RANDOM_UUID();
-SET @pet5_id = RANDOM_UUID();
+-- 先插入 Pet 父類別資料
+INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@cat1_id, 'CAT', '喵喵', 3, '波斯貓', 'FEMALE', '李小華', '0923-456-789', '對海鮮過敏', true, '已完成年度疫苗');
 
-INSERT INTO pet (id, name, type, age, breed, owner_name, owner_phone, special_needs)
-VALUES (@pet1_id, '阿福', '狗', 5, '黃金獵犬', '王小明', '0912-345-678', '需要每天散步兩次');
+INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@cat2_id, 'CAT', '咪咪', 4, '美國短毛貓', 'MALE', '林大明', '0956-789-012', '需要定期梳毛', true, '已完成基本疫苗');
 
-INSERT INTO pet (id, name, type, age, breed, owner_name, owner_phone, special_needs)
-VALUES (@pet2_id, '喵喵', '貓', 3, '波斯貓', '李小華', '0923-456-789', '對海鮮過敏');
+INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@cat3_id, 'CAT', '小橘', 2, '橘貓', 'MALE', '張小英', '0967-890-123', NULL, false, NULL);
 
-INSERT INTO pet (id, name, type, age, breed, owner_name, owner_phone, special_needs)
-VALUES (@pet3_id, '毛毛', '兔子', 1, '荷蘭侏儒兔', '張大同', '0934-567-890', '每天需要新鮮蔬菜');
+-- 再插入 Cat 子類別資料
+INSERT INTO cat (id, is_indoor, litter_box_type, scratching_habit)
+VALUES (@cat1_id, true, 'COVERED', 'LOW');
 
-INSERT INTO pet (id, name, type, age, breed, owner_name, owner_phone, special_needs)
-VALUES (@pet4_id, '皮皮', '狗', 2, '柴犬', '陳小美', '0945-678-901', NULL);
+INSERT INTO cat (id, is_indoor, litter_box_type, scratching_habit)
+VALUES (@cat2_id, true, 'AUTOMATIC', 'MODERATE');
 
-INSERT INTO pet (id, name, type, age, breed, owner_name, owner_phone, special_needs)
-VALUES (@pet5_id, '咪咪', '貓', 4, '美國短毛貓', '林大明', '0956-789-012', '需要定期梳毛');
+INSERT INTO cat (id, is_indoor, litter_box_type, scratching_habit)
+VALUES (@cat3_id, false, 'OPEN', 'HIGH');
+
+-- 設定用於 SitterRecord 的變數 (使用已存在的寵物)
+SET @pet1_id = @dog1_id;
+SET @pet2_id = @cat1_id;
+SET @pet4_id = @dog2_id;
+SET @pet5_id = @cat2_id;
 
 -- 插入 Sitter 測試資料 (先存儲 UUID 以便在 SitterRecord 中引用)
 SET @sitter1_id = RANDOM_UUID();
@@ -67,7 +89,7 @@ INSERT INTO sitter_record (id, pet_id, sitter_id, record_time, activity, fed, wa
 VALUES (RANDOM_UUID(), @pet2_id, @sitter2_id, '2025-01-01 10:00:00', '餵食與梳毛', true, false, '慵懶', '喵喵今天比較想睡覺，梳毛時很配合', NULL);
 
 INSERT INTO sitter_record (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)
-VALUES (RANDOM_UUID(), @pet3_id, @sitter3_id, '2025-01-01 08:30:00', '早餐與清潔', true, false, '活潑', '毛毛吃了新鮮胡蘿蔔和生菜，活動力很好', NULL);
+VALUES (RANDOM_UUID(), @cat3_id, @sitter3_id, '2025-01-01 08:30:00', '早餐與清潔', true, false, '活潑', '小橘今天精神很好，活動力很足', NULL);
 
 INSERT INTO sitter_record (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)
 VALUES (RANDOM_UUID(), @pet4_id, @sitter4_id, '2025-01-01 14:00:00', '下午散步', true, true, '興奮', '皮皮在公園遇到其他柴犬，玩得很開心', NULL);
