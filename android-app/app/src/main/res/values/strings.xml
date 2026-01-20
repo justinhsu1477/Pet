@@ -111,6 +111,16 @@
     <string name="sitter_email">Email</string>
     <string name="sitter_experience">經驗</string>
 
+    <!-- 篩選功能 -->
+    <string name="filter_by_type">依類型篩選</string>
+    <string name="filter_all">全部</string>
+    <string name="filter_dog">狗狗</string>
+    <string name="filter_cat">貓咪</string>
+    <string name="no_pets_found">目前沒有寵物資料</string>
+    <string name="no_dogs_found">目前沒有狗狗資料</string>
+    <string name="no_cats_found">目前沒有貓咪資料</string>
+    <string name="emoji_paw">🐾</string>
+
     <!-- 通用 -->
     <string name="cancel">取消</string>
     <string name="confirm">確認</string>

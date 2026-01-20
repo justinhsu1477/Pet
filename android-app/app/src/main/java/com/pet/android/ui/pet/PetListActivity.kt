@@ -4,10 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.pet.android.R
 import com.pet.android.databinding.ActivityPetListBinding
 import com.pet.android.ui.base.BaseActivity
+import com.pet.android.ui.create.CreatePetActivity
 import com.pet.android.ui.sitter.SitterListActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,12 +21,22 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
     private val viewModel: PetViewModel by viewModels()
     private lateinit var petAdapter: PetAdapter
 
+    private val createPetLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Refresh the list when a new pet is created
+            viewModel.loadPets()
+        }
+    }
+
     override fun getViewBinding() = ActivityPetListBinding.inflate(layoutInflater)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupRecyclerView()
         setupViews()
+        setupFilterChips()
         observePetsState()
         viewModel.loadPets()
     }
@@ -45,7 +58,20 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
         }
 
         binding.fabAdd.setOnClickListener {
-            startActivity(Intent(this, com.pet.android.ui.create.CreatePetActivity::class.java))
+            createPetLauncher.launch(Intent(this, CreatePetActivity::class.java))
+        }
+    }
+
+    private fun setupFilterChips() {
+        binding.chipGroupFilter.setOnCheckedStateChangeListener { _, checkedIds ->
+            if (checkedIds.isNotEmpty()) {
+                val filter = when (checkedIds.first()) {
+                    R.id.chipDog -> PetFilter.DOG
+                    R.id.chipCat -> PetFilter.CAT
+                    else -> PetFilter.ALL
+                }
+                viewModel.setFilter(filter)
+            }
         }
     }
 
@@ -55,17 +81,42 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
                 is Resource.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
                     binding.rvPets.visibility = View.GONE
+                    binding.emptyState.visibility = View.GONE
                 }
                 is Resource.Success -> {
                     binding.progressBar.visibility = View.GONE
-                    binding.rvPets.visibility = View.VISIBLE
-                    petAdapter.submitList(resource.data)
+                    val pets = resource.data
+                    if (pets.isEmpty()) {
+                        binding.rvPets.visibility = View.GONE
+                        binding.emptyState.visibility = View.VISIBLE
+                        updateEmptyStateMessage()
+                    } else {
+                        binding.rvPets.visibility = View.VISIBLE
+                        binding.emptyState.visibility = View.GONE
+                        petAdapter.submitList(pets)
+                    }
                 }
                 is Resource.Error -> {
                     binding.progressBar.visibility = View.GONE
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.tvEmptyMessage.text = resource.message
                     Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    private fun updateEmptyStateMessage() {
+        val filter = viewModel.currentFilter.value ?: PetFilter.ALL
+        val message = when (filter) {
+            PetFilter.ALL -> getString(R.string.no_pets_found)
+            PetFilter.DOG -> getString(R.string.no_dogs_found)
+            PetFilter.CAT -> getString(R.string.no_cats_found)
+        }
+        binding.tvEmptyMessage.text = message
+    }
+
+    override fun onBackButtonPressed() {
+        finishAffinity()
     }
 }

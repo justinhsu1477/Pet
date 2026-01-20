@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.pet.android.R
 import com.pet.android.data.model.Pet
 import com.pet.android.databinding.ItemPetBinding
 
@@ -30,10 +31,32 @@ class PetAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(pet: Pet) {
+            val context = binding.root.context
+            val isDog = pet.type.equals("DOG", ignoreCase = true) || pet.type == "狗"
+
             binding.apply {
+                // Set pet icon
+                tvPetIcon.text = if (isDog) "🐶" else "🐱"
+
+                // Set pet name
                 tvPetName.text = pet.name
-                tvPetType.text = "${pet.type} · ${pet.age}歲"
-                tvOwnerInfo.text = "飼主: ${pet.ownerName}"
+
+                // Set badge
+                tvPetBadge.text = if (isDog) {
+                    context.getString(R.string.filter_dog)
+                } else {
+                    context.getString(R.string.filter_cat)
+                }
+                tvPetBadge.setChipBackgroundColorResource(
+                    if (isDog) R.color.pet_orange_light else R.color.pet_green_light
+                )
+
+                // Set breed and age
+                val breedText = pet.breed ?: if (isDog) "狗狗" else "貓咪"
+                tvPetType.text = "$breedText · ${pet.age}歲"
+
+                // Set owner info
+                tvOwnerInfo.text = pet.ownerName
 
                 root.setOnClickListener {
                     onItemClick(pet)
