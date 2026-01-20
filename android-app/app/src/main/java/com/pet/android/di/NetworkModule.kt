@@ -1,6 +1,8 @@
 package com.pet.android.di
 
 import com.pet.android.data.api.AuthApi
+import com.pet.android.data.api.CatApi
+import com.pet.android.data.api.DogApi
 import com.pet.android.data.api.PetApi
 import com.pet.android.data.api.SitterApi
 import com.pet.android.data.preferences.EnvironmentManager
@@ -10,6 +12,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import okhttp3.Cookie
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -23,12 +28,29 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideCookieJar(): CookieJar {
+        return object : CookieJar {
+            private val cookieStore = mutableMapOf<String, List<Cookie>>()
+
+            override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+                cookieStore[url.host] = cookies
+            }
+
+            override fun loadForRequest(url: HttpUrl): List<Cookie> {
+                return cookieStore[url.host] ?: emptyList()
+            }
+        }
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(cookieJar: CookieJar): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
         return OkHttpClient.Builder()
+            .cookieJar(cookieJar)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -70,5 +92,17 @@ object NetworkModule {
     @Singleton
     fun provideSitterApi(retrofit: Retrofit): SitterApi {
         return retrofit.create(SitterApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCatApi(retrofit: Retrofit): CatApi {
+        return retrofit.create(CatApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDogApi(retrofit: Retrofit): DogApi {
+        return retrofit.create(DogApi::class.java)
     }
 }

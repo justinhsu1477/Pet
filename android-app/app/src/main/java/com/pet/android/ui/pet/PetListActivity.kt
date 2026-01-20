@@ -45,7 +45,7 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
         }
 
         binding.fabAdd.setOnClickListener {
-            Toast.makeText(this, "新增寵物功能待實作", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, com.pet.android.ui.create.CreatePetActivity::class.java))
         }
     }
 

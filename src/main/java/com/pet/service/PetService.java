@@ -1,5 +1,7 @@
 package com.pet.service;
 
+import com.pet.domain.Cat;
+import com.pet.domain.Dog;
 import com.pet.domain.Pet;
 import com.pet.dto.PetDto;
 import com.pet.exception.ResourceNotFoundException;
@@ -11,6 +13,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * 寵物服務 - 提供多態查詢所有寵物（貓和狗）
+ * 新增/更新/刪除請使用 CatService 或 DogService
+ */
 @Service
 @Transactional
 public class PetService {
@@ -21,34 +27,27 @@ public class PetService {
         this.petRepository = petRepository;
     }
 
+    /**
+     * 取得所有寵物（包含貓和狗）
+     */
     public List<PetDto> getAllPets() {
         return petRepository.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根據 ID 取得寵物
+     */
     public PetDto getPetById(UUID id) {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("寵物", "id", id));
         return convertToDto(pet);
     }
 
-    public PetDto createPet(PetDto petDto) {
-        Pet pet = convertToEntity(petDto);
-        Pet savedPet = petRepository.save(pet);
-        return convertToDto(savedPet);
-    }
-
-    public PetDto updatePet(UUID id, PetDto petDto) {
-        if (!petRepository.existsById(id)) {
-            throw new ResourceNotFoundException("寵物", "id", id);
-        }
-        Pet pet = convertToEntity(petDto);
-        pet.setId(id);
-        Pet updatedPet = petRepository.save(pet);
-        return convertToDto(updatedPet);
-    }
-
+    /**
+     * 刪除寵物（通用刪除）
+     */
     public void deletePet(UUID id) {
         if (!petRepository.existsById(id)) {
             throw new ResourceNotFoundException("寵物", "id", id);
@@ -56,33 +55,46 @@ public class PetService {
         petRepository.deleteById(id);
     }
 
-    // 內部方法:用於其他 Service 取得 Pet Entity
+    /**
+     * 內部方法: 用於其他 Service 取得 Pet Entity（如 SitterRecordService）
+     */
     public Pet getPetEntityById(UUID id) {
         return petRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("寵物", "id", id));
     }
 
+    /**
+     * 根據寵物類型取得所有寵物
+     */
+    public List<PetDto> getPetsByType(String petType) {
+        return petRepository.findAll().stream()
+                .filter(pet -> {
+                    if ("CAT".equalsIgnoreCase(petType)) {
+                        return pet instanceof Cat;
+                    } else if ("DOG".equalsIgnoreCase(petType)) {
+                        return pet instanceof Dog;
+                    }
+                    return false;
+                })
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     private PetDto convertToDto(Pet pet) {
+        String petType = pet instanceof Cat ? "CAT" : "DOG";
         return new PetDto(
                 pet.getId(),
                 pet.getName(),
-                pet.getType(),
                 pet.getAge(),
                 pet.getBreed(),
+                pet.getGender(),
                 pet.getOwnerName(),
                 pet.getOwnerPhone(),
-                pet.getSpecialNeeds());
-    }
-
-    private Pet convertToEntity(PetDto dto) {
-        Pet pet = new Pet();
-        pet.setName(dto.name());
-        pet.setType(dto.type());
-        pet.setAge(dto.age());
-        pet.setBreed(dto.breed());
-        pet.setOwnerName(dto.ownerName());
-        pet.setOwnerPhone(dto.ownerPhone());
-        pet.setSpecialNeeds(dto.specialNeeds());
-        return pet;
+                pet.getSpecialNeeds(),
+                pet.getIsNeutered(),
+                pet.getVaccineStatus(),
+                petType,
+                pet.getPetTypeName()
+        );
     }
 }

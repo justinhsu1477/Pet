@@ -1,3 +1,11 @@
+-- 刪除舊表（注意順序，先刪除有 FK 的表）
+DROP TABLE IF EXISTS sitter_record;
+DROP TABLE IF EXISTS dog;
+DROP TABLE IF EXISTS cat;
+DROP TABLE IF EXISTS pet;
+DROP TABLE IF EXISTS sitter;
+DROP TABLE IF EXISTS users;
+
 -- Users 表
 CREATE TABLE IF NOT EXISTS users (
     id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
@@ -8,23 +16,41 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(20)
 );
 
--- Cat 表
-CREATE TABLE IF NOT EXISTS cat (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
-    name VARCHAR(255),
-    age INT
-);
-
--- Pet 表
+-- Pet 表 (父類別，使用 JOINED 繼承策略)
 CREATE TABLE IF NOT EXISTS pet (
     id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
-    name VARCHAR(255),
-    type VARCHAR(255),
+    pet_type VARCHAR(31) NOT NULL,
+    name VARCHAR(100),
     age INT,
-    breed VARCHAR(255),
-    owner_name VARCHAR(255),
-    owner_phone VARCHAR(255),
-    special_needs VARCHAR(500)
+    breed VARCHAR(100),
+    gender VARCHAR(10),
+    owner_name VARCHAR(100),
+    owner_phone VARCHAR(20),
+    special_needs VARCHAR(500),
+    is_neutered BOOLEAN,
+    vaccine_status VARCHAR(255)
+);
+
+-- Dog 表 (子類別，繼承 Pet)
+CREATE TABLE IF NOT EXISTS dog (
+    id UUID PRIMARY KEY,
+    size VARCHAR(20),
+    is_walk_required BOOLEAN,
+    walk_frequency_per_day INT,
+    training_level VARCHAR(20),
+    is_friendly_with_dogs BOOLEAN,
+    is_friendly_with_people BOOLEAN,
+    is_friendly_with_children BOOLEAN,
+    FOREIGN KEY (id) REFERENCES pet(id)
+);
+
+-- Cat 表 (子類別，繼承 Pet)
+CREATE TABLE IF NOT EXISTS cat (
+    id UUID PRIMARY KEY,
+    is_indoor BOOLEAN,
+    litter_box_type VARCHAR(20),
+    scratching_habit VARCHAR(20),
+    FOREIGN KEY (id) REFERENCES pet(id)
 );
 
 -- Sitter 表

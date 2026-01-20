@@ -14,7 +14,7 @@ spring:
     show-sql: true
   sql:
     init:
-      mode: embedded
+      mode: always
       schema-locations: classpath:db/schema.sql
       data-locations: classpath:db/data.sql
   h2:
