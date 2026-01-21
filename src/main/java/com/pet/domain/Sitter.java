@@ -19,4 +19,22 @@ public class Sitter {
     @Column(length = 500)
     private String experience;
 
+    /**
+     * 平均評分（反正規化，用於快速排序查詢）
+     * 每次新增評價時更新
+     */
+    @Column(name = "average_rating")
+    private Double averageRating;
+
+    /**
+     * 評價總數
+     */
+    @Column(name = "rating_count")
+    private Integer ratingCount = 0;
+
+    /**
+     * 完成訂單數
+     */
+    @Column(name = "completed_bookings")
+    private Integer completedBookings = 0;
 }
