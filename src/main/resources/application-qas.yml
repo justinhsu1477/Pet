@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: ${MSSQL_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb;encrypt=false;trustServerCertificate=true}
+    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: ${MSSQL_USERNAME:sa}
+    password: ${MSSQL_PASSWORD:Passw0rd}
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+  sql:
+    init:
+      mode: never
