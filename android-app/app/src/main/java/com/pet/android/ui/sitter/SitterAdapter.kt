@@ -35,6 +35,29 @@ class SitterAdapter(
                 tvSitterPhone.text = sitter.phone
                 tvSitterExperience.text = sitter.experience ?: "無經驗描述"
 
+                // 設置評分
+                if (sitter.averageRating != null && sitter.averageRating > 0) {
+                    ratingBar.rating = sitter.averageRating.toFloat()
+                    ratingBar.visibility = android.view.View.VISIBLE
+                    tvRatingScore.text = String.format("%.1f", sitter.averageRating)
+                    tvRatingScore.visibility = android.view.View.VISIBLE
+                    tvRatingCount.text = "(${sitter.ratingCount ?: 0})"
+                    tvRatingCount.visibility = android.view.View.VISIBLE
+                } else {
+                    ratingBar.visibility = android.view.View.GONE
+                    tvRatingScore.visibility = android.view.View.GONE
+                    tvRatingCount.text = "(尚無評價)"
+                    tvRatingCount.visibility = android.view.View.VISIBLE
+                }
+
+                // 設置完成訂單數
+                if (sitter.completedBookings != null && sitter.completedBookings > 0) {
+                    chipCompletedBookings.text = "已完成 ${sitter.completedBookings} 次服務"
+                    chipCompletedBookings.visibility = android.view.View.VISIBLE
+                } else {
+                    chipCompletedBookings.visibility = android.view.View.GONE
+                }
+
                 root.setOnClickListener {
                     onItemClick(sitter)
                 }
