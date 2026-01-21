@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.PetCare" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.PetCare" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary Colors - Warm Orange -->
         <item name="colorPrimary">@color/pet_orange</item>
         <item name="colorPrimaryVariant">@color/pet_orange_dark</item>
