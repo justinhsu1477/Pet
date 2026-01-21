@@ -25,7 +25,7 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupViews()
-        setupToolbar(binding.toolbar,"系統設定",true)
+        setupToolbarNavigation(binding.toolbar)
         observeViewModel()
     }
 

@@ -24,19 +24,15 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
 
         species = Species.valueOf(intent.getStringExtra(EXTRA_SPECIES) ?: Species.DOG.name)
 
-        setupToolbar()
-        setupUI()
-        setupObservers()
-        setupSubmitButton()
-    }
-
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener { onBackButtonPressed() }
+        setupToolbarNavigation(binding.toolbar)
         binding.toolbar.title = if (species == Species.DOG) {
             getString(R.string.create_dog_title)
         } else {
             getString(R.string.create_cat_title)
         }
+        setupUI()
+        setupObservers()
+        setupSubmitButton()
     }
 
     private fun setupUI() {

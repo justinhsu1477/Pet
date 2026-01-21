@@ -33,20 +33,16 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
             return
         }
 
-        setupToolbar()
-        setupUI()
-        setupObservers()
-        setupSubmitButton()
-        loadPetData()
-    }
-
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener { onBackButtonPressed() }
+        setupToolbarNavigation(binding.toolbar)
         binding.toolbar.title = if (petType.equals("DOG", ignoreCase = true)) {
             getString(R.string.edit_dog_title)
         } else {
             getString(R.string.edit_cat_title)
         }
+        setupUI()
+        setupObservers()
+        setupSubmitButton()
+        loadPetData()
     }
 
     private fun setupUI() {

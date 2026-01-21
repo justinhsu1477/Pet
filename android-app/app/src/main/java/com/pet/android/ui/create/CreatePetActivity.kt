@@ -23,12 +23,8 @@ class CreatePetActivity : BaseActivity<ActivityCreatePetBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setupToolbar()
+        setupToolbarNavigation(binding.toolbar)
         setupClicks()
-    }
-
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener { onBackButtonPressed() }
     }
 
     private fun setupClicks() {
