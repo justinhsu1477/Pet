@@ -47,4 +47,35 @@
         <item name="android:textStyle">bold</item>
         <item name="elevation">4dp</item>
     </style>
+
+    <!-- Custom Toolbar Style -->
+    <style name="Widget.PetCare.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="android:background">@color/pet_orange</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="subtitleTextColor">@color/white</item>
+        <item name="navigationIconTint">@color/white</item>
+        <item name="titleCentered">true</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+
+    <!-- Toolbar Style for Surface (Light Background) -->
+    <style name="Widget.PetCare.Toolbar.Surface" parent="Widget.MaterialComponents.Toolbar.Surface">
+        <item name="android:background">@color/surface</item>
+        <item name="titleTextColor">@color/pet_gray_dark</item>
+        <item name="subtitleTextColor">@color/pet_gray</item>
+        <item name="navigationIconTint">@color/pet_gray_dark</item>
+        <item name="titleCentered">true</item>
+        <item name="android:elevation">2dp</item>
+    </style>
+
+    <!-- Back Button Style - Circular with Ripple -->
+    <style name="Widget.PetCare.BackButton" parent="">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">@drawable/bg_back_button</item>
+        <item name="android:src">@drawable/ic_arrow_back</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:contentDescription">@string/back</item>
+    </style>
 </resources>

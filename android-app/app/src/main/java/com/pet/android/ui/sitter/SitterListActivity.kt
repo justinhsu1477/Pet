@@ -20,6 +20,7 @@ class SitterListActivity : BaseActivity<ActivitySitterListBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupToolbarNavigation(binding.toolbar)
         setupRecyclerView()
         observeSittersState()
         viewModel.loadSitters()

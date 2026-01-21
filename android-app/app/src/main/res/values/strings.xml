@@ -122,6 +122,7 @@
     <string name="emoji_paw">🐾</string>
 
     <!-- 通用 -->
+    <string name="back">返回</string>
     <string name="cancel">取消</string>
     <string name="confirm">確認</string>
     <string name="add">新增</string>
