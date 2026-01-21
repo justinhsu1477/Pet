@@ -28,7 +28,8 @@ class SitterListActivity : BaseActivity<ActivitySitterListBinding>() {
 
     private fun setupRecyclerView() {
         sitterAdapter = SitterAdapter { sitter ->
-            Toast.makeText(this, "點擊: ${sitter.name}", Toast.LENGTH_SHORT).show()
+            val id = sitter.id ?: return@SitterAdapter
+            com.pet.android.ui.sitter.rating.SitterRatingActivity.start(this, id, sitter.name)
         }
         binding.rvSitters.apply {
             layoutManager = LinearLayoutManager(this@SitterListActivity)

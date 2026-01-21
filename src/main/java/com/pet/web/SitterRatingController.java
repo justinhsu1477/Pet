@@ -17,11 +17,6 @@ import java.util.UUID;
 
 /**
  * 保母評價 API
- *
- * 面試亮點：
- * - 防濫用設計（只有完成訂單才能評價）
- * - 分頁查詢
- * - 統計彙整 API
  */
 @RestController
 @RequestMapping("/api/ratings")

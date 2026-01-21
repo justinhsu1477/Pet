@@ -23,12 +23,6 @@ import java.util.stream.Collectors;
 
 /**
  * 保母評價服務
- *
- * 面試亮點：
- * 1. 防濫用：只有 COMPLETED 訂單才能評價
- * 2. 唯一性檢查：一個訂單只能評價一次
- * 3. 加權平均計算：總體40% + 專業25% + 溝通20% + 準時15%
- * 4. 反正規化更新：更新評價時同步更新 Sitter 的平均分
  */
 @Service
 @Transactional
@@ -48,7 +42,6 @@ public class SitterRatingService {
 
     /**
      * 建立評價
-     * 面試重點：
      * 1. 驗證訂單狀態（只有 COMPLETED 可評價）
      * 2. 驗證評價者身份（只有訂單的飼主可評價）
      * 3. 防止重複評價
@@ -129,41 +122,52 @@ public class SitterRatingService {
         Sitter sitter = sitterRepository.findById(sitterId)
                 .orElseThrow(() -> new ResourceNotFoundException("保母", "id", sitterId));
 
-        // 計算各項平均分
+        // 計算各項平均分（可能為 null，需容錯）
         Object[] averages = ratingRepository.calculateDetailedAverages(sitterId);
-        Double avgOverall = averages[0] != null ? (Double) averages[0] : null;
-        Double avgProfessionalism = averages[1] != null ? (Double) averages[1] : null;
-        Double avgCommunication = averages[2] != null ? (Double) averages[2] : null;
-        Double avgPunctuality = averages[3] != null ? (Double) averages[3] : null;
+        if (averages == null || averages.length < 4) {
+            averages = new Object[] { null, null, null, null };
+        }
+        Double avgOverall = averages[0] instanceof Number ? ((Number) averages[0]).doubleValue() : null;
+        Double avgProfessionalism = averages[1] instanceof Number ? ((Number) averages[1]).doubleValue() : null;
+        Double avgCommunication = averages[2] instanceof Number ? ((Number) averages[2]).doubleValue() : null;
+        Double avgPunctuality = averages[3] instanceof Number ? ((Number) averages[3]).doubleValue() : null;
 
-        // 計算評分分佈
+        // 計算評分分佈（沒有評價時回傳 0）
         Map<Integer, Long> distribution = new HashMap<>();
         for (int i = 1; i <= 5; i++) {
             distribution.put(i, 0L);
         }
         List<Object[]> ratingCounts = ratingRepository.countRatingsByStars(sitterId);
         for (Object[] row : ratingCounts) {
-            Integer stars = (Integer) row[0];
-            Long count = (Long) row[1];
-            distribution.put(stars, count);
+            Integer stars = (row[0] instanceof Number) ? ((Number) row[0]).intValue() : null;
+            Long count = (row[1] instanceof Number) ? ((Number) row[1]).longValue() : 0L;
+            if (stars != null && stars >= 1 && stars <= 5) {
+                distribution.put(stars, count);
+            }
         }
 
         long totalRatings = ratingRepository.countBySitterId(sitterId);
 
+        // 對可能為 null 的欄位給預設值
+        Double averageRating = sitter.getAverageRating() != null
+                ? sitter.getAverageRating()
+                : (avgOverall != null ? Math.round(avgOverall * 100.0) / 100.0 : 0.0);
+        int completedBookings = sitter.getCompletedBookings() != null ? sitter.getCompletedBookings() : 0;
+
         return new SitterRatingStatsDto(
                 sitterId,
                 sitter.getName(),
-                sitter.getAverageRating(),
-                avgProfessionalism,
-                avgCommunication,
-                avgPunctuality,
+                averageRating,
+                avgProfessionalism != null ? avgProfessionalism : 0.0,
+                avgCommunication != null ? avgCommunication : 0.0,
+                avgPunctuality != null ? avgPunctuality : 0.0,
                 (int) totalRatings,
-                sitter.getCompletedBookings(),
-                distribution.get(5).intValue(),
-                distribution.get(4).intValue(),
-                distribution.get(3).intValue(),
-                distribution.get(2).intValue(),
-                distribution.get(1).intValue()
+                completedBookings,
+                distribution.getOrDefault(5, 0L).intValue(),
+                distribution.getOrDefault(4, 0L).intValue(),
+                distribution.getOrDefault(3, 0L).intValue(),
+                distribution.getOrDefault(2, 0L).intValue(),
+                distribution.getOrDefault(1, 0L).intValue()
         );
     }
 
