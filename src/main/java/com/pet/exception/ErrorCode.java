@@ -1,5 +1,8 @@
 package com.pet.exception;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorCode {
     // 認證相關錯誤
     USER_NOT_FOUND("USER_NOT_FOUND", "用戶不存在"),
@@ -28,7 +31,21 @@ public enum ErrorCode {
     DATABASE_ERROR("DATABASE_ERROR", "資料庫操作失敗"),
 
     // 業務邏輯錯誤
-    BUSINESS_LOGIC_ERROR("BUSINESS_LOGIC_ERROR", "操作不符合業務規則");
+    BUSINESS_LOGIC_ERROR("BUSINESS_LOGIC_ERROR", "操作不符合業務規則"),
+
+    // 預約相關錯誤
+    BOOKING_NOT_FOUND("BOOKING_NOT_FOUND", "找不到指定的預約"),
+    BOOKING_CONFLICT("BOOKING_CONFLICT", "該時段已有其他預約"),
+    BOOKING_INVALID_TIME("BOOKING_INVALID_TIME", "預約時間無效"),
+    BOOKING_INVALID_STATUS_TRANSITION("BOOKING_INVALID_STATUS_TRANSITION", "無法進行此狀態變更"),
+    BOOKING_ALREADY_PROCESSED("BOOKING_ALREADY_PROCESSED", "預約已被處理"),
+    SITTER_NOT_AVAILABLE("SITTER_NOT_AVAILABLE", "保母在該時段不可用"),
+
+    // 評價相關錯誤
+    RATING_NOT_FOUND("RATING_NOT_FOUND", "找不到指定的評價"),
+    RATING_ALREADY_EXISTS("RATING_ALREADY_EXISTS", "此預約已經評價過"),
+    RATING_BOOKING_NOT_COMPLETED("RATING_BOOKING_NOT_COMPLETED", "只能對已完成的預約進行評價"),
+    RATING_UNAUTHORIZED("RATING_UNAUTHORIZED", "您無權對此預約進行評價");
 
     private final String code;
     private final String userMessage;
@@ -36,14 +53,6 @@ public enum ErrorCode {
     ErrorCode(String code, String userMessage) {
         this.code = code;
         this.userMessage = userMessage;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getUserMessage() {
-        return userMessage;
     }
 
     // Compatibility method

@@ -5,12 +5,15 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.pet.android.databinding.ActivityLoginBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.ui.pet.PetListActivity
 import com.pet.android.ui.setting.SettingActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : BaseActivity<ActivityLoginBinding>() {
@@ -26,6 +29,15 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
     }
 
     private fun setupViews() {
+        // Observe and populate saved username
+        lifecycleScope.launch {
+            viewModel.savedUsername.collectLatest { savedUsername ->
+                savedUsername?.let {
+                    binding.etUsername.setText(it)
+                }
+            }
+        }
+
         binding.btnLogin.setOnClickListener {
             val username = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()

@@ -31,6 +31,9 @@ echo ""
 echo "Importing schema..."
 docker exec -i pet-mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Passw0rd' -d petdb < src/main/resources/db/schema-mssql.sql
 
+echo "Importing test data..."
+docker exec -i pet-mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Passw0rd' -d petdb < src/main/resources/db/data-mssql.sql
+
 echo ""
 echo "========================================="
 echo "All Done! Your database is ready to use."
