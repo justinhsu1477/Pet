@@ -1,23 +1,13 @@
 spring:
   application:
     name: petSystem
-  datasource:
-    url: jdbc:h2:file:./data/testdb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+  profiles:
+    active: dev
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: none
     show-sql: true
   sql:
     init:
-      mode: always
-      schema-locations: classpath:db/schema.sql
-      data-locations: classpath:db/data.sql
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+      mode: never
