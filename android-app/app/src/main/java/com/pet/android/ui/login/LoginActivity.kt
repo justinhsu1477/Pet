@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.pet.android.data.model.UserRole
 import com.pet.android.databinding.ActivityLoginBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.ui.pet.PetListActivity
@@ -72,9 +73,16 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
     }
 
     private fun navigateToPetList() {
-        val intent = Intent(this, PetListActivity::class.java)
-        startActivity(intent)
-        finish()
+        lifecycleScope.launch {
+            val role = viewModel.getUserRoleEnum()
+            if (role == UserRole.ADMIN) {
+                val intent = Intent(this@LoginActivity, PetListActivity::class.java)
+                startActivity(intent)
+                finish()
+            } else {
+                Toast.makeText(this@LoginActivity, "需要 ADMIN 權限才能進入", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onBackButtonPressed() {

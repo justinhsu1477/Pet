@@ -8,8 +8,6 @@ import java.util.UUID;
 
 /**
  * 保母評價
- *
- * 面試亮點：
  * 1. 限制只有 COMPLETED 訂單才能評分（防濫用）
  * 2. 一個 Booking 只能評價一次（唯一索引）
  * 3. 支援加權平均計算

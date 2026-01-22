@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.pet.android.R
 import com.pet.android.data.model.SitterRatingResponse
 import com.pet.android.databinding.ItemSitterRatingBinding
 
@@ -25,17 +26,33 @@ class SitterRatingAdapter :
 
     class VH(private val b: ItemSitterRatingBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(item: SitterRatingResponse) {
-            val stars = item.overallRating.coerceIn(0, 5)
-            b.tvRating.text = "★".repeat(stars) + " (${item.overallRating})"
-            b.tvComment.text = item.comment ?: "—"
-            if (!item.reply.isNullOrBlank()) {
-                b.tvReply.visibility = View.VISIBLE
-                b.tvReply.text = "保母回覆：${item.reply}"
+            val context = b.root.context
+
+            // User avatar (first character of userId or "U" for anonymous)
+            val userName = if (item.userId.isNullOrBlank()) {
+                context.getString(R.string.anonymous_user)
             } else {
-                b.tvReply.visibility = View.GONE
+                "User${item.userId.take(4)}"
             }
-            // 簡單格式化時間
-            b.tvCreatedAt.text = item.createdAt.take(19).replace('T', ' ')
+            b.tvAvatar.text = userName.first().uppercaseChar().toString()
+            b.tvUserName.text = userName
+
+            // Rating display
+            b.tvRating.text = item.overallRating.toString()
+
+            // Comment
+            b.tvComment.text = item.comment ?: "—"
+
+            // Sitter reply
+            if (!item.reply.isNullOrBlank()) {
+                b.layoutReply.visibility = View.VISIBLE
+                b.tvReply.text = item.reply
+            } else {
+                b.layoutReply.visibility = View.GONE
+            }
+
+            // Format date: "2026-01-21T10:00:00" -> "2026-01-21"
+            b.tvCreatedAt.text = item.createdAt.take(10)
         }
     }
 

@@ -5,11 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pet.android.data.model.LoginResponse
+import com.pet.android.data.model.UserRole
 import com.pet.android.data.preferences.UserPreferencesManager
 import com.pet.android.data.repository.AuthRepository
 import com.pet.android.util.Resource
 import kotlinx.coroutines.flow.Flow
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,5 +36,13 @@ class LoginViewModel @Inject constructor(
             _loginState.value = Resource.Loading
             _loginState.value = authRepository.login(username, password)
         }
+    }
+
+    suspend fun getUserRole(): String {
+        return userPreferencesManager.userRole.first() ?: "還未有權限"
+    }
+
+    suspend fun getUserRoleEnum(): UserRole {
+        return userPreferencesManager.userRoleEnum.first()
     }
 }

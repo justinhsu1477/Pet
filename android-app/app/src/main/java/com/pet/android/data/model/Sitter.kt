@@ -12,11 +12,5 @@ data class Sitter(
     @SerializedName("email")
     val email: String?,
     @SerializedName("experience")
-    val experience: String?,
-    @SerializedName("averageRating")
-    val averageRating: Double? = null,
-    @SerializedName("ratingCount")
-    val ratingCount: Int? = null,
-    @SerializedName("completedBookings")
-    val completedBookings: Int? = null
+    val experience: String?
 )

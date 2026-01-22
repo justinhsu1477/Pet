@@ -115,7 +115,6 @@ public class SitterRatingService {
 
     /**
      * 取得保母的評價統計
-     * 面試重點：加權平均計算 + 評分分佈統計
      */
     @Transactional(readOnly = true)
     public SitterRatingStatsDto getSitterRatingStats(UUID sitterId) {

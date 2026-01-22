@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.pet.android.data.model.UserRole
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -34,12 +35,22 @@ class UserPreferencesManager @Inject constructor(
     val userRole: Flow<String?> = context.userDataStore.data
         .map { preferences -> preferences[USER_ROLE_KEY] }
 
+    // Convenience: access role as enum while keeping stored string compatibility
+    val userRoleEnum: Flow<UserRole> = userRole.map { value ->
+        UserRole.fromString(value)
+    }
+
     suspend fun saveLoginData(username: String, role: String) {
         context.userDataStore.edit { preferences ->
             preferences[USERNAME_KEY] = username
             preferences[LOGIN_DATE_KEY] = System.currentTimeMillis()
             preferences[USER_ROLE_KEY] = role
         }
+    }
+
+    // Overload: save with enum
+    suspend fun saveLoginData(username: String, role: UserRole) {
+        saveLoginData(username, role.code)
     }
 
     suspend fun clearLoginData() {

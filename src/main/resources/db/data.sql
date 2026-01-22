@@ -102,3 +102,114 @@ VALUES (RANDOM_UUID(), @pet1_id, @sitter1_id, '2025-01-02 09:30:00', '晨間散�
 
 INSERT INTO sitter_record (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)
 VALUES (RANDOM_UUID(), @pet2_id, @sitter2_id, '2025-01-02 11:00:00', '遊戲時間', true, false, '活潑', '用逗貓棒跟喵喵玩了30分鐘', NULL);
+
+-- ============================================
+-- 假資料：預約紀錄 (Booking)
+-- ============================================
+
+-- 獲取 user01 的 ID
+SET @user01_id = (SELECT id FROM users WHERE username = 'user01');
+
+-- 建立預約紀錄
+SET @booking1_id = RANDOM_UUID();
+SET @booking2_id = RANDOM_UUID();
+SET @booking3_id = RANDOM_UUID();
+SET @booking4_id = RANDOM_UUID();
+SET @booking5_id = RANDOM_UUID();
+SET @booking6_id = RANDOM_UUID();
+SET @booking7_id = RANDOM_UUID();
+SET @booking8_id = RANDOM_UUID();
+SET @booking9_id = RANDOM_UUID();
+SET @booking10_id = RANDOM_UUID();
+SET @booking11_id = RANDOM_UUID();
+SET @booking12_id = RANDOM_UUID();
+
+-- 張保母的預約
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking1_id, @pet1_id, @sitter1_id, @user01_id, '2025-01-05 09:00:00', '2025-01-05 18:00:00', 'COMPLETED', '請幫忙遛狗兩次', 800.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking2_id, @pet4_id, @sitter1_id, @user01_id, '2025-01-08 10:00:00', '2025-01-08 17:00:00', 'COMPLETED', '皮皮需要多運動', 700.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking3_id, @pet1_id, @sitter1_id, @user01_id, '2025-01-12 09:00:00', '2025-01-12 18:00:00', 'COMPLETED', NULL, 800.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking4_id, @pet4_id, @sitter1_id, @user01_id, '2025-01-15 08:00:00', '2025-01-15 20:00:00', 'COMPLETED', '長時間照顧', 1200.00);
+
+-- 李保母的預約
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking5_id, @pet2_id, @sitter2_id, @user01_id, '2025-01-06 10:00:00', '2025-01-06 18:00:00', 'COMPLETED', '喵喵對海鮮過敏請注意', 750.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking6_id, @pet5_id, @sitter2_id, @user01_id, '2025-01-10 09:00:00', '2025-01-10 17:00:00', 'COMPLETED', '需要定期梳毛', 700.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking7_id, @pet2_id, @sitter2_id, @user01_id, '2025-01-14 10:00:00', '2025-01-14 18:00:00', 'COMPLETED', NULL, 750.00);
+
+-- 王保母的預約
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking8_id, @cat3_id, @sitter3_id, @user01_id, '2025-01-07 09:00:00', '2025-01-07 17:00:00', 'COMPLETED', '小橘活潑好動', 650.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking9_id, @cat3_id, @sitter3_id, @user01_id, '2025-01-11 10:00:00', '2025-01-11 16:00:00', 'COMPLETED', NULL, 550.00);
+
+-- 陳保母的預約
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking10_id, @pet1_id, @sitter4_id, @user01_id, '2025-01-09 08:00:00', '2025-01-09 20:00:00', 'COMPLETED', '阿福需要特別注意', 1000.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking11_id, @pet2_id, @sitter4_id, @user01_id, '2025-01-13 09:00:00', '2025-01-13 18:00:00', 'COMPLETED', '喵喵過敏體質', 850.00);
+
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price)
+VALUES (@booking12_id, @pet4_id, @sitter4_id, @user01_id, '2025-01-16 09:00:00', '2025-01-16 18:00:00', 'COMPLETED', NULL, 800.00);
+
+-- ============================================
+-- 假資料：保母評價 (SitterRating)
+-- ============================================
+
+-- 張保母的評價 (4筆，平均 4.5)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking1_id, @sitter1_id, @user01_id, 5, 5, 5, 5, '張保母非常專業！阿福被照顧得很好，每次遛狗都拍照回報，讓我很放心。下次還會再預約！', '謝謝您的肯定！阿福很乖很可愛，期待下次再見！', false, '2025-01-06 10:30:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking2_id, @sitter1_id, @user01_id, 4, 4, 5, 4, '皮皮玩得很開心，保母很有耐心。唯一小建議是希望遛狗時間可以再長一點。', '感謝您的建議！下次會注意讓皮皮多運動一些。', false, '2025-01-09 14:00:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking3_id, @sitter1_id, @user01_id, 5, 5, 5, 5, '服務一如既往的好，很推薦給有大型犬的飼主！', NULL, false, '2025-01-13 09:00:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking4_id, @sitter1_id, @user01_id, 4, 4, 4, 5, '長時間照顧也很細心，皮皮回來精神很好。', '謝謝您的信任，照顧皮皮是我的榮幸！', false, '2025-01-16 20:30:00');
+
+-- 李保母的評價 (3筆，平均 4.7)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking5_id, @sitter2_id, @user01_id, 5, 5, 5, 5, '李保母對貓咪超級有愛！喵喵平常很怕生，但保母很有技巧地讓牠放鬆。而且完全沒有餵到過敏的食物，非常細心！', '喵喵真的很可愛！照顧牠是我的榮幸，期待下次見面～', false, '2025-01-07 19:00:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking6_id, @sitter2_id, @user01_id, 5, 5, 4, 5, '咪咪被梳得很漂亮，保母還拍了很多可愛的照片給我看。專業又貼心！', NULL, false, '2025-01-11 18:30:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking7_id, @sitter2_id, @user01_id, 4, 4, 4, 4, '服務很好，貓咪照顧得不錯。', '感謝您的評價，期待再次為您服務！', false, '2025-01-15 10:00:00');
+
+-- 王保母的評價 (2筆，平均 3.5)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking8_id, @sitter3_id, @user01_id, 4, 4, 3, 4, '整體還可以，小橘回來狀態不錯。但溝通上回覆有點慢，希望可以改進。', '感謝您的回饋，我會改進溝通效率的！', false, '2025-01-08 18:00:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking9_id, @sitter3_id, @user01_id, 3, 3, 3, 3, '普通，沒有特別問題但也沒有特別驚喜。', NULL, true, '2025-01-12 17:00:00');
+
+-- 陳保母的評價 (3筆，平均 4.7)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking10_id, @sitter4_id, @user01_id, 5, 5, 5, 5, '陳保母經驗豐富，處理特殊需求寵物很專業。阿福有時候會緊張，但保母處理得很好，完全沒有問題！', '謝謝您的信任！阿福很棒，是隻很聰明的狗狗。', false, '2025-01-10 21:00:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking11_id, @sitter4_id, @user01_id, 5, 5, 5, 5, '喵喵的過敏體質被照顧得很好，完全沒有任何不適。非常推薦給有特殊需求寵物的飼主！', '感謝您的好評！喵喵是隻很可愛的貓咪，照顧牠很開心。', false, '2025-01-14 19:30:00');
+
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at)
+VALUES (RANDOM_UUID(), @booking12_id, @sitter4_id, @user01_id, 4, 4, 4, 5, '皮皮照顧得不錯，準時接送很加分。', NULL, false, '2025-01-17 10:00:00');
+
+-- 更新保母的評分統計
+UPDATE sitter SET average_rating = 4.5, rating_count = 4, completed_bookings = 4 WHERE id = @sitter1_id;
+UPDATE sitter SET average_rating = 4.7, rating_count = 3, completed_bookings = 3 WHERE id = @sitter2_id;
+UPDATE sitter SET average_rating = 3.5, rating_count = 2, completed_bookings = 2 WHERE id = @sitter3_id;
+UPDATE sitter SET average_rating = 4.7, rating_count = 3, completed_bookings = 3 WHERE id = @sitter4_id;
