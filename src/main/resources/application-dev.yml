@@ -1,9 +1,15 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./data/testdb;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    primary:
+      url: jdbc:h2:file:./data/testdb;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+    log:
+      url: jdbc:postgresql://localhost:5432/pet_log
+      driver-class-name: org.postgresql.Driver
+      username: postgres
+      password: postgres
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:

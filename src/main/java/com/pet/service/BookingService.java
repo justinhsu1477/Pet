@@ -7,10 +7,13 @@ import com.pet.dto.BookingStatusUpdateDto;
 import com.pet.exception.BusinessException;
 import com.pet.exception.ErrorCode;
 import com.pet.exception.ResourceNotFoundException;
+import com.pet.log.service.BookingLogService;
 import com.pet.repository.BookingRepository;
 import com.pet.repository.PetRepository;
 import com.pet.repository.SitterRepository;
 import com.pet.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +25,6 @@ import java.util.stream.Collectors;
 
 /**
  * 預約服務
- *
- * 面試亮點：
  * 1. 樂觀鎖處理併發更新 (@Version + ObjectOptimisticLockingFailureException)
  * 2. 狀態機設計：限制合法的狀態轉換
  * 3. 時間衝突檢查：防止雙重預約
@@ -33,24 +34,29 @@ import java.util.stream.Collectors;
 @Transactional
 public class BookingService {
 
+    private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
+
     private final BookingRepository bookingRepository;
     private final PetRepository petRepository;
     private final SitterRepository sitterRepository;
     private final UserRepository userRepository;
+    private final BookingLogService bookingLogService;
 
     public BookingService(BookingRepository bookingRepository,
                           PetRepository petRepository,
                           SitterRepository sitterRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          BookingLogService bookingLogService) {
         this.bookingRepository = bookingRepository;
         this.petRepository = petRepository;
         this.sitterRepository = sitterRepository;
         this.userRepository = userRepository;
+        this.bookingLogService = bookingLogService;
     }
 
     /**
      * 建立預約
-     * 面試重點：檢查時間衝突，避免雙重預約
+     * 檢查時間衝突，避免雙重預約
      */
     public BookingDto createBooking(BookingDto dto, UUID userId) {
         // 1. 驗證時間
@@ -81,6 +87,9 @@ public class BookingService {
         booking.setTotalPrice(dto.totalPrice());
 
         Booking saved = bookingRepository.save(booking);
+
+        // 同步到 Log DB
+        syncToLogDb(saved);
 
         // TODO: 發送通知給保母（Domain Event）
         // eventPublisher.publishEvent(new BookingCreatedEvent(saved));
@@ -128,6 +137,9 @@ public class BookingService {
             }
 
             Booking updated = bookingRepository.save(booking);
+
+            // 同步到 Log DB
+            syncToLogDb(updated);
 
             // TODO: 發送狀態變更通知
             // eventPublisher.publishEvent(new BookingStatusChangedEvent(updated));
@@ -228,6 +240,19 @@ public class BookingService {
     }
 
     // ============ Private Methods ============
+
+    /**
+     * 同步 Booking 到 Log DB
+     * 失敗時只記錄錯誤，不影響主流程
+     */
+    private void syncToLogDb(Booking booking) {
+        try {
+            bookingLogService.syncBookingToLog(booking);
+        } catch (Exception e) {
+            logger.error("Failed to sync booking {} to log DB, will continue with main operation: {}",
+                    booking.getId(), e.getMessage());
+        }
+    }
 
     private void validateBookingTime(LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime == null || endTime == null) {
