@@ -146,4 +146,12 @@
     <string name="fed_at">餵食時間: %s</string>
     <string name="activity_recorded">活動紀錄成功</string>
     <string name="today_activity">今日活動</string>
+
+    <!-- 評價系統 -->
+    <string name="sitter_reply">保母回覆</string>
+    <string name="reviews_title">評價與評論</string>
+    <string name="all_reviews">所有評論</string>
+    <string name="no_reviews">目前還沒有評論</string>
+    <string name="reviews_count">%d 則評論</string>
+    <string name="anonymous_user">匿名用戶</string>
 </resources>

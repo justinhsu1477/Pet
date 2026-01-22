@@ -1,117 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/apk/res/tools"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    app:cardElevation="2dp"
-    app:cardCornerRadius="16dp"
-    app:strokeWidth="0dp">
+    android:layout_margin="8dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- 保母名稱 -->
         <TextView
             android:id="@+id/tvSitterName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="張保母" />
 
-        <!-- 評分區域 -->
-        <RatingBar
-            android:id="@+id/ratingBar"
-            style="?android:attr/ratingBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:isIndicator="true"
-            android:numStars="5"
-            android:stepSize="0.1"
-            android:progressTint="?attr/colorPrimary"
-            android:secondaryProgressTint="?attr/colorPrimary"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvSitterName"
-            tools:rating="4.5" />
-
-        <TextView
-            android:id="@+id/tvRatingScore"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorPrimary"
-            app:layout_constraintBottom_toBottomOf="@id/ratingBar"
-            app:layout_constraintStart_toEndOf="@id/ratingBar"
-            app:layout_constraintTop_toTopOf="@id/ratingBar"
-            tools:text="4.5" />
-
-        <TextView
-            android:id="@+id/tvRatingCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:textSize="12sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            app:layout_constraintBottom_toBottomOf="@id/ratingBar"
-            app:layout_constraintStart_toEndOf="@id/tvRatingScore"
-            app:layout_constraintTop_toTopOf="@id/ratingBar"
-            tools:text="(123)" />
-
-        <!-- 完成訂單數 -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipCompletedBookings"
-            style="@style/Widget.Material3.Chip.Assist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="12sp"
-            app:chipIconSize="16dp"
-            app:chipMinHeight="28dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ratingBar"
-            tools:text="已完成 45 次服務" />
-
-        <!-- 聯絡電話 -->
         <TextView
             android:id="@+id/tvSitterPhone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:drawablePadding="6dp"
+            android:layout_marginTop="4dp"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            app:drawableStartCompat="@android:drawable/ic_menu_call"
-            app:drawableTint="?attr/colorOnSurfaceVariant"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/chipCompletedBookings"
+            app:layout_constraintTop_toBottomOf="@id/tvSitterName"
             tools:text="0911-111-222" />
 
-        <!-- 經驗描述 -->
         <TextView
             android:id="@+id/tvSitterExperience"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:ellipsize="end"
-            android:maxLines="2"
+            android:layout_marginTop="4dp"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvSitterPhone"
-            tools:text="擁有5年寵物照護經驗，熟悉各種犬貓品種，提供專業且細心的照護服務" />
+            tools:text="5年寵物照護經驗" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
