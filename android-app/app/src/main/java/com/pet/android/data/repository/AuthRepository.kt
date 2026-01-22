@@ -30,7 +30,8 @@ class AuthRepository @Inject constructor(
                     // Save login data to DataStore
                     userPreferencesManager.saveLoginData(
                         username = response.data.username,
-                        role = response.data.role
+                        role = response.data.role,
+                        userId = response.data.id
                     )
                     Resource.Success(response.data)
                 } else {

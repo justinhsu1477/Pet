@@ -80,6 +80,16 @@ public class PetService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 取得使用者的所有寵物
+     */
+    @Transactional(readOnly = true)
+    public List<PetDto> getPetsByUserId(UUID userId) {
+        return petRepository.findByOwnerIdOrderByNameAsc(userId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     private PetDto convertToDto(Pet pet) {
         String petType = pet instanceof Cat ? "CAT" : "DOG";
         return new PetDto(

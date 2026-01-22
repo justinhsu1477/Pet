@@ -5,6 +5,21 @@
       <config />
     </shared>
     <layouts>
+      <layout url="file://$PROJECT_DIR$/android-app/app/src/main/res/layout/activity_available_sitters.xml">
+        <config>
+          <theme>@style/Theme.PetCare</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/android-app/app/src/main/res/layout/activity_booking_confirm.xml">
+        <config>
+          <theme>@style/Theme.PetCare</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/android-app/app/src/main/res/layout/activity_booking_home.xml">
+        <config>
+          <theme>@style/Theme.PetCare</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/android-app/app/src/main/res/layout/activity_create_pet.xml">
         <config>
           <theme>@style/Theme.PetCare</theme>
@@ -20,39 +35,55 @@
           <theme>@style/Theme.PetCare</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/android-app/app/src/main/res/layout/activity_pet_list.xml">
+        <config>
+          <theme>@style/Theme.PetCare</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/android-app/app/src/main/res/layout/activity_sitter_list.xml">
+        <config>
+          <theme>@style/Theme.PetCare</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/android-app/app/src/main/res/layout/activity_sitter_rating.xml">
+        <config>
+          <theme>@style/Theme.PetCare</theme>
+        </config>
+      </layout>
+      <layout url="file://$USER_HOME$/Library/Android/sdk/platforms/android-34/data/res/layout/simple_spinner_dropdown_item.xml">
+        <config>
+          <theme>@style/Theme.PetCare</theme>
+        </config>
+      </layout>
     </layouts>
   </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e0077c18-1a66-4aea-bdc1-16b896e464ba" name="Changes" comment="feat: enhance login UI with new design elements and loading overlay">
-      <change afterPath="$PROJECT_DIR$/queries/Query.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/queries/Query_1.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Dog.java" afterDir="false" />
+    <list default="true" id="e0077c18-1a66-4aea-bdc1-16b896e464ba" name="Changes" comment="feat: add booking and sitter rating data to SQL and update user role checks in login flow">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/android-app/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/api/PetApi.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/api/PetApi.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/model/Pet.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/model/Pet.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/preferences/UserPreferencesManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/preferences/UserPreferencesManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/repository/AuthRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/data/repository/AuthRepository.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/di/NetworkModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/di/NetworkModule.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/ui/login/LoginActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/ui/login/LoginActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/ui/pet/PetListActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/java/com/pet/android/ui/pet/PetListActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/android-app/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/app/src/main/res/values/strings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android-app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/android-app/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android-app/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/domain/Cat.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Cat.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/domain/Pet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Pet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/domain/Sitter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Sitter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/domain/SitterRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/SitterRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/domain/Users.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/domain/Users.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/dto/PetDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/dto/PetDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/exception/ResourceNotFoundException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/exception/ResourceNotFoundException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/repository/CatRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/repository/CatRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/repository/PetRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/repository/PetRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/repository/SitterAvailabilityRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/repository/SitterAvailabilityRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/service/PetService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/service/PetService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/web/CatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/web/CatController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/service/SitterService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/service/SitterService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/web/PetController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/web/PetController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/pet/web/SitterController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pet/web/SitterController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/db/data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/db/data.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/db/schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/db/schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/db/schema-h2.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/db/schema-h2.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/db/schema.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
     </list>
@@ -126,8 +157,14 @@
     </system>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="MIXED" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -150,6 +187,9 @@
     "Gradle.android-app:app [installDebug].executor": "Run",
     "HTTP Request.generated-requests | #67.executor": "Run",
     "HTTP Request.generated-requests | #68.executor": "Run",
+    "HTTP Request.generated-requests | #71.executor": "Run",
+    "Maven.petSystem [clean].executor": "Run",
+    "Maven.petSystem [compile].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
@@ -194,10 +234,12 @@
   </component>
   <component name="RunAnythingCache">
     <option name="myCommands">
+      <command value="mvn clean" />
+      <command value="mvn compile" />
       <command value="gradle clean app:build" />
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.PracticeApplication">
+  <component name="RunManager" selected="Android App.PetCare.app">
     <configuration name="PetCare.app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
       <module name="PetCare.app" />
       <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
@@ -412,41 +454,6 @@
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="android-app [clean app:build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/android-app" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="clean" />
-            <option value="app:build" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <EXTENSION ID="com.intellij.execution.ExternalSystemRunConfigurationJavaExtension">
-        <extension name="net.ashald.envfile">
-          <option name="IS_ENABLED" value="false" />
-          <option name="IS_SUBST" value="false" />
-          <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
-          <option name="IS_IGNORE_MISSING_FILES" value="false" />
-          <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
-          <ENTRIES>
-            <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
-          </ENTRIES>
-        </extension>
-      </EXTENSION>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <method v="2" />
-    </configuration>
     <configuration name="android-app:app [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -516,6 +523,9 @@
     <configuration name="generated-requests | #68" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#68" index="68" runType="Run single request">
       <method v="2" />
     </configuration>
+    <configuration name="generated-requests | #71" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#71" index="71" runType="Run single request">
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="JetRunConfigurationType">
       <module name="petSystem" />
       <method v="2">
@@ -545,6 +555,11 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="HTTP Request.generated-requests | #71" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -660,7 +675,31 @@
       <option name="project" value="LOCAL" />
       <updated>1767423374979</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="feat: implement rating system UI with detailed review display and color themes">
+      <option name="closed" value="true" />
+      <created>1769048537405</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1769048537405</updated>
+    </task>
+    <task id="LOCAL-00013" summary="feat: add booking and sitter rating data to SQL and update user role checks in login flow">
+      <option name="closed" value="true" />
+      <created>1769048557221</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1769048557221</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat: add booking and sitter rating data to SQL and update user role checks in login flow">
+      <option name="closed" value="true" />
+      <created>1769048572490</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1769048572490</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -689,14 +728,16 @@
     <MESSAGE value="feat: add unit test for password encoding using BCrypt" />
     <MESSAGE value="feat: add initial implementation of authentication and pet management features" />
     <MESSAGE value="feat: enhance login UI with new design elements and loading overlay" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: enhance login UI with new design elements and loading overlay" />
+    <MESSAGE value="feat: implement rating system UI with detailed review display and color themes" />
+    <MESSAGE value="feat: add booking and sitter rating data to SQL and update user role checks in login flow" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add booking and sitter rating data to SQL and update user role checks in login flow" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/pet/domain/Pet.java</url>
-          <line>22</line>
+          <line>26</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>

@@ -1,6 +1,7 @@
 package com.pet.android.di
 
 import com.pet.android.data.api.AuthApi
+import com.pet.android.data.api.BookingApi
 import com.pet.android.data.api.CatApi
 import com.pet.android.data.api.DogApi
 import com.pet.android.data.api.PetApi
@@ -118,5 +119,11 @@ object NetworkModule {
     @Singleton
     fun provideSitterRatingApi(retrofit: Retrofit): SitterRatingApi {
         return retrofit.create(SitterRatingApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBookingApi(retrofit: Retrofit): BookingApi {
+        return retrofit.create(BookingApi::class.java)
     }
 }

@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.pet.android.data.model.UserRole
 import com.pet.android.databinding.ActivityLoginBinding
 import com.pet.android.ui.base.BaseActivity
+import com.pet.android.ui.booking.BookingHomeActivity
 import com.pet.android.ui.pet.PetListActivity
 import com.pet.android.ui.setting.SettingActivity
 import com.pet.android.util.Resource
@@ -75,12 +76,24 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
     private fun navigateToPetList() {
         lifecycleScope.launch {
             val role = viewModel.getUserRoleEnum()
-            if (role == UserRole.ADMIN) {
-                val intent = Intent(this@LoginActivity, PetListActivity::class.java)
-                startActivity(intent)
-                finish()
-            } else {
-                Toast.makeText(this@LoginActivity, "需要 ADMIN 權限才能進入", Toast.LENGTH_SHORT).show()
+            when (role) {
+                UserRole.ADMIN -> {
+                    val intent = Intent(this@LoginActivity, PetListActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+                UserRole.USER -> {
+                    // USER 角色導航到預約頁面
+                    BookingHomeActivity.start(this@LoginActivity)
+                    finish()
+                }
+                UserRole.SITTER -> {
+                    // SITTER 角色可以導航到其他頁面（如訂單列表）
+                    Toast.makeText(this@LoginActivity, "保母功能開發中", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    Toast.makeText(this@LoginActivity, "未知角色", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

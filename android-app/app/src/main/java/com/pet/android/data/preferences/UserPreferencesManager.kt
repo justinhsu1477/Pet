@@ -24,6 +24,7 @@ class UserPreferencesManager @Inject constructor(
         private val USERNAME_KEY = stringPreferencesKey("username")
         private val LOGIN_DATE_KEY = longPreferencesKey("login_date")
         private val USER_ROLE_KEY = stringPreferencesKey("user_role")
+        private val USER_ID_KEY = stringPreferencesKey("user_id")
     }
 
     val username: Flow<String?> = context.userDataStore.data
@@ -34,6 +35,9 @@ class UserPreferencesManager @Inject constructor(
 
     val userRole: Flow<String?> = context.userDataStore.data
         .map { preferences -> preferences[USER_ROLE_KEY] }
+
+    val userId: Flow<String?> = context.userDataStore.data
+        .map { preferences -> preferences[USER_ID_KEY] }
 
     // Convenience: access role as enum while keeping stored string compatibility
     val userRoleEnum: Flow<UserRole> = userRole.map { value ->
@@ -53,11 +57,27 @@ class UserPreferencesManager @Inject constructor(
         saveLoginData(username, role.code)
     }
 
+    // Overload: save with userId as well
+    suspend fun saveLoginData(username: String, role: String, userId: String) {
+        context.userDataStore.edit { preferences ->
+            preferences[USERNAME_KEY] = username
+            preferences[LOGIN_DATE_KEY] = System.currentTimeMillis()
+            preferences[USER_ROLE_KEY] = role
+            preferences[USER_ID_KEY] = userId
+        }
+    }
+
+    // Overload: save with enum role and userId
+    suspend fun saveLoginData(username: String, role: UserRole, userId: String) {
+        saveLoginData(username, role.code, userId)
+    }
+
     suspend fun clearLoginData() {
         context.userDataStore.edit { preferences ->
             preferences.remove(USERNAME_KEY)
             preferences.remove(LOGIN_DATE_KEY)
             preferences.remove(USER_ROLE_KEY)
+            preferences.remove(USER_ID_KEY)
         }
     }
 }

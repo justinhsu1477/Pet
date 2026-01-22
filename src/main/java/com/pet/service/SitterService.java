@@ -1,12 +1,16 @@
 package com.pet.service;
 
 import com.pet.domain.Sitter;
+import com.pet.dto.AvailableSitterDto;
 import com.pet.dto.SitterDto;
 import com.pet.exception.ResourceNotFoundException;
+import com.pet.repository.SitterAvailabilityRepository;
 import com.pet.repository.SitterRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,9 +20,12 @@ import java.util.stream.Collectors;
 public class SitterService {
 
     private final SitterRepository sitterRepository;
+    private final SitterAvailabilityRepository availabilityRepository;
 
-    public SitterService(SitterRepository sitterRepository) {
+    public SitterService(SitterRepository sitterRepository,
+                         SitterAvailabilityRepository availabilityRepository) {
         this.sitterRepository = sitterRepository;
+        this.availabilityRepository = availabilityRepository;
     }
 
     public List<SitterDto> getAllSitters() {
@@ -60,6 +67,41 @@ public class SitterService {
     public Sitter getSitterEntityById(UUID id) {
         return sitterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("保母", "id", id));
+    }
+
+    /**
+     * 取得指定日期可用的保母列表
+     */
+    @Transactional(readOnly = true)
+    public List<AvailableSitterDto> getAvailableSitters(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        List<Sitter> sitters = availabilityRepository.findAvailableSittersByDayOfWeek(dayOfWeek);
+        return sitters.stream()
+                .map(this::convertToAvailableDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 取得所有保母（含評分資訊）
+     */
+    @Transactional(readOnly = true)
+    public List<AvailableSitterDto> getAllSittersWithRating() {
+        return sitterRepository.findAll().stream()
+                .map(this::convertToAvailableDto)
+                .collect(Collectors.toList());
+    }
+
+    private AvailableSitterDto convertToAvailableDto(Sitter sitter) {
+        return new AvailableSitterDto(
+                sitter.getId(),
+                sitter.getName(),
+                sitter.getPhone(),
+                sitter.getEmail(),
+                sitter.getExperience(),
+                sitter.getAverageRating(),
+                sitter.getRatingCount(),
+                sitter.getCompletedBookings()
+        );
     }
 
     private SitterDto convertToDto(Sitter sitter) {

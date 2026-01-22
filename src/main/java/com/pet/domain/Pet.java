@@ -16,6 +16,10 @@ public abstract class Pet {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private Users owner;
+
     private String name;
     private Integer age;
     private String breed;

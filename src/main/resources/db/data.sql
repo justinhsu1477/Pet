@@ -1,26 +1,34 @@
 -- 插入 User 測試資料（密碼已使用 BCrypt 加密）
 -- admin / admin123
+SET @admin_id = RANDOM_UUID();
 INSERT INTO users (id, username, password, email, phone, role)
-VALUES (RANDOM_UUID(), 'admin', '$2a$10$ioaaP9Nongaib.l8BoFY1ehNWJBG7OvBW92w4/O1oADnWMF6PrY8O', 'admin@petcare.com', '0900-000-001', 'ADMIN');
+VALUES (@admin_id, 'admin', '$2a$10$ioaaP9Nongaib.l8BoFY1ehNWJBG7OvBW92w4/O1oADnWMF6PrY8O', 'admin@petcare.com', '0900-000-001', 'ADMIN');
 
 -- user01 / password123
+SET @user01_id = RANDOM_UUID();
 INSERT INTO users (id, username, password, email, phone, role)
-VALUES (RANDOM_UUID(), 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user01@example.com', '0911-222-333', 'USER');
+VALUES (@user01_id, 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user01@example.com', '0911-222-333', 'USER');
+
+-- user02 / password123 (另一個使用者，有自己的寵物)
+SET @user02_id = RANDOM_UUID();
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (@user02_id, 'user02', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user02@example.com', '0933-444-555', 'USER');
 
 -- sitter01 / sitter123
+SET @sitter_user_id = RANDOM_UUID();
 INSERT INTO users (id, username, password, email, phone, role)
-VALUES (RANDOM_UUID(), 'sitter01', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter01@example.com', '0922-333-444', 'SITTER');
+VALUES (@sitter_user_id, 'sitter01', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter01@example.com', '0922-333-444', 'SITTER');
 
 -- 插入 Dog 測試資料 (使用 JOINED 繼承策略)
 SET @dog1_id = RANDOM_UUID();
 SET @dog2_id = RANDOM_UUID();
 
--- 先插入 Pet 父類別資料
-INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
-VALUES (@dog1_id, 'DOG', '阿福', 5, '黃金獵犬', 'MALE', '王小明', '0912-345-678', '需要每天散步兩次', true, '已完成年度疫苗');
+-- 先插入 Pet 父類別資料（user01 的寵物）
+INSERT INTO pet (id, user_id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@dog1_id, @user01_id, 'DOG', '阿福', 5, '黃金獵犬', 'MALE', '王小明', '0912-345-678', '需要每天散步兩次', true, '已完成年度疫苗');
 
-INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
-VALUES (@dog2_id, 'DOG', '皮皮', 2, '柴犬', 'FEMALE', '陳小美', '0945-678-901', NULL, false, '已完成基本疫苗');
+INSERT INTO pet (id, user_id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@dog2_id, @user01_id, 'DOG', '皮皮', 2, '柴犬', 'FEMALE', '陳小美', '0945-678-901', NULL, false, '已完成基本疫苗');
 
 -- 再插入 Dog 子類別資料
 INSERT INTO dog (id, size, is_walk_required, walk_frequency_per_day, training_level, is_friendly_with_dogs, is_friendly_with_people, is_friendly_with_children)
@@ -34,15 +42,16 @@ SET @cat1_id = RANDOM_UUID();
 SET @cat2_id = RANDOM_UUID();
 SET @cat3_id = RANDOM_UUID();
 
--- 先插入 Pet 父類別資料
-INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
-VALUES (@cat1_id, 'CAT', '喵喵', 3, '波斯貓', 'FEMALE', '李小華', '0923-456-789', '對海鮮過敏', true, '已完成年度疫苗');
+-- 先插入 Pet 父類別資料（user01 的寵物）
+INSERT INTO pet (id, user_id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@cat1_id, @user01_id, 'CAT', '喵喵', 3, '波斯貓', 'FEMALE', '李小華', '0923-456-789', '對海鮮過敏', true, '已完成年度疫苗');
 
-INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
-VALUES (@cat2_id, 'CAT', '咪咪', 4, '美國短毛貓', 'MALE', '林大明', '0956-789-012', '需要定期梳毛', true, '已完成基本疫苗');
+-- user02 的寵物
+INSERT INTO pet (id, user_id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@cat2_id, @user02_id, 'CAT', '咪咪', 4, '美國短毛貓', 'MALE', '林大明', '0956-789-012', '需要定期梳毛', true, '已完成基本疫苗');
 
-INSERT INTO pet (id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
-VALUES (@cat3_id, 'CAT', '小橘', 2, '橘貓', 'MALE', '張小英', '0967-890-123', NULL, false, NULL);
+INSERT INTO pet (id, user_id, pet_type, name, age, breed, gender, owner_name, owner_phone, special_needs, is_neutered, vaccine_status)
+VALUES (@cat3_id, @user02_id, 'CAT', '小橘', 2, '橘貓', 'MALE', '張小英', '0967-890-123', NULL, false, NULL);
 
 -- 再插入 Cat 子類別資料
 INSERT INTO cat (id, is_indoor, litter_box_type, scratching_habit)
@@ -78,6 +87,60 @@ VALUES (@sitter3_id, '王保母', '0933-333-444', 'wang@example.com', '2年小�
 INSERT INTO sitter (id, name, phone, email, experience)
 VALUES (@sitter4_id, '陳保母', '0944-444-555', 'chen@example.com', '7年全方位寵物照護，可處理特殊需求寵物');
 
+-- ============================================
+-- 插入保母可用時段 (SitterAvailability)
+-- ============================================
+
+-- 張保母：週一到週五全天、週六上午
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter1_id, 'MONDAY', '08:00', '20:00', '台北市大安區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter1_id, 'TUESDAY', '08:00', '20:00', '台北市大安區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter1_id, 'WEDNESDAY', '08:00', '20:00', '台北市大安區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter1_id, 'THURSDAY', '08:00', '20:00', '台北市大安區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter1_id, 'FRIDAY', '08:00', '20:00', '台北市大安區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter1_id, 'SATURDAY', '09:00', '14:00', '台北市大安區', true);
+
+-- 李保母：週二到週日
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter2_id, 'TUESDAY', '09:00', '18:00', '台北市信義區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter2_id, 'WEDNESDAY', '09:00', '18:00', '台北市信義區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter2_id, 'THURSDAY', '09:00', '18:00', '台北市信義區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter2_id, 'FRIDAY', '09:00', '18:00', '台北市信義區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter2_id, 'SATURDAY', '10:00', '20:00', '台北市信義區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter2_id, 'SUNDAY', '10:00', '20:00', '台北市信義區', true);
+
+-- 王保母：週末全天
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter3_id, 'SATURDAY', '08:00', '22:00', '台北市中山區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter3_id, 'SUNDAY', '08:00', '22:00', '台北市中山區', true);
+
+-- 陳保母：每天都可用（全年無休）
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter4_id, 'MONDAY', '07:00', '22:00', '台北市全區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter4_id, 'TUESDAY', '07:00', '22:00', '台北市全區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter4_id, 'WEDNESDAY', '07:00', '22:00', '台北市全區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter4_id, 'THURSDAY', '07:00', '22:00', '台北市全區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter4_id, 'FRIDAY', '07:00', '22:00', '台北市全區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter4_id, 'SATURDAY', '07:00', '22:00', '台北市全區', true);
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
+VALUES (RANDOM_UUID(), @sitter4_id, 'SUNDAY', '07:00', '22:00', '台北市全區', true);
+
 -- 插入 SitterRecord 測試資料
 INSERT INTO sitter_record (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)
 VALUES (RANDOM_UUID(), @pet1_id, @sitter1_id, '2025-01-01 09:00:00', '晨間散步', true, true, '活潑開心', '阿福今天精神很好，在公園玩得很開心', NULL);
@@ -107,10 +170,7 @@ VALUES (RANDOM_UUID(), @pet2_id, @sitter2_id, '2025-01-02 11:00:00', '遊戲時�
 -- 假資料：預約紀錄 (Booking)
 -- ============================================
 
--- 獲取 user01 的 ID
-SET @user01_id = (SELECT id FROM users WHERE username = 'user01');
-
--- 建立預約紀錄
+-- 建立預約紀錄（使用上面已定義的 @user01_id）
 SET @booking1_id = RANDOM_UUID();
 SET @booking2_id = RANDOM_UUID();
 SET @booking3_id = RANDOM_UUID();

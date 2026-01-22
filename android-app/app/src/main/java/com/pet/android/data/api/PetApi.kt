@@ -11,6 +11,9 @@ interface PetApi {
     @GET("api/pets/{id}")
     suspend fun getPetById(@Path("id") id: String): ApiResponse<Pet>
 
+    @GET("api/pets/user/{userId}")
+    suspend fun getPetsByUser(@Path("userId") userId: String): ApiResponse<List<Pet>>
+
     @POST("api/pets")
     suspend fun createPet(@Body pet: Pet): ApiResponse<Pet>
 

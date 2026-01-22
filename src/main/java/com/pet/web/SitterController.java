@@ -1,13 +1,16 @@
 package com.pet.web;
 
+import com.pet.dto.AvailableSitterDto;
 import com.pet.dto.SitterDto;
 import com.pet.dto.response.ApiResponse;
 import com.pet.service.SitterService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,5 +55,26 @@ public class SitterController {
     public ResponseEntity<ApiResponse<Void>> deleteSitter(@PathVariable UUID id) {
         sitterService.deleteSitter(id);
         return ResponseEntity.ok(ApiResponse.success("保母刪除成功", null));
+    }
+
+    /**
+     * 取得指定日期可用的保母列表
+     * GET /api/sitters/available?date=2026-01-22
+     */
+    @GetMapping("/available")
+    public ResponseEntity<ApiResponse<List<AvailableSitterDto>>> getAvailableSitters(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<AvailableSitterDto> sitters = sitterService.getAvailableSitters(date);
+        return ResponseEntity.ok(ApiResponse.success(sitters));
+    }
+
+    /**
+     * 取得所有保母（含評分資訊）
+     * GET /api/sitters/with-rating
+     */
+    @GetMapping("/with-rating")
+    public ResponseEntity<ApiResponse<List<AvailableSitterDto>>> getAllSittersWithRating() {
+        List<AvailableSitterDto> sitters = sitterService.getAllSittersWithRating();
+        return ResponseEntity.ok(ApiResponse.success(sitters));
     }
 }

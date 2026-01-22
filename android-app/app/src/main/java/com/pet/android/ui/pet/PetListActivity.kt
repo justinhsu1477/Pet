@@ -82,6 +82,8 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
     }
 
     private fun setupViews() {
+        setupToolbar(binding.toolbar,"管理員 寵物清單",false)
+
         binding.btnToSitters.setOnClickListener {
             startActivity(Intent(this, SitterListActivity::class.java))
         }

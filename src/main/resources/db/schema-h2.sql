@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Pet 表 (父類別，使用 JOINED 繼承策略)
 CREATE TABLE IF NOT EXISTS pet (
     id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    user_id UUID,
     pet_type VARCHAR(31) NOT NULL,
     name VARCHAR(100),
     age INT,
@@ -32,7 +33,8 @@ CREATE TABLE IF NOT EXISTS pet (
     owner_phone VARCHAR(20),
     special_needs VARCHAR(500),
     is_neutered BOOLEAN,
-    vaccine_status VARCHAR(255)
+    vaccine_status VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Dog 表 (子類別，繼承 Pet)

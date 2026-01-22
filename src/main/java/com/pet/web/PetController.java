@@ -58,4 +58,14 @@ public class PetController {
         petService.deletePet(id);
         return ResponseEntity.ok(ApiResponse.success("寵物刪除成功", null));
     }
+
+    /**
+     * 取得使用者的所有寵物
+     * GET /api/pets/user/{userId}
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<List<PetDto>>> getPetsByUser(@PathVariable UUID userId) {
+        List<PetDto> pets = petService.getPetsByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(pets));
+    }
 }

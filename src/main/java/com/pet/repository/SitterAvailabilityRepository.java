@@ -50,4 +50,12 @@ public interface SitterAvailabilityRepository extends JpaRepository<SitterAvaila
             @Param("dayOfWeek") DayOfWeek dayOfWeek,
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime);
+
+    /**
+     * 查詢特定星期可用的保母（不重複）
+     */
+    @Query("SELECT DISTINCT sa.sitter FROM SitterAvailability sa " +
+           "WHERE sa.dayOfWeek = :dayOfWeek " +
+           "AND sa.isActive = true")
+    List<com.pet.domain.Sitter> findAvailableSittersByDayOfWeek(@Param("dayOfWeek") DayOfWeek dayOfWeek);
 }

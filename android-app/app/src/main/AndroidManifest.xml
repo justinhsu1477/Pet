@@ -54,6 +54,18 @@
             android:name=".ui.pet.EditPetActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".ui.booking.BookingHomeActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.booking.AvailableSittersActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.booking.BookingConfirmActivity"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

@@ -154,4 +154,37 @@
     <string name="no_reviews">目前還沒有評論</string>
     <string name="reviews_count">%d 則評論</string>
     <string name="anonymous_user">匿名用戶</string>
+
+    <!-- 預約系統 -->
+    <string name="booking_title">預約保母服務</string>
+    <string name="booking_step1_select_pet">步驟 1</string>
+    <string name="booking_which_pet">選擇需要照顧的寵物</string>
+    <string name="booking_no_pets">您還沒有寵物，請先新增寵物</string>
+    <string name="booking_step2_select_date">步驟 2</string>
+    <string name="booking_when">選擇照顧日期</string>
+    <string name="booking_select_date_hint">請選擇日期</string>
+    <string name="booking_step3_select_time">步驟 3</string>
+    <string name="booking_duration">選擇照顧時段</string>
+    <string name="booking_half_day">半天 (4小時)</string>
+    <string name="booking_full_day">全天 (8小時)</string>
+    <string name="booking_overnight">過夜 (24小時)</string>
+    <string name="booking_search_sitters">搜尋可用保母</string>
+    <string name="booking_available_sitters">可用保母</string>
+    <string name="booking_no_sitters">該日期沒有可用的保母</string>
+    <string name="booking_sitter_count">找到 %d 位可用保母</string>
+    <string name="booking_view_profile">查看</string>
+    <string name="booking_select">預約</string>
+    <string name="booking_confirm_title">確認預約</string>
+    <string name="booking_pet_info">寵物資訊</string>
+    <string name="booking_sitter_info">保母資訊</string>
+    <string name="booking_time_info">預約時間</string>
+    <string name="booking_notes">備註（選填）</string>
+    <string name="booking_notes_hint">有什麼需要特別注意的事項嗎？</string>
+    <string name="booking_submit">確認預約</string>
+    <string name="booking_success">預約成功！</string>
+    <string name="booking_failed">預約失敗，請稍後再試</string>
+    <string name="rating_format">%.1f</string>
+    <string name="rating_count_format">(%d)</string>
+    <string name="experience_format">%s 經驗</string>
+    <string name="completed_bookings_format">已完成 %d 單</string>
 </resources>

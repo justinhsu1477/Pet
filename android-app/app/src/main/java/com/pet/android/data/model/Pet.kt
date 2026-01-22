@@ -1,6 +1,7 @@
 package com.pet.android.data.model
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 data class Pet(
     @SerializedName("id")
@@ -19,4 +20,4 @@ data class Pet(
     val ownerPhone: String,
     @SerializedName("specialNeeds")
     val specialNeeds: String?
-)
+) : Serializable
