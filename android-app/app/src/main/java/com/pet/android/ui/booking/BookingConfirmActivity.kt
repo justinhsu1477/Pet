@@ -127,8 +127,11 @@ class BookingConfirmActivity : BaseActivity<ActivityBookingConfirmBinding>() {
                 is Resource.Success -> {
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(this, getString(R.string.booking_success), Toast.LENGTH_SHORT).show()
-                    // Go back to home or show success
-                    setResult(RESULT_OK)
+                    // Bring existing BookingHomeActivity to front and clear intermediates
+                    val intent = Intent(this, BookingHomeActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    }
+                    startActivity(intent)
                     finish()
                 }
                 is Resource.Error -> {
