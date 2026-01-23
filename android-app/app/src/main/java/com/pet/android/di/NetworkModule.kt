@@ -7,6 +7,7 @@ import com.pet.android.data.api.DogApi
 import com.pet.android.data.api.PetApi
 import com.pet.android.data.api.PetActivityApi
 import com.pet.android.data.api.SitterApi
+import com.pet.android.data.api.SitterBookingApi
 import com.pet.android.data.api.SitterRatingApi
 import com.pet.android.data.preferences.EnvironmentManager
 import dagger.Module
@@ -125,5 +126,11 @@ object NetworkModule {
     @Singleton
     fun provideBookingApi(retrofit: Retrofit): BookingApi {
         return retrofit.create(BookingApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSitterBookingApi(retrofit: Retrofit): SitterBookingApi {
+        return retrofit.create(SitterBookingApi::class.java)
     }
 }

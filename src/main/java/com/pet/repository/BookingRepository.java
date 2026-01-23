@@ -93,4 +93,55 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     List<Booking> findUpcomingBookings(
             @Param("now") LocalDateTime now,
             @Param("endTime") LocalDateTime endTime);
+
+    // ============================================
+    // 統計相關查詢方法
+    // ============================================
+
+    /**
+     * 查詢保母在指定時間範圍內的所有預約（用於統計）
+     */
+    @Query("SELECT b FROM Booking b WHERE b.sitter.id = :sitterId AND b.createdAt BETWEEN :startTime AND :endTime")
+    List<Booking> findBySitterIdAndCreatedAtBetween(
+            @Param("sitterId") UUID sitterId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 統計保母在指定時間範圍內特定狀態的預約數量
+     */
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.sitter.id = :sitterId AND b.status = :status AND b.createdAt BETWEEN :startTime AND :endTime")
+    long countBySitterIdAndStatusAndCreatedAtBetween(
+            @Param("sitterId") UUID sitterId,
+            @Param("status") BookingStatus status,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 統計保母在指定時間範圍內多個狀態的預約數量（例如 REJECTED + CANCELLED）
+     */
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.sitter.id = :sitterId AND b.status IN :statuses AND b.createdAt BETWEEN :startTime AND :endTime")
+    long countBySitterIdAndStatusInAndCreatedAtBetween(
+            @Param("sitterId") UUID sitterId,
+            @Param("statuses") List<BookingStatus> statuses,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 計算保母在指定時間範圍內已完成訂單的總收入
+     * 使用 COALESCE 避免 null 值
+     */
+    @Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM Booking b WHERE b.sitter.id = :sitterId AND b.status = 'COMPLETED' AND b.createdAt BETWEEN :startTime AND :endTime")
+    Double sumRevenueByCompletedBookings(
+            @Param("sitterId") UUID sitterId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 查詢保母在某一天的所有已完成預約（用於每日收入趨勢）
+     */
+    @Query("SELECT b FROM Booking b WHERE b.sitter.id = :sitterId AND b.status = 'COMPLETED' AND DATE(b.createdAt) = :date")
+    List<Booking> findCompletedBookingsByDate(
+            @Param("sitterId") UUID sitterId,
+            @Param("date") java.time.LocalDate date);
 }

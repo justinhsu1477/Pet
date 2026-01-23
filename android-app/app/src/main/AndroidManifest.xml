@@ -66,6 +66,14 @@
             android:name=".ui.booking.BookingConfirmActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".ui.sitter.booking.SitterBookingsActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.sitter.booking.SitterBookingDetailActivity"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

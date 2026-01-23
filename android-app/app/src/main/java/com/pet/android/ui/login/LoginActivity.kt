@@ -12,6 +12,7 @@ import com.pet.android.ui.base.BaseActivity
 import com.pet.android.ui.booking.BookingHomeActivity
 import com.pet.android.ui.pet.PetListActivity
 import com.pet.android.ui.setting.SettingActivity
+import com.pet.android.ui.sitter.booking.SitterBookingsActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -88,8 +89,9 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
                     finish()
                 }
                 UserRole.SITTER -> {
-                    // SITTER 角色可以導航到其他頁面（如訂單列表）
-                    Toast.makeText(this@LoginActivity, "保母功能開發中", Toast.LENGTH_SHORT).show()
+                    // SITTER 角色導航到確認頁面
+                    SitterBookingsActivity.start(this@LoginActivity)
+                    finish()
                 }
                 else -> {
                     Toast.makeText(this@LoginActivity, "未知角色", Toast.LENGTH_SHORT).show()

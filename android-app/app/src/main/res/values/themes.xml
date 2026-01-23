@@ -78,4 +78,10 @@
         <item name="android:padding">8dp</item>
         <item name="android:contentDescription">@string/back</item>
     </style>
+
+    <style name="Widget.PetCare.Chip" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/pet_orange_light</item>
+        <item name="rippleColor">@color/pet_orange</item>
+        <item name="android:textColor">@color/pet_gray_dark</item>
+    </style>
 </resources>
