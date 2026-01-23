@@ -2,48 +2,9 @@
 
 寵物照護服務預約系統 - 後端 API
 
-## 快速開始
-
-### 前置需求
-
-- Java 17
-- Maven 3.x
-- Docker (僅 QAS 環境需要)
-
 ### 啟動後端服務
 
-#### Dev 環境 (開發用)
-
-使用 H2 檔案資料庫,不需要 Docker:
-
-```bash
-mvn spring-boot:run
-```
-
-或指定 profile:
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
-```
-
-服務啟動後會顯示:
-```
-========================================
-🚀 Pet System Started Successfully!
-========================================
-📌 Active Profile: DEV
-📊 Primary DB: jdbc:h2:file:./data/petdb
-📝 Log DB: jdbc:h2:file:./data/petdb_log
-========================================
-```
-
-訪問:
-- API: http://localhost:8080
-- H2 Console: http://localhost:8080/h2-console
-
 #### QAS 環境 (測試用)
-
-使用 MSSQL 資料庫,需要 Docker:
 
 ```bash
 # 1. 啟動 MSSQL
@@ -54,27 +15,6 @@ docker compose --profile qas up -d
 
 # 3. 啟動應用
 mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=qas"
-```
-
-服務啟動後會顯示:
-```
-========================================
-🚀 Pet System Started Successfully!
-========================================
-📌 Active Profile: QAS
-📊 Primary DB: jdbc:sqlserver://localhost:1433;databaseName=petdb
-📝 Log DB: jdbc:sqlserver://localhost:1433;databaseName=petdb_log
-========================================
-```
-
-### 停止服務
-
-#### 停止 Spring Boot
-按 `Ctrl+C` 終止應用程式
-
-#### 停止 Docker (QAS 環境)
-```bash
-docker compose --profile qas down
 ```
 
 ## 專案架構
@@ -115,69 +55,6 @@ Pet/
 ## API 文件
 
 Sitter Booking API 文件: [SITTER_BOOKING_API_DOC.md](SITTER_BOOKING_API_DOC.md)
-
-## 常見問題
-
-### 如何重置 Dev 環境資料?
-
-```bash
-# 刪除 H2 資料庫檔案
-rm -rf ./data
-
-# 重新啟動應用即可自動重建
-mvn spring-boot:run
-```
-
-### 如何查看當前執行環境?
-
-應用程式啟動時會在 log 中顯示當前環境資訊,包括:
-- Active Profile (dev/qas)
-- Primary Database URL
-- Log Database URL
-
-### 如何切換環境?
-
-使用 `--spring.profiles.active` 參數:
-
-```bash
-# Dev 環境
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
-
-# QAS 環境
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=qas"
-```
-
-## 開發相關
-
-### 編譯專案
-
-```bash
-mvn clean install
-```
-
-### 執行測試
-
-```bash
-mvn test
-```
-
-### 打包 JAR
-
-```bash
-mvn clean package
-```
-
-執行打包後的 JAR:
-```bash
-java -jar target/practice-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
-```
-
-### Android App 編譯
-
-```bash
-cd android-app
-./gradlew assembleDebug
-```
 
 ## 技術棧
 
