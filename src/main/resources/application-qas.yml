@@ -1,16 +1,30 @@
 spring:
   datasource:
-    url: ${MSSQL_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb;encrypt=false;trustServerCertificate=true}
-    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: ${MSSQL_USERNAME:sa}
-    password: ${MSSQL_PASSWORD:Passw0rd}
+    primary:
+      url: ${MSSQL_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb;encrypt=false;trustServerCertificate=true}
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      username: ${MSSQL_USERNAME:sa}
+      password: ${MSSQL_PASSWORD:Passw0rd}
+    log:
+      url: ${MSSQL_LOG_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb_log;encrypt=false;trustServerCertificate=true}
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      username: ${MSSQL_LOG_USERNAME:sa}
+      password: ${MSSQL_LOG_PASSWORD:Passw0rd}
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update  # QAS 環境用 update，方便開發測試
+    log:
+      database-platform: org.hibernate.dialect.SQLServerDialect
+      hibernate:
+        ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.SQLServerDialect
+        format_sql: true
   sql:
     init:
-      mode: never
+      mode: always  # 啟用自動執行 SQL
+      data-locations: classpath:db/data.sql  # 載入測試資料
+      continue-on-error: true  # 如果資料已存在，繼續執行
