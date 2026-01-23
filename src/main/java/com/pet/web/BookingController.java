@@ -14,11 +14,6 @@ import java.util.UUID;
 
 /**
  * 預約管理 API
- *
- * 面試亮點：
- * - RESTful 設計
- * - 狀態機操作 (confirm/reject/cancel/complete)
- * - 多維度查詢 (by user/sitter/pet)
  */
 @RestController
 @RequestMapping("/api/bookings")

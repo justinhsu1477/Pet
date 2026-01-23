@@ -99,7 +99,6 @@ public class BookingService {
 
     /**
      * 更新預約狀態
-     * 面試重點：樂觀鎖 + 狀態機驗證
      */
     public BookingDto updateBookingStatus(UUID bookingId, BookingStatusUpdateDto updateDto) {
         try {
