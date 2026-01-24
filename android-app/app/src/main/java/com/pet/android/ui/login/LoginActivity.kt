@@ -86,14 +86,15 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
                     startActivity(intent)
                     finish()
                 }
-                UserRole.USER -> {
+                UserRole.CUSTOMER -> {
                     // USER 角色導航到預約頁面
                     BookingHomeActivity.start(this@LoginActivity)
                     finish()
                 }
                 UserRole.SITTER -> {
                     // SITTER 角色導航到確認頁面
-                    SitterBookingsActivity.start(this@LoginActivity)
+                    val intent = Intent(this@LoginActivity, SitterBookingsActivity::class.java)
+                    startActivity(intent)
                     finish()
                 }
                 else -> {

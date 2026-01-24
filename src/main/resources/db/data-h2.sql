@@ -48,11 +48,11 @@ VALUES ('40000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000
 -- 插入 Pet (Dogs)
 -- ============================================
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, ownerName, ownerPhone, specialNeeds, isNeutered, vaccineStatus)
-VALUES ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'DOG', '阿福', 5, '黃金獵犬', 'MALE', '王小明', '0912-345-678', '需要每天散步兩次', true, '已完成年度疫苗');
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+VALUES ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'DOG', '阿福', 5, '黃金獵犬', 'MALE', '需要每天散步兩次', true, '已完成年度疫苗');
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, ownerName, ownerPhone, specialNeeds, isNeutered, vaccineStatus)
-VALUES ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'DOG', '皮皮', 2, '柴犬', 'FEMALE', '陳小美', '0945-678-901', NULL, false, '已完成基本疫苗');
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+VALUES ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'DOG', '皮皮', 2, '柴犬', 'FEMALE', NULL, false, '已完成基本疫苗');
 
 INSERT INTO Dog (id, size, isWalkRequired, walkFrequencyPerDay, trainingLevel, isFriendlyWithDogs, isFriendlyWithPeople, isFriendlyWithChildren)
 VALUES ('10000000-0000-0000-0000-000000000001', 'LARGE', true, 2, 'BASIC', true, true, true);
@@ -64,14 +64,14 @@ VALUES ('10000000-0000-0000-0000-000000000002', 'MEDIUM', true, 3, 'INTERMEDIATE
 -- 插入 Pet (Cats)
 -- ============================================
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, ownerName, ownerPhone, specialNeeds, isNeutered, vaccineStatus)
-VALUES ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'CAT', '喵喵', 3, '波斯貓', 'FEMALE', '李小華', '0923-456-789', '對海鮮過敏', true, '已完成年度疫苗');
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+VALUES ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'CAT', '喵喵', 3, '波斯貓', 'FEMALE', '對海鮮過敏', true, '已完成年度疫苗');
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, ownerName, ownerPhone, specialNeeds, isNeutered, vaccineStatus)
-VALUES ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'CAT', '咪咪', 4, '美國短毛貓', 'MALE', '林大明', '0956-789-012', '需要定期梳毛', true, '已完成基本疫苗');
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+VALUES ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'CAT', '咪咪', 4, '美國短毛貓', 'MALE', '需要定期梳毛', true, '已完成基本疫苗');
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, ownerName, ownerPhone, specialNeeds, isNeutered, vaccineStatus)
-VALUES ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'CAT', '小橘', 2, '橘貓', 'MALE', '張小英', '0967-890-123', NULL, false, NULL);
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+VALUES ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'CAT', '小橘', 2, '橘貓', 'MALE', NULL, false, NULL);
 
 INSERT INTO Cat (id, isIndoor, litterBoxType, scratchingHabit)
 VALUES ('20000000-0000-0000-0000-000000000001', true, 'COVERED', 'LOW');

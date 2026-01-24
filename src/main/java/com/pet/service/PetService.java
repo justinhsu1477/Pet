@@ -98,8 +98,6 @@ public class PetService {
                 pet.getAge(),
                 pet.getBreed(),
                 pet.getGender(),
-                pet.getOwnerName(),
-                pet.getOwnerPhone(),
                 pet.getSpecialNeeds(),
                 pet.getIsNeutered(),
                 pet.getVaccineStatus(),

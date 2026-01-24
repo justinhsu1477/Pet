@@ -6,14 +6,14 @@ package com.pet.android.data.model
 enum class UserRole(val code: String) {
     ADMIN("ADMIN"),
     SITTER("SITTER"),
-    USER("USER"),
+    CUSTOMER("CUSTOMER"),
     UNKNOWN("UNKNOWN");
 
     companion object {
         fun fromString(value: String?): UserRole = when (value?.uppercase()) {
             ADMIN.code -> ADMIN
             SITTER.code -> SITTER
-            USER.code -> USER
+            CUSTOMER.code -> CUSTOMER
             else -> UNKNOWN
         }
     }

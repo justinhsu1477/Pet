@@ -24,7 +24,7 @@ public record BookingDto(
 
         UUID userId,
 
-        String userName,
+        String username,
 
         @NotNull(message = "開始時間不能為空")
         @FutureOrPresent(message = "開始時間不能是過去時間")

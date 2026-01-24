@@ -15,8 +15,9 @@ import com.pet.android.databinding.ActivityBookingConfirmBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -94,11 +95,12 @@ class BookingConfirmActivity : BaseActivity<ActivityBookingConfirmBinding>() {
     }
 
     private fun submitBooking() {
-        val userId = runBlocking { userPreferences.userId.first() }
-        if (userId == null) {
-            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
-            return
-        }
+        lifecycleScope.launch {
+            val userId = userPreferences.userId.first()
+            if (userId == null) {
+                Toast.makeText(this@BookingConfirmActivity, "Please login first", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
 
         // Calculate start and end time
         val localDate = LocalDate.parse(date)
@@ -115,6 +117,7 @@ class BookingConfirmActivity : BaseActivity<ActivityBookingConfirmBinding>() {
         )
 
         viewModel.createBooking(userId, request)
+        }
     }
 
     private fun observeState() {

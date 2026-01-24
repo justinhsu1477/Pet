@@ -15,8 +15,9 @@ import com.pet.android.databinding.ActivityBookingHomeBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -102,12 +103,14 @@ class BookingHomeActivity : BaseActivity<ActivityBookingHomeBinding>() {
     }
 
     private fun loadUserPets() {
-        val userId = runBlocking { userPreferences.userId.first() }
-        if (userId != null) {
-            viewModel.loadUserPets(userId)
-        } else {
-            Toast.makeText(this, "請先登入", Toast.LENGTH_SHORT).show()
-            finish()
+        lifecycleScope.launch {
+            val userId = userPreferences.userId.first()
+            if (userId != null) {
+                viewModel.loadUserPets(userId)
+            } else {
+                Toast.makeText(this@BookingHomeActivity, "請先登入", Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }
     }
 

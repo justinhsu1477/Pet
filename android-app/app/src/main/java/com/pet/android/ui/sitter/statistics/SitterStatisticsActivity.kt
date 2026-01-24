@@ -3,6 +3,7 @@ package com.pet.android.ui.sitter.statistics
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -12,8 +13,9 @@ import com.pet.android.databinding.ActivitySitterStatisticsBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -63,13 +65,21 @@ class SitterStatisticsActivity : BaseActivity<ActivitySitterStatisticsBinding>()
     }
 
     private fun loadSitterId() {
-        sitterId = runBlocking { userPreferences.userId.first() }
+        lifecycleScope.launch {
+            sitterId = userPreferences.userId.first()
+            val username = userPreferences.username.first()
+            val role = userPreferences.userRole.first()
 
-        if (sitterId != null) {
-            viewModel.loadStatistics(sitterId!!)
-        } else {
-            Toast.makeText(this, "無法取得保母 ID", Toast.LENGTH_SHORT).show()
-            finish()
+            Log.d(TAG, "loadSitterId - userId: $sitterId, username: $username, role: $role")
+
+            if (sitterId != null) {
+                Log.d(TAG, "Loading statistics for sitterId: $sitterId")
+                viewModel.loadStatistics(sitterId!!)
+            } else {
+                Log.e(TAG, "userId is null! Cannot load statistics. Username: $username, Role: $role")
+                Toast.makeText(this@SitterStatisticsActivity, "無法取得保母 ID，請重新登入", Toast.LENGTH_LONG).show()
+                binding.progressBar.visibility = View.GONE
+            }
         }
     }
 
@@ -122,6 +132,8 @@ class SitterStatisticsActivity : BaseActivity<ActivitySitterStatisticsBinding>()
     }
 
     companion object {
+        private const val TAG = "SitterStatisticsActivity"
+
         fun start(context: Context) {
             context.startActivity(Intent(context, SitterStatisticsActivity::class.java))
         }

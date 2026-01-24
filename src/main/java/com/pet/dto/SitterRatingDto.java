@@ -20,7 +20,7 @@ public record SitterRatingDto(
 
         UUID userId,
 
-        String userName,
+        String username,
 
         @NotNull(message = "總體評分不能為空")
         @Min(value = 1, message = "評分最低為1")

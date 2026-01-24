@@ -6,9 +6,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.pet.android.R
@@ -20,7 +22,7 @@ import com.pet.android.ui.sitter.statistics.SitterStatisticsActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.Calendar
 import javax.inject.Inject
@@ -46,6 +48,15 @@ class SitterBookingsActivity : BaseActivity<ActivitySitterBookingsBinding>() {
         setupFilters()
         loadSitterId()
         observeBookings()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 當從詳情頁返回時，重新加載數據以反映最新狀態
+        sitterId?.let {
+            Log.d(TAG, "onResume - Reloading bookings for sitterId: $it")
+            viewModel.loadSitterBookings(it)
+        }
     }
 
     private fun setupToolbar() {
@@ -134,13 +145,29 @@ class SitterBookingsActivity : BaseActivity<ActivitySitterBookingsBinding>() {
     private fun loadSitterId() {
         // 從 UserPreferences 取得 sitterId
         // 假設登入時有存 userId，且 userId 就是 sitterId (保母登入)
-        sitterId = runBlocking { userPreferences.userId.first() }
+        lifecycleScope.launch {
+            sitterId = userPreferences.userId.first()
+            val username = userPreferences.username.first()
+            val role = userPreferences.userRole.first()
+            val roleName = userPreferences.roleName.first()
 
-        if (sitterId != null) {
-            viewModel.loadSitterBookings(sitterId!!)
-        } else {
-            Toast.makeText(this, "無法取得保母 ID", Toast.LENGTH_SHORT).show()
-            finish()
+            Log.d(TAG, "loadSitterId - userId: $sitterId, username: $username, role: $role, roleName: $roleName")
+
+            // 顯示 sitter 名字
+            val displayName = roleName ?: username ?: "保母"
+            binding.tvSitterName.text = displayName
+
+            if (sitterId != null) {
+                Log.d(TAG, "Loading sitter bookings for sitterId: $sitterId")
+                viewModel.loadSitterBookings(sitterId!!)
+            } else {
+                Log.e(TAG, "userId is null! Cannot load sitter bookings. Username: $username, Role: $role")
+                Toast.makeText(this@SitterBookingsActivity, "無法取得保母 ID，請重新登入", Toast.LENGTH_LONG).show()
+
+                binding.progressBar.visibility = View.GONE
+                binding.tvEmpty.visibility = View.VISIBLE
+                binding.tvEmpty.text = "無法取得保母資訊，請重新登入"
+            }
         }
     }
 

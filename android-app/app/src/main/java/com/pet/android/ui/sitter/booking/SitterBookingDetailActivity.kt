@@ -16,8 +16,9 @@ import com.pet.android.databinding.ActivitySitterBookingDetailBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -41,17 +42,19 @@ class SitterBookingDetailActivity : BaseActivity<ActivitySitterBookingDetailBind
         super.onCreate(savedInstanceState)
 
         bookingId = intent.getStringExtra(EXTRA_BOOKING_ID)
-        sitterId = runBlocking { userPreferences.userId.first() }
-
         setupToolbar()
         setupButtons()
         observeStates()
 
-        if (sitterId != null && bookingId != null) {
-            viewModel.loadBookingDetail(sitterId!!, bookingId!!)
-        } else {
-            Toast.makeText(this, "預約資訊錯誤", Toast.LENGTH_SHORT).show()
-            finish()
+        lifecycleScope.launch {
+            sitterId = userPreferences.userId.first()
+
+            if (sitterId != null && bookingId != null) {
+                viewModel.loadBookingDetail(sitterId!!, bookingId!!)
+            } else {
+                Toast.makeText(this@SitterBookingDetailActivity, "預約資訊錯誤", Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }
     }
 

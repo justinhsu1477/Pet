@@ -8,10 +8,6 @@ data class CatRequest(
     val age: Int?,
     val breed: String?,
     val gender: Gender?,
-    @SerializedName("ownerName")
-    val ownerName: String,
-    @SerializedName("ownerPhone")
-    val ownerPhone: String,
     @SerializedName("specialNeeds")
     val specialNeeds: String?,
     @SerializedName("isNeutered")

@@ -39,8 +39,6 @@ class ActivityQuickDialog : DialogFragment() {
                 type = it.getString(ARG_PET_TYPE) ?: "",
                 age = it.getInt(ARG_PET_AGE),
                 breed = it.getString(ARG_PET_BREED),
-                ownerName = it.getString(ARG_OWNER_NAME) ?: "",
-                ownerPhone = it.getString(ARG_OWNER_PHONE) ?: "",
                 specialNeeds = it.getString(ARG_SPECIAL_NEEDS)
             )
         }
@@ -179,8 +177,6 @@ class ActivityQuickDialog : DialogFragment() {
         private const val ARG_PET_TYPE = "pet_type"
         private const val ARG_PET_AGE = "pet_age"
         private const val ARG_PET_BREED = "pet_breed"
-        private const val ARG_OWNER_NAME = "owner_name"
-        private const val ARG_OWNER_PHONE = "owner_phone"
         private const val ARG_SPECIAL_NEEDS = "special_needs"
 
         fun newInstance(pet: Pet): ActivityQuickDialog {
@@ -191,8 +187,6 @@ class ActivityQuickDialog : DialogFragment() {
                     putString(ARG_PET_TYPE, pet.type)
                     putInt(ARG_PET_AGE, pet.age)
                     putString(ARG_PET_BREED, pet.breed)
-                    putString(ARG_OWNER_NAME, pet.ownerName)
-                    putString(ARG_OWNER_PHONE, pet.ownerPhone)
                     putString(ARG_SPECIAL_NEEDS, pet.specialNeeds)
                 }
             }

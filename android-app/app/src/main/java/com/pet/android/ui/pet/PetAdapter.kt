@@ -56,8 +56,8 @@ class PetAdapter(
                 val breedText = pet.breed ?: if (isDog) "狗狗" else "貓咪"
                 tvPetType.text = "$breedText · ${pet.age}歲"
 
-                // Set owner info
-                tvOwnerInfo.text = pet.ownerName
+                // Set special needs info (if any)
+                tvOwnerInfo.text = pet.specialNeeds ?: "無特殊需求"
 
                 root.setOnClickListener {
                     onItemClick(pet)

@@ -48,8 +48,6 @@ class DogServiceTest {
         testDog.setAge(5);
         testDog.setBreed("柴犬");
         testDog.setGender(Pet.Gender.MALE);
-        testDog.setOwnerName("李大華");
-        testDog.setOwnerPhone("0987654321");
         testDog.setSize(Dog.Size.MEDIUM);
         testDog.setIsWalkRequired(true);
         testDog.setWalkFrequencyPerDay(2);
@@ -58,8 +56,8 @@ class DogServiceTest {
         testDog.setIsFriendlyWithChildren(true);
 
         testDogDto = new DogDto(
-                testId, "旺財", 5, "柴犬", Pet.Gender.MALE,
-                "李大華", "0987654321", null, null, null,
+                testId, "旺財", 5, "柴犬", Pet.Gender.MALE
+                , null, null, null,
                 Dog.Size.MEDIUM, true, 2, Dog.TrainingLevel.BASIC,
                 true, null, true
         );

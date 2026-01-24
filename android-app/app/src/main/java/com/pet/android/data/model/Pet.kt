@@ -14,10 +14,6 @@ data class Pet(
     val age: Int,
     @SerializedName("breed")
     val breed: String?,
-    @SerializedName("ownerName")
-    val ownerName: String,
-    @SerializedName("ownerPhone")
-    val ownerPhone: String,
     @SerializedName("specialNeeds")
     val specialNeeds: String?
 ) : Serializable

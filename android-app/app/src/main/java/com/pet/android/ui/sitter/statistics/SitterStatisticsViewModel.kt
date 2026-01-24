@@ -24,7 +24,7 @@ class SitterStatisticsViewModel @Inject constructor(
      */
     fun loadStatistics(sitterId: String) {
         viewModelScope.launch {
-            _statisticsState.value = Resource.Loading()
+            _statisticsState.value = Resource.Loading
 
             try {
                 val response = sitterBookingApi.getStatistics(sitterId)

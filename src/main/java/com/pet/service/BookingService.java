@@ -266,14 +266,18 @@ public class BookingService {
     }
 
     private BookingDto convertToDto(Booking booking) {
+        // 取得 user 資訊（使用 null 安全處理）
+        UUID userId = booking.getUser() != null ? booking.getUser().getId() : null;
+        String username = booking.getUser() != null ? booking.getUser().getUsername() : "未知用戶";
+
         return new BookingDto(
                 booking.getId(),
                 booking.getPet().getId(),
                 booking.getPet().getName(),
                 booking.getSitter().getId(),
                 booking.getSitter().getName(),
-                booking.getUser().getId(),
-                booking.getUser().getUsername(),
+                userId,
+                username,
                 booking.getStartTime(),
                 booking.getEndTime(),
                 booking.getStatus(),

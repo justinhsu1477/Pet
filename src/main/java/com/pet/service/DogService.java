@@ -117,8 +117,6 @@ public class DogService implements PetServiceInterface<DogDto> {
                 dog.getAge(),
                 dog.getBreed(),
                 dog.getGender(),
-                dog.getOwnerName(),
-                dog.getOwnerPhone(),
                 dog.getSpecialNeeds(),
                 dog.getIsNeutered(),
                 dog.getVaccineStatus(),
@@ -138,8 +136,6 @@ public class DogService implements PetServiceInterface<DogDto> {
         dog.setAge(dto.age());
         dog.setBreed(dto.breed());
         dog.setGender(dto.gender());
-        dog.setOwnerName(dto.ownerName());
-        dog.setOwnerPhone(dto.ownerPhone());
         dog.setSpecialNeeds(dto.specialNeeds());
         dog.setIsNeutered(dto.isNeutered());
         dog.setVaccineStatus(dto.vaccineStatus());

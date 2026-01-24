@@ -111,8 +111,6 @@ class PetViewModel @Inject constructor(
             type = "DOG",
             age = this.age ?: 0,
             breed = this.breed,
-            ownerName = this.ownerName,
-            ownerPhone = this.ownerPhone,
             specialNeeds = this.specialNeeds
         )
     }
@@ -125,8 +123,6 @@ class PetViewModel @Inject constructor(
             type = "CAT",
             age = this.age ?: 0,
             breed = this.breed,
-            ownerName = this.ownerName,
-            ownerPhone = this.ownerPhone,
             specialNeeds = this.specialNeeds
         )
     }

@@ -48,15 +48,13 @@ class CatServiceTest {
         testCat.setAge(3);
         testCat.setBreed("米克斯");
         testCat.setGender(Pet.Gender.FEMALE);
-        testCat.setOwnerName("王小明");
-        testCat.setOwnerPhone("0912345678");
         testCat.setIsIndoor(true);
         testCat.setLitterBoxType(Cat.LitterBoxType.COVERED);
         testCat.setScratchingHabit(Cat.ScratchingHabit.MODERATE);
 
         testCatDto = new CatDto(
                 testId, "小花", 3, "米克斯", Pet.Gender.FEMALE,
-                "王小明", "0912345678", null, null, null,
+                null, null, null,
                 true, Cat.LitterBoxType.COVERED, Cat.ScratchingHabit.MODERATE
         );
     }

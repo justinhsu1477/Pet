@@ -108,8 +108,6 @@ public class CatService implements PetServiceInterface<CatDto> {
                 cat.getAge(),
                 cat.getBreed(),
                 cat.getGender(),
-                cat.getOwnerName(),
-                cat.getOwnerPhone(),
                 cat.getSpecialNeeds(),
                 cat.getIsNeutered(),
                 cat.getVaccineStatus(),
@@ -125,8 +123,6 @@ public class CatService implements PetServiceInterface<CatDto> {
         cat.setAge(dto.age());
         cat.setBreed(dto.breed());
         cat.setGender(dto.gender());
-        cat.setOwnerName(dto.ownerName());
-        cat.setOwnerPhone(dto.ownerPhone());
         cat.setSpecialNeeds(dto.specialNeeds());
         cat.setIsNeutered(dto.isNeutered());
         cat.setVaccineStatus(dto.vaccineStatus());

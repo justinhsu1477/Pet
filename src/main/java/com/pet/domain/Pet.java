@@ -8,7 +8,8 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "pet_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class Pet {
@@ -26,9 +27,6 @@ public abstract class Pet {
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
-
-    private String ownerName;
-    private String ownerPhone;
 
     @Column(length = 500)
     private String specialNeeds;

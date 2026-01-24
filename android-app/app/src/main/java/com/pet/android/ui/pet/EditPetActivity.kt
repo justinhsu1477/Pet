@@ -127,8 +127,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
             etName.setText(dog.name)
             etAge.setText(dog.age?.toString() ?: "")
             etBreed.setText(dog.breed ?: "")
-            etOwnerName.setText(dog.ownerName)
-            etOwnerPhone.setText(dog.ownerPhone)
             etVaccineStatus.setText(dog.vaccineStatus ?: "")
             etSpecialNeeds.setText(dog.specialNeeds ?: "")
             switchNeutered.isChecked = dog.isNeutered == true
@@ -168,8 +166,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
             etName.setText(cat.name)
             etAge.setText(cat.age?.toString() ?: "")
             etBreed.setText(cat.breed ?: "")
-            etOwnerName.setText(cat.ownerName)
-            etOwnerPhone.setText(cat.ownerPhone)
             etVaccineStatus.setText(cat.vaccineStatus ?: "")
             etSpecialNeeds.setText(cat.specialNeeds ?: "")
             switchNeutered.isChecked = cat.isNeutered == true
@@ -223,22 +219,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
             binding.tilName.error = null
         }
 
-        val ownerName = binding.etOwnerName.text.toString().trim()
-        if (ownerName.isEmpty()) {
-            binding.tilOwnerName.error = getString(R.string.error_owner_name_required)
-            isValid = false
-        } else {
-            binding.tilOwnerName.error = null
-        }
-
-        val ownerPhone = binding.etOwnerPhone.text.toString().trim()
-        if (ownerPhone.isEmpty()) {
-            binding.tilOwnerPhone.error = getString(R.string.error_owner_phone_required)
-            isValid = false
-        } else {
-            binding.tilOwnerPhone.error = null
-        }
-
         return isValid
     }
 
@@ -246,8 +226,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
         val name = binding.etName.text.toString().trim()
         val age = binding.etAge.text.toString().toIntOrNull()
         val breed = binding.etBreed.text.toString().trim().takeIf { it.isNotEmpty() }
-        val ownerName = binding.etOwnerName.text.toString().trim()
-        val ownerPhone = binding.etOwnerPhone.text.toString().trim()
         val vaccineStatus = binding.etVaccineStatus.text.toString().trim().takeIf { it.isNotEmpty() }
         val specialNeeds = binding.etSpecialNeeds.text.toString().trim().takeIf { it.isNotEmpty() }
         val isNeutered = binding.switchNeutered.isChecked
@@ -259,9 +237,9 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
         }
 
         if (petType.equals("DOG", ignoreCase = true)) {
-            submitDog(name, age, breed, gender, ownerName, ownerPhone, specialNeeds, isNeutered, vaccineStatus)
+            submitDog(name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
         } else {
-            submitCat(name, age, breed, gender, ownerName, ownerPhone, specialNeeds, isNeutered, vaccineStatus)
+            submitCat(name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
         }
     }
 
@@ -270,8 +248,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
         age: Int?,
         breed: String?,
         gender: Gender?,
-        ownerName: String,
-        ownerPhone: String,
         specialNeeds: String?,
         isNeutered: Boolean?,
         vaccineStatus: String?
@@ -304,8 +280,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
             age = age,
             breed = breed,
             gender = gender,
-            ownerName = ownerName,
-            ownerPhone = ownerPhone,
             specialNeeds = specialNeeds,
             isNeutered = isNeutered,
             vaccineStatus = vaccineStatus,
@@ -324,8 +298,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
         age: Int?,
         breed: String?,
         gender: Gender?,
-        ownerName: String,
-        ownerPhone: String,
         specialNeeds: String?,
         isNeutered: Boolean?,
         vaccineStatus: String?
@@ -353,8 +325,6 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
             age = age,
             breed = breed,
             gender = gender,
-            ownerName = ownerName,
-            ownerPhone = ownerPhone,
             specialNeeds = specialNeeds,
             isNeutered = isNeutered,
             vaccineStatus = vaccineStatus,

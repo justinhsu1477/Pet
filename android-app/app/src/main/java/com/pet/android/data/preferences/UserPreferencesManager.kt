@@ -25,6 +25,7 @@ class UserPreferencesManager @Inject constructor(
         private val LOGIN_DATE_KEY = longPreferencesKey("login_date")
         private val USER_ROLE_KEY = stringPreferencesKey("user_role")
         private val USER_ID_KEY = stringPreferencesKey("user_id")
+        private val ROLE_NAME_KEY = stringPreferencesKey("role_name")
     }
 
     val username: Flow<String?> = context.userDataStore.data
@@ -38,6 +39,9 @@ class UserPreferencesManager @Inject constructor(
 
     val userId: Flow<String?> = context.userDataStore.data
         .map { preferences -> preferences[USER_ID_KEY] }
+
+    val roleName: Flow<String?> = context.userDataStore.data
+        .map { preferences -> preferences[ROLE_NAME_KEY] }
 
     // Convenience: access role as enum while keeping stored string compatibility
     val userRoleEnum: Flow<UserRole> = userRole.map { value ->
@@ -67,9 +71,27 @@ class UserPreferencesManager @Inject constructor(
         }
     }
 
+    // Overload: save with userId and roleName
+    suspend fun saveLoginData(username: String, role: String, userId: String, roleName: String?) {
+        context.userDataStore.edit { preferences ->
+            preferences[USERNAME_KEY] = username
+            preferences[LOGIN_DATE_KEY] = System.currentTimeMillis()
+            preferences[USER_ROLE_KEY] = role
+            preferences[USER_ID_KEY] = userId
+            if (roleName != null) {
+                preferences[ROLE_NAME_KEY] = roleName
+            }
+        }
+    }
+
     // Overload: save with enum role and userId
     suspend fun saveLoginData(username: String, role: UserRole, userId: String) {
         saveLoginData(username, role.code, userId)
+    }
+
+    // Overload: save with enum role, userId and roleName
+    suspend fun saveLoginData(username: String, role: UserRole, userId: String, roleName: String?) {
+        saveLoginData(username, role.code, userId, roleName)
     }
 
     suspend fun clearLoginData() {
@@ -78,6 +100,7 @@ class UserPreferencesManager @Inject constructor(
             preferences.remove(LOGIN_DATE_KEY)
             preferences.remove(USER_ROLE_KEY)
             preferences.remove(USER_ID_KEY)
+            preferences.remove(ROLE_NAME_KEY)
         }
     }
 }

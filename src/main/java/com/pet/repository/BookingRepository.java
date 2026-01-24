@@ -30,14 +30,26 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     List<Booking> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     /**
-     * 查詢保母的所有預約
+     * 查詢保母的所有預約（使用 JOIN FETCH 預加載關聯實體）
      */
-    List<Booking> findBySitterIdOrderByStartTimeDesc(UUID sitterId);
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
+           "WHERE b.sitter.id = :sitterId " +
+           "ORDER BY b.startTime DESC")
+    List<Booking> findBySitterIdOrderByStartTimeDesc(@Param("sitterId") UUID sitterId);
 
     /**
-     * 查詢保母待處理的預約
+     * 查詢保母待處理的預約（使用 JOIN FETCH 預加載關聯實體）
      */
-    List<Booking> findBySitterIdAndStatus(UUID sitterId, BookingStatus status);
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
+           "WHERE b.sitter.id = :sitterId " +
+           "AND b.status = :status")
+    List<Booking> findBySitterIdAndStatus(@Param("sitterId") UUID sitterId, @Param("status") BookingStatus status);
 
     /**
      * 查詢寵物的預約歷史
