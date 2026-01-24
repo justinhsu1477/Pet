@@ -85,4 +85,12 @@ public class Users {
         this.role = role;
     }
 
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public Sitter getSitter() {
+        return sitter;
+    }
+
 }

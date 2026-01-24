@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Care Admin - 管理後台</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">🐾</div>
+                <span class="sidebar-logo-text">Pet Care</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="nav-item-icon">📊</span>
+                    <span>總覽</span>
+                </a>
+                <a href="#" class="nav-item" data-page="users">
+                    <span class="nav-item-icon">👤</span>
+                    <span>一般使用者</span>
+                </a>
+                <a href="#" class="nav-item" data-page="sitters">
+                    <span class="nav-item-icon">🧑‍⚕️</span>
+                    <span>保母管理</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="nav-item" id="userInfo">
+                    <div class="avatar avatar-sm" id="userAvatar">A</div>
+                    <span id="userName">Admin</span>
+                </div>
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <span class="nav-item-icon">🚪</span>
+                    <span>登出</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">總覽</h1>
+                    <p class="page-subtitle">Pet Care 管理系統概況</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👤</div>
+                        <div class="stat-info">
+                            <h3>一般使用者</h3>
+                            <div class="stat-value" id="stat-users">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🧑‍⚕️</div>
+                        <div class="stat-info">
+                            <h3>保母數量</h3>
+                            <div class="stat-value" id="stat-sitters">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🐕</div>
+                        <div class="stat-info">
+                            <h3>寵物總數</h3>
+                            <div class="stat-value" id="stat-pets">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">最新保母列表</h3>
+                    </div>
+                    <div class="table-container" style="box-shadow: none;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>保母</th>
+                                    <th>專長</th>
+                                    <th>評分</th>
+                                    <th>狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-sitters-table">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">載入中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Page -->
+            <div id="page-users" class="page" style="display: none;">
+                <div class="page-header flex justify-between items-center">
+                    <div>
+                        <h1 class="page-title">一般使用者</h1>
+                        <p class="page-subtitle">管理系統中的使用者帳號</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-container" style="box-shadow: none;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>使用者</th>
+                                    <th>Email</th>
+                                    <th>電話</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">載入中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- User Detail Modal -->
+                <div id="user-detail-modal" class="modal" style="display: none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title" id="user-detail-name">使用者資訊</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <div id="user-detail-content">
+                            <p class="text-muted">載入中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sitters Page -->
+            <div id="page-sitters" class="page" style="display: none;">
+                <div class="page-header flex justify-between items-center">
+                    <div>
+                        <h1 class="page-title">保母管理</h1>
+                        <p class="page-subtitle">管理系統中的保母帳號</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-container" style="box-shadow: none;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>保母</th>
+                                    <th>專長</th>
+                                    <th>評分</th>
+                                    <th>完成訂單</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sitters-table">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">載入中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sitter Detail Modal -->
+                <div id="sitter-detail-modal" class="modal" style="display: none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width: 800px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title" id="sitter-detail-name">保母資訊</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <div id="sitter-detail-content">
+                            <p class="text-muted">載入中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
