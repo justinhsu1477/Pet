@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sitterBookingsFragment"
+        android:icon="@drawable/ic_bookings"
+        android:title="預約管理" />
+
+    <item
+        android:id="@+id/sitterRatingFragment"
+        android:icon="@drawable/ic_ratings"
+        android:title="評價" />
+
+    <item
+        android:id="@+id/sitterStatisticsFragment"
+        android:icon="@drawable/ic_statistics"
+        android:title="統計" />
+
+    <item
+        android:id="@+id/sitterProfileFragment"
+        android:icon="@drawable/ic_profile"
+        android:title="個人檔案" />
+</menu>

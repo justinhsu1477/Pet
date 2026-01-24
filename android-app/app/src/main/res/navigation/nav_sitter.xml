@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_sitter"
+    app:startDestination="@id/sitterBookingsFragment">
+
+    <fragment
+        android:id="@+id/sitterBookingsFragment"
+        android:name="com.pet.android.ui.sitter.booking.SitterBookingsFragment"
+        android:label="預約管理"
+        tools:layout="@layout/fragment_sitter_bookings" />
+
+    <fragment
+        android:id="@+id/sitterRatingFragment"
+        android:name="com.pet.android.ui.sitter.rating.SitterRatingFragment"
+        android:label="評價"
+        tools:layout="@layout/fragment_sitter_rating" />
+
+    <fragment
+        android:id="@+id/sitterStatisticsFragment"
+        android:name="com.pet.android.ui.sitter.statistics.SitterStatisticsFragment"
+        android:label="統計"
+        tools:layout="@layout/fragment_sitter_statistics" />
+
+    <fragment
+        android:id="@+id/sitterProfileFragment"
+        android:name="com.pet.android.ui.sitter.profile.SitterProfileFragment"
+        android:label="個人檔案"
+        tools:layout="@layout/fragment_sitter_profile" />
+
+</navigation>

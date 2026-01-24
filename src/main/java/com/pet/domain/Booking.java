@@ -46,7 +46,6 @@ public class Booking {
 
     /**
      * 樂觀鎖版本號
-     * 面試重點：避免併發更新時的資料不一致
      */
     @Version
     private Long version;

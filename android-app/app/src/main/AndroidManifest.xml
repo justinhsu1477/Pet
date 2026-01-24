@@ -66,6 +66,12 @@
             android:name=".ui.booking.BookingConfirmActivity"
             android:screenOrientation="portrait" />
 
+        <!-- Sitter 主容器頁面 (使用 Bottom Navigation) -->
+        <activity
+            android:name=".ui.sitter.SitterMainActivity"
+            android:screenOrientation="portrait" />
+
+        <!-- 保留原有的 Activity 作為備用 -->
         <activity
             android:name=".ui.sitter.booking.SitterBookingsActivity"
             android:screenOrientation="portrait" />

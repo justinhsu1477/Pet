@@ -12,7 +12,7 @@ import com.pet.android.ui.base.BaseActivity
 import com.pet.android.ui.booking.BookingHomeActivity
 import com.pet.android.ui.pet.PetListActivity
 import com.pet.android.ui.setting.SettingActivity
-import com.pet.android.ui.sitter.booking.SitterBookingsActivity
+import com.pet.android.ui.sitter.SitterMainActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -92,9 +92,8 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
                     finish()
                 }
                 UserRole.SITTER -> {
-                    // SITTER 角色導航到確認頁面
-                    val intent = Intent(this@LoginActivity, SitterBookingsActivity::class.java)
-                    startActivity(intent)
+                    // SITTER 角色導航到主頁面 (包含預約管理、評價、統計三個功能)
+                    SitterMainActivity.start(this@LoginActivity)
                     finish()
                 }
                 else -> {

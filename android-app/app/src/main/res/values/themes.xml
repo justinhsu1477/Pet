@@ -84,4 +84,10 @@
         <item name="rippleColor">@color/pet_orange</item>
         <item name="android:textColor">@color/pet_gray_dark</item>
     </style>
+
+    <!-- Circle Image Style for Profile Photo -->
+    <style name="CircleImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>
