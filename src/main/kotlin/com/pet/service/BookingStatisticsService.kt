@@ -58,10 +58,10 @@ class BookingStatisticsService(
 
         val monthlyStats = MonthlyBookingStats(
             total = bookings.size.toLong(),
-            pending = bookings.count { it.status == Booking.BookingStatus.PENDING }.toLong(),
-            completed = bookings.count { it.status == Booking.BookingStatus.COMPLETED }.toLong(),
+            pending = bookings.count { it.getStatus() == Booking.BookingStatus.PENDING }.toLong(),
+            completed = bookings.count { it.getStatus() == Booking.BookingStatus.COMPLETED }.toLong(),
             rejectedOrCancelled = bookings.count {
-                it.status == Booking.BookingStatus.REJECTED || it.status == Booking.BookingStatus.CANCELLED
+                it.getStatus() == Booking.BookingStatus.REJECTED || it.getStatus() == Booking.BookingStatus.CANCELLED
             }.toLong()
         )
 
@@ -95,16 +95,16 @@ class BookingStatisticsService(
 
         // 2. 一次性查詢這 7 天內所有的已完成預約，避免 N+1
         val recentBookings = bookingRepository.findBySitterIdAndCreatedAtBetween(sitterId, startDate, endDate)
-            .filter { it.status == Booking.BookingStatus.COMPLETED }
+            .filter { it.getStatus() == Booking.BookingStatus.COMPLETED }
 
         // 3. 按日期分組統計
-        val bookingsByDate = recentBookings.groupBy { it.createdAt.toLocalDate() }
+        val bookingsByDate = recentBookings.groupBy { it.getCreatedAt().toLocalDate() }
 
         val dailyTrend = recentDates.map { date ->
             val dayBookings = bookingsByDate[date] ?: emptyList()
             DailyRevenue(
                 date = date,
-                revenue = dayBookings.sumOf { it.totalPrice ?: 0.0 },
+                revenue = dayBookings.sumOf { it.getTotalPrice() ?: 0.0 },
                 bookingCount = dayBookings.size.toLong()
             )
         }
@@ -149,12 +149,12 @@ class BookingStatisticsService(
         val latestRatingsRaw = sitterRatingRepository.findBySitterIdOrderByCreatedAtDesc(sitterId)
         val latestRatings = latestRatingsRaw.take(limit).map { rating ->
             SimpleRatingDto(
-                id = rating.id,
-                overallRating = rating.overallRating,
-                comment = rating.comment,
-                createdAt = rating.createdAt,
-                userName = if (rating.isAnonymous) null else rating.user?.username,
-                isAnonymous = rating.isAnonymous
+                id = rating.getId(),
+                overallRating = rating.getOverallRating(),
+                comment = rating.getComment(),
+                createdAt = rating.getCreatedAt(),
+                userName = if (rating.getIsAnonymous()) null else rating.getUser()?.getUsername(),
+                isAnonymous = rating.getIsAnonymous()
             )
         }
 

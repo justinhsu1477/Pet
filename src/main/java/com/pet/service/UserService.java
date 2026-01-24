@@ -50,7 +50,7 @@ public class UserService {
         existingUsers.setUsername(userDto.username());
         existingUsers.setEmail(userDto.email());
         existingUsers.setPhone(userDto.phone());
-        existingUsers.setRole(userDto.role());
+        existingUsers.setRole(com.pet.domain.UserRole.valueOf(userDto.role()));
 
         Users updatedUsers = userRepository.save(existingUsers);
         return convertToDto(updatedUsers);
@@ -69,7 +69,7 @@ public class UserService {
                 users.getUsername(),
                 users.getEmail(),
                 users.getPhone(),
-                users.getRole()
+                users.getRole() != null ? users.getRole().name() : null
         );
     }
 
@@ -78,7 +78,9 @@ public class UserService {
         users.setUsername(dto.username());
         users.setEmail(dto.email());
         users.setPhone(dto.phone());
-        users.setRole(dto.role());
+        if (dto.role() != null) {
+            users.setRole(com.pet.domain.UserRole.valueOf(dto.role()));
+        }
         return users;
     }
 }

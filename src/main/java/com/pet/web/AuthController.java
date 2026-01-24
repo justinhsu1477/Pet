@@ -1,6 +1,7 @@
 package com.pet.web;
 
 import com.pet.domain.Users;
+import java.util.UUID;
 import com.pet.dto.LoginRequestDto;
 import com.pet.dto.LoginResponseDto;
 import com.pet.dto.response.ApiResponse;

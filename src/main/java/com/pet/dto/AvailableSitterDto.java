@@ -8,8 +8,6 @@ import java.util.UUID;
 public record AvailableSitterDto(
         UUID id,
         String name,
-        String phone,
-        String email,
         String experience,
         Double averageRating,
         Integer ratingCount,

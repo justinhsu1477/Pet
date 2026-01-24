@@ -95,8 +95,6 @@ public class SitterService {
         return new AvailableSitterDto(
                 sitter.getId(),
                 sitter.getName(),
-                sitter.getPhone(),
-                sitter.getEmail(),
                 sitter.getExperience(),
                 sitter.getAverageRating(),
                 sitter.getRatingCount(),
@@ -108,16 +106,12 @@ public class SitterService {
         return new SitterDto(
                 sitter.getId(),
                 sitter.getName(),
-                sitter.getPhone(),
-                sitter.getEmail(),
                 sitter.getExperience());
     }
 
     private Sitter convertToEntity(SitterDto dto) {
         Sitter sitter = new Sitter();
         sitter.setName(dto.name());
-        sitter.setPhone(dto.phone());
-        sitter.setEmail(dto.email());
         sitter.setExperience(dto.experience());
         return sitter;
     }

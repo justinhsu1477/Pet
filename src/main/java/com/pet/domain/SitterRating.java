@@ -101,6 +101,30 @@ public class SitterRating {
         updatedAt = LocalDateTime.now();
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public Integer getOverallRating() {
+        return overallRating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public Boolean getIsAnonymous() {
+        return isAnonymous;
+    }
+
+    public Users getUser() {
+        return user;
+    }
+
     /**
      * 計算加權平均分數
      * 權重：總體 40%, 專業 25%, 溝通 20%, 準時 15%

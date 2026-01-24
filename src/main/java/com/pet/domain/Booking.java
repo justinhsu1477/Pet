@@ -86,6 +86,29 @@ public class Booking {
     }
 
     /**
+     * 手動添加 Getter 以解決 Kotlin 訪問 Lombok 私有欄位的問題
+     */
+    public BookingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BookingStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public Double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    /**
      * 預約狀態枚舉
      * 狀態流轉：
      * PENDING → CONFIRMED (Sitter 接受)
