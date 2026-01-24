@@ -3,24 +3,27 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication
-    const user = sessionStorage.getItem(CONFIG.STORAGE_KEYS.USER);
-    if (!user) {
+    // 檢查 JWT 認證
+    if (!Auth.isAuthenticated()) {
         window.location.href = 'index.html';
         return;
     }
 
-    const userData = JSON.parse(user);
-    if (userData.role !== 'ADMIN') {
+    // 檢查是否為管理員
+    if (!Auth.isAdmin()) {
+        alert('權限不足,需要管理員權限');
+        Auth.clearAuth();
         window.location.href = 'index.html';
         return;
     }
 
-    // Set user info in sidebar
+    const userData = Auth.getUser();
+
+    // 設置用戶資訊在側邊欄
     document.getElementById('userName').textContent = userData.roleName || userData.username;
     document.getElementById('userAvatar').textContent = (userData.roleName || userData.username).charAt(0).toUpperCase();
 
-    // Initialize app
+    // 初始化應用
     App.init();
 });
 
@@ -76,10 +79,20 @@ const App = {
 
     // ===== Logout =====
     setupLogout() {
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
             e.preventDefault();
-            sessionStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
-            window.location.href = 'index.html';
+
+            if (confirm('確定要登出嗎?')) {
+                try {
+                    await Auth.logout();
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    // 即使登出 API 失敗,也清除本地資料並跳轉
+                    Auth.clearAuth();
+                    window.location.href = 'index.html';
+                }
+            }
         });
     },
 

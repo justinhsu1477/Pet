@@ -53,10 +53,6 @@ class SitterBookingController(
     /**
      * 保母確認預約
      * POST /api/sitter/{sitterId}/bookings/{bookingId}/confirm
-     *
-     * 面試亮點：
-     * - Kotlin 的 ?.let 處理 nullable 類型
-     * - 更清晰的業務語意（從保母視角）
      */
     @PostMapping("/{sitterId}/bookings/{bookingId}/confirm")
     fun confirmBooking(
@@ -134,8 +130,6 @@ class SitterBookingController(
     /**
      * 保母取消預約
      * POST /api/sitter/{sitterId}/bookings/{bookingId}/cancel
-     *
-     * 面試亮點：預設參數值
      */
     @PostMapping("/{sitterId}/bookings/{bookingId}/cancel")
     fun cancelBooking(

@@ -2,6 +2,7 @@ package com.pet.android.ui.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -30,8 +31,31 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 檢查是否從登出跳轉而來
+        if (intent.getBooleanExtra("SHOW_LOGOUT_MESSAGE", false)) {
+            Toast.makeText(this, "您已登出，請重新登入", Toast.LENGTH_SHORT).show()
+        }
+
+        // 檢查是否已有有效的 Token，自動登入
+        checkAutoLogin()
+
         setupViews()
         observeLoginState()
+    }
+
+    /**
+     * 檢查自動登入
+     * 如果有有效的 Token，直接跳轉到主頁
+     */
+    private fun checkAutoLogin() {
+        if (viewModel.isLoggedIn()) {
+            Log.d(TAG, "Valid token found, auto-login")
+            Toast.makeText(this, "自動登入中...", Toast.LENGTH_SHORT).show()
+            navigateToHome()
+        } else {
+            Log.d(TAG, "No valid token, showing login screen")
+        }
     }
 
     private fun setupViews() {
@@ -47,7 +71,8 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
         binding.btnLogin.setOnClickListener {
             val username = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
-            viewModel.login(username, password)
+            // 使用 JWT 登入
+            viewModel.jwtLogin(username, password)
         }
         binding.ivLogo.setOnClickListener {
             val intent = Intent(this, SettingActivity::class.java)
@@ -56,6 +81,28 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
     }
 
     private fun observeLoginState() {
+        // 觀察 JWT 登入狀態
+        viewModel.jwtLoginState.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                    binding.loadingOverlay.visibility = View.VISIBLE
+                    binding.btnLogin.isEnabled = false
+                }
+                is Resource.Success -> {
+                    binding.loadingOverlay.visibility = View.GONE
+                    binding.btnLogin.isEnabled = true
+                    Toast.makeText(this, "登入成功", Toast.LENGTH_SHORT).show()
+                    navigateToHome()
+                }
+                is Resource.Error -> {
+                    binding.loadingOverlay.visibility = View.GONE
+                    binding.btnLogin.isEnabled = true
+                    Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        // 保留舊版登入狀態觀察（向後兼容）
         viewModel.loginState.observe(this) { resource ->
             when (resource) {
                 is Resource.Loading -> {
@@ -66,7 +113,7 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
                     binding.loadingOverlay.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
                     Toast.makeText(this, "登入成功", Toast.LENGTH_SHORT).show()
-                    navigateToPetList()
+                    navigateToHome()
                 }
                 is Resource.Error -> {
                     binding.loadingOverlay.visibility = View.GONE
@@ -77,7 +124,7 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
         }
     }
 
-    private fun navigateToPetList() {
+    private fun navigateToHome() {
         lifecycleScope.launch {
             val role = viewModel.getUserRoleEnum()
             when (role) {

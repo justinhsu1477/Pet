@@ -6,3 +6,14 @@ spring:
   jpa:
     defer-datasource-initialization: true
     show-sql: true
+
+# JWT Configuration
+jwt:
+  # 密鑰 (生產環境請使用環境變數或加密配置)
+  secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production-environment-please-use-strong-secret-key-for-security}
+  # Access Token 有效期 (毫秒) - 默認 15 分鐘
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}
+  # Refresh Token 有效期 (毫秒) - 默認 7 天
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+  # Token 發行者
+  issuer: ${JWT_ISSUER:pet-care-system}

@@ -58,7 +58,6 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     /**
      * 檢查時段是否有衝突（防止雙重預約）
-     * 面試重點：時間區間重疊檢查邏輯
      */
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
            "WHERE b.sitter.id = :sitterId " +

@@ -2,8 +2,11 @@ package com.pet.android.data.repository
 
 import android.util.Log
 import com.pet.android.data.api.AuthApi
+import com.pet.android.data.model.JwtAuthenticationResponse
 import com.pet.android.data.model.LoginRequest
 import com.pet.android.data.model.LoginResponse
+import com.pet.android.data.model.RefreshTokenRequest
+import com.pet.android.data.preferences.TokenManager
 import com.pet.android.data.preferences.UserPreferencesManager
 import com.pet.android.util.Resource
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepository @Inject constructor(
     private val authApi: AuthApi,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val tokenManager: TokenManager
 ) {
     companion object {
         private const val TAG = "AuthRepository"
@@ -73,5 +77,148 @@ class AuthRepository @Inject constructor(
                 Resource.Error(e.message ?: "網路錯誤")
             }
         }
+    }
+
+    /**
+     * JWT 登入
+     * 使用 JWT 認證機制進行登入，獲取 Access Token 和 Refresh Token
+     */
+    suspend fun jwtLogin(username: String, password: String): Resource<JwtAuthenticationResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "Attempting JWT login for username: $username")
+
+                // Check if account has changed and clear data if necessary
+                val savedUsername = userPreferencesManager.username.first()
+                if (savedUsername != null && savedUsername != username) {
+                    Log.d(TAG, "Account changed from $savedUsername to $username, clearing old data")
+                    userPreferencesManager.clearLoginData()
+                    tokenManager.clearTokens()
+                }
+
+                val response = authApi.jwtLogin(
+                    deviceType = "APP",
+                    request = LoginRequest(username, password)
+                )
+
+                Log.d(TAG, "JWT login API response - success: ${response.success}, message: ${response.message}")
+
+                if (response.success && response.data != null) {
+                    val jwtData = response.data
+
+                    // 保存 Tokens
+                    tokenManager.saveTokens(jwtData.accessToken, jwtData.refreshToken)
+                    Log.d(TAG, "JWT tokens saved successfully")
+
+                    // 如果有用戶信息，也保存到 UserPreferences
+                    jwtData.userInfo?.let { userInfo ->
+                        val effectiveId = userInfo.id ?: userInfo.username
+                        Log.d(TAG, "Saving user info - userId: ${userInfo.userId}, roleId: ${userInfo.roleId}, username: ${userInfo.username}, role: ${userInfo.role}")
+
+                        userPreferencesManager.saveLoginData(
+                            username = userInfo.username,
+                            role = userInfo.role,
+                            userId = effectiveId,
+                            roleName = userInfo.roleName
+                        )
+                        Log.d(TAG, "User info saved to preferences")
+                    }
+
+                    Resource.Success(jwtData)
+                } else {
+                    Log.e(TAG, "JWT login failed: ${response.message}")
+                    Resource.Error(response.message ?: "登入失敗")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "JWT login error: ${e.message}", e)
+                Resource.Error(e.message ?: "網路錯誤")
+            }
+        }
+    }
+
+    /**
+     * 刷新 Token
+     * 使用 Refresh Token 獲取新的 Access Token
+     */
+    suspend fun refreshToken(): Resource<JwtAuthenticationResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val refreshToken = tokenManager.getRefreshToken()
+                if (refreshToken.isNullOrEmpty()) {
+                    Log.e(TAG, "No refresh token available")
+                    return@withContext Resource.Error("未找到 Refresh Token")
+                }
+
+                Log.d(TAG, "Attempting to refresh token")
+                val response = authApi.refreshToken(RefreshTokenRequest(refreshToken))
+
+                if (response.success && response.data != null) {
+                    val jwtData = response.data
+
+                    // 保存新的 Tokens
+                    tokenManager.saveTokens(jwtData.accessToken, jwtData.refreshToken)
+                    Log.d(TAG, "Tokens refreshed and saved successfully")
+
+                    Resource.Success(jwtData)
+                } else {
+                    Log.e(TAG, "Token refresh failed: ${response.message}")
+                    Resource.Error(response.message ?: "刷新 Token 失敗")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Token refresh error: ${e.message}", e)
+                Resource.Error(e.message ?: "網路錯誤")
+            }
+        }
+    }
+
+    /**
+     * 登出
+     * 清除本地 Tokens 並通知後端使 Refresh Token 失效
+     */
+    suspend fun logout(): Resource<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val refreshToken = tokenManager.getRefreshToken()
+
+                // 即使沒有 refresh token 也繼續清除本地數據
+                if (!refreshToken.isNullOrEmpty()) {
+                    try {
+                        Log.d(TAG, "Attempting to logout on server")
+                        val response = authApi.logout(RefreshTokenRequest(refreshToken))
+                        Log.d(TAG, "Logout API response - success: ${response.success}")
+                    } catch (e: Exception) {
+                        // 即使後端登出失敗，也繼續清除本地數據
+                        Log.e(TAG, "Server logout failed, but will clear local data anyway", e)
+                    }
+                }
+
+                // 清除本地 Tokens 和用戶數據
+                tokenManager.clearTokens()
+                userPreferencesManager.clearLoginData()
+
+                Log.d(TAG, "Local data cleared successfully")
+                Resource.Success(Unit)
+            } catch (e: Exception) {
+                Log.e(TAG, "Logout error: ${e.message}", e)
+                // 即使出錯，也清除本地數據
+                tokenManager.clearTokens()
+                userPreferencesManager.clearLoginData()
+                Resource.Error(e.message ?: "登出錯誤")
+            }
+        }
+    }
+
+    /**
+     * 檢查是否已登入（有有效的 Token）
+     */
+    fun isLoggedIn(): Boolean {
+        return tokenManager.hasValidTokens()
+    }
+
+    /**
+     * 檢查 Access Token 是否過期
+     */
+    fun isAccessTokenExpired(): Boolean {
+        return tokenManager.isAccessTokenExpired()
     }
 }

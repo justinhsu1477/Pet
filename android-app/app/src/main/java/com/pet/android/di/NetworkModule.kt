@@ -9,6 +9,8 @@ import com.pet.android.data.api.PetActivityApi
 import com.pet.android.data.api.SitterApi
 import com.pet.android.data.api.SitterBookingApi
 import com.pet.android.data.api.SitterRatingApi
+import com.pet.android.data.interceptor.AuthInterceptor
+import com.pet.android.data.interceptor.TokenAuthenticator
 import com.pet.android.data.preferences.EnvironmentManager
 import dagger.Module
 import dagger.Provides
@@ -48,14 +50,23 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(cookieJar: CookieJar): OkHttpClient {
+    fun provideOkHttpClient(
+        cookieJar: CookieJar,
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator
+    ): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
         return OkHttpClient.Builder()
             .cookieJar(cookieJar)
+            // 添加 Logging Interceptor（應該在最前面，記錄所有請求）
             .addInterceptor(loggingInterceptor)
+            // 添加 Auth Interceptor（自動注入 Token）
+            .addInterceptor(authInterceptor)
+            // 添加 Authenticator（處理 401，自動刷新 Token）
+            .authenticator(tokenAuthenticator)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)

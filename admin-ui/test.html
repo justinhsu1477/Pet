@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT 認證系統測試</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2563eb; }
+        h3 { color: #1e293b; margin-top: 0; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { background: #1e40af; }
+        .result {
+            background: #f8fafc;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #2563eb;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .success { border-left-color: #10b981; }
+        .error { border-left-color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🔐 JWT 認證系統測試</h1>
+    
+    <div class="test-card">
+        <h3>1. 登入測試</h3>
+        <button onclick="testLogin()">測試登入 (admin/admin123)</button>
+        <div id="loginResult" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-card">
+        <h3>2. Token 檢查</h3>
+        <button onclick="checkTokens()">檢查 Token</button>
+        <button onclick="clearTokens()">清除 Token</button>
+        <div id="tokenResult" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-card">
+        <h3>3. API 請求測試</h3>
+        <button onclick="testAPI()">測試 API (需先登入)</button>
+        <div id="apiResult" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-card">
+        <h3>4. Token 刷新測試</h3>
+        <button onclick="testRefresh()">測試刷新 Token</button>
+        <div id="refreshResult" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-card">
+        <h3>5. 登出測試</h3>
+        <button onclick="testLogout()">測試登出</button>
+        <div id="logoutResult" class="result" style="display:none;"></div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        async function testLogin() {
+            const result = document.getElementById('loginResult');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.textContent = '登入中...';
+
+            try {
+                const response = await Auth.login('admin', 'admin123');
+                const user = Auth.getUser();
+                
+                result.className = 'result success';
+                result.textContent = `✅ 登入成功!\n\n用戶資訊:\n${JSON.stringify(user, null, 2)}\n\nAccess Token: ${Auth.getAccessToken().substring(0, 50)}...\nRefresh Token: ${Auth.getRefreshToken().substring(0, 50)}...`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 登入失敗!\n\n錯誤: ${error.message}`;
+            }
+        }
+
+        function checkTokens() {
+            const result = document.getElementById('tokenResult');
+            result.style.display = 'block';
+
+            const accessToken = Auth.getAccessToken();
+            const refreshToken = Auth.getRefreshToken();
+            const user = Auth.getUser();
+
+            if (accessToken && refreshToken) {
+                result.className = 'result success';
+                result.textContent = `✅ Token 存在\n\nAccess Token: ${accessToken.substring(0, 50)}...\nRefresh Token: ${refreshToken.substring(0, 50)}...\n\n用戶: ${JSON.stringify(user, null, 2)}`;
+            } else {
+                result.className = 'result error';
+                result.textContent = '❌ 未找到 Token\n\n請先登入';
+            }
+        }
+
+        function clearTokens() {
+            Auth.clearAuth();
+            const result = document.getElementById('tokenResult');
+            result.style.display = 'block';
+            result.className = 'result success';
+            result.textContent = '✅ Token 已清除';
+        }
+
+        async function testAPI() {
+            const result = document.getElementById('apiResult');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.textContent = '請求中...';
+
+            try {
+                const response = await API.sitters.getAllWithRating();
+                
+                result.className = 'result success';
+                result.textContent = `✅ API 請求成功!\n\n回應:\n${JSON.stringify(response, null, 2).substring(0, 500)}...`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ API 請求失敗!\n\n錯誤: ${error.message}`;
+            }
+        }
+
+        async function testRefresh() {
+            const result = document.getElementById('refreshResult');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.textContent = '刷新中...';
+
+            try {
+                const oldToken = Auth.getAccessToken();
+                const newToken = await Auth.refreshToken();
+                
+                result.className = 'result success';
+                result.textContent = `✅ Token 刷新成功!\n\n舊 Token: ${oldToken.substring(0, 50)}...\n新 Token: ${newToken.substring(0, 50)}...`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ Token 刷新失敗!\n\n錯誤: ${error.message}`;
+            }
+        }
+
+        async function testLogout() {
+            const result = document.getElementById('logoutResult');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.textContent = '登出中...';
+
+            try {
+                await Auth.logout();
+                
+                result.className = 'result success';
+                result.textContent = '✅ 登出成功!\n\nToken 已清除';
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 登出失敗!\n\n錯誤: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

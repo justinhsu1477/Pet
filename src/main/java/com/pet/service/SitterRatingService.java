@@ -205,7 +205,6 @@ public class SitterRatingService {
 
     /**
      * 更新保母的平均評分（反正規化）
-     * 面試重點：使用加權平均計算
      */
     private void updateSitterAverageRating(UUID sitterId) {
         Double weightedAvg = ratingRepository.calculateWeightedAverageRating(sitterId);
