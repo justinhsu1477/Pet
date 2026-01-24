@@ -90,4 +90,52 @@ public class Customer {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    // ==========================================
+    // 手動添加 Getter 以解決 Kotlin 訪問 Lombok 私有欄位的問題
+    // ==========================================
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Users getUser() {
+        return user;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getEmergencyContact() {
+        return emergencyContact;
+    }
+
+    public String getEmergencyPhone() {
+        return emergencyPhone;
+    }
+
+    public String getMemberLevel() {
+        return memberLevel;
+    }
+
+    public Integer getTotalBookings() {
+        return totalBookings;
+    }
+
+    public Double getTotalSpent() {
+        return totalSpent;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
