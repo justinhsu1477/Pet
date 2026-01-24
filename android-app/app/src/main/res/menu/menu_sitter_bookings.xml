@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_statistics"
+        android:icon="@drawable/ic_bar_chart"
+        android:title="統計儀表板"
+        app:showAsAction="ifRoom" />
+
+</menu>

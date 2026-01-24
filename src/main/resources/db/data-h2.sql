@@ -9,17 +9,40 @@
 INSERT INTO Users (id, username, password, email, phone, role)
 VALUES ('00000000-0000-0000-0000-000000000001', 'admin', '$2a$10$ioaaP9Nongaib.l8BoFY1ehNWJBG7OvBW92w4/O1oADnWMF6PrY8O', 'admin@petcare.com', '0900-000-001', 'ADMIN');
 
--- user01 / password123
+-- user01 / password123 (一般用戶/飼主)
 INSERT INTO Users (id, username, password, email, phone, role)
-VALUES ('00000000-0000-0000-0000-000000000002', 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user01@example.com', '0911-222-333', 'USER');
+VALUES ('00000000-0000-0000-0000-000000000002', 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user01@example.com', '0911-222-333', 'CUSTOMER');
 
--- user02 / password123
+-- user02 / password123 (一般用戶/飼主)
 INSERT INTO Users (id, username, password, email, phone, role)
-VALUES ('00000000-0000-0000-0000-000000000003', 'user02', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user02@example.com', '0933-444-555', 'USER');
+VALUES ('00000000-0000-0000-0000-000000000003', 'user02', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user02@example.com', '0933-444-555', 'CUSTOMER');
 
--- sitter01 / sitter123
+-- sitter01 / sitter123 (保母帳號)
 INSERT INTO Users (id, username, password, email, phone, role)
 VALUES ('00000000-0000-0000-0000-000000000004', 'sitter01', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter01@example.com', '0922-333-444', 'SITTER');
+
+-- sitter02 / sitter123 (保母帳號)
+INSERT INTO Users (id, username, password, email, phone, role)
+VALUES ('00000000-0000-0000-0000-000000000005', 'sitter02', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter02@example.com', '0933-555-666', 'SITTER');
+
+-- sitter03 / sitter123 (保母帳號)
+INSERT INTO Users (id, username, password, email, phone, role)
+VALUES ('00000000-0000-0000-0000-000000000006', 'sitter03', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter03@example.com', '0944-666-777', 'SITTER');
+
+-- sitter04 / sitter123 (保母帳號)
+INSERT INTO Users (id, username, password, email, phone, role)
+VALUES ('00000000-0000-0000-0000-000000000007', 'sitter04', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter04@example.com', '0955-777-888', 'SITTER');
+
+-- ============================================
+-- 插入 Customer (一般用戶詳細資料)
+-- 注意: phone 和 email 已統一在 Users 表,這裡不再重複
+-- ============================================
+
+INSERT INTO Customer (id, user_id, name, address, emergency_contact, emergency_phone, member_level, total_bookings, total_spent, created_at, updated_at)
+VALUES ('40000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '王小明', '台北市信義區信義路100號', '王大明', '0912-333-444', 'SILVER', 5, 15000.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO Customer (id, user_id, name, address, emergency_contact, emergency_phone, member_level, total_bookings, total_spent, created_at, updated_at)
+VALUES ('40000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', '陳小美', '台北市大安區敦化南路200號', '陳小華', '0934-555-666', 'BRONZE', 2, 6000.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- ============================================
 -- 插入 Pet (Dogs)
@@ -60,20 +83,21 @@ INSERT INTO Cat (id, isIndoor, litterBoxType, scratchingHabit)
 VALUES ('20000000-0000-0000-0000-000000000003', false, 'OPEN', 'HIGH');
 
 -- ============================================
--- 插入 Sitter
+-- 插入 Sitter (保母詳細資料)
+-- 注意: phone 和 email 已統一在 Users 表,這裡不再重複
 -- ============================================
 
-INSERT INTO Sitter (id, name, phone, email, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000001', '張保母', '0911-111-222', 'zhang@example.com', '5年寵物照護經驗,擅長照顧大型犬', 4.5, 4, 4);
+INSERT INTO Sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', '張保母', '5年寵物照護經驗,擅長照顧大型犬', 4.5, 4, 4);
 
-INSERT INTO Sitter (id, name, phone, email, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000002', '李保母', '0922-222-333', 'lee@example.com', '3年貓咪專業照護,有獸醫助理背景', 4.7, 3, 3);
+INSERT INTO Sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES ('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', '李保母', '3年貓咪專業照護,有獸醫助理背景', 4.7, 3, 3);
 
-INSERT INTO Sitter (id, name, phone, email, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000003', '王保母', '0933-333-444', 'wang@example.com', '2年小型寵物照護經驗', 3.5, 2, 2);
+INSERT INTO Sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES ('30000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000006', '王保母', '2年小型寵物照護經驗', 3.5, 2, 2);
 
-INSERT INTO Sitter (id, name, phone, email, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000004', '陳保母', '0944-444-555', 'chen@example.com', '7年全方位寵物照護,可處理特殊需求寵物', 4.7, 3, 3);
+INSERT INTO Sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES ('30000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000007', '陳保母', '7年全方位寵物照護,可處理特殊需求寵物', 4.7, 3, 3);
 
 -- ============================================
 -- 插入 sitter_availability (注意：表名用小寫加底線)

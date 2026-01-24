@@ -4,6 +4,8 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -14,6 +16,7 @@ import com.pet.android.data.model.BookingStatus
 import com.pet.android.data.preferences.UserPreferencesManager
 import com.pet.android.databinding.ActivitySitterBookingsBinding
 import com.pet.android.ui.base.BaseActivity
+import com.pet.android.ui.sitter.statistics.SitterStatisticsActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -46,8 +49,24 @@ class SitterBookingsActivity : BaseActivity<ActivitySitterBookingsBinding>() {
     }
 
     private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
         binding.toolbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_sitter_bookings, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_statistics -> {
+                SitterStatisticsActivity.start(this)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -158,6 +177,8 @@ class SitterBookingsActivity : BaseActivity<ActivitySitterBookingsBinding>() {
     }
 
     companion object {
+        private const val TAG = "SitterBookingsActivity"
+
         fun start(context: Context) {
             context.startActivity(Intent(context, SitterBookingsActivity::class.java))
         }

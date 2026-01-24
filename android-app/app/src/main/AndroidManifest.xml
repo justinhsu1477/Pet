@@ -74,6 +74,10 @@
             android:name=".ui.sitter.booking.SitterBookingDetailActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".ui.sitter.statistics.SitterStatisticsActivity"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

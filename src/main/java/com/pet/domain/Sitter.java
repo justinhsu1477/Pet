@@ -2,6 +2,7 @@ package com.pet.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.UUID;
 
@@ -12,10 +13,24 @@ public class Sitter {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String name;
-    private String phone;
-    private String email;
+    /**
+     * 關聯到 Users 帳號
+     * 一對一關聯，一個 Sitter 對應一個 Users
+     */
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    @ToString.Exclude
+    private Users user;
 
+    /**
+     * 保母顯示名稱/服務名稱
+     */
+    @Column(nullable = false)
+    private String name;
+
+    /**
+     * 服務經驗描述
+     */
     @Column(length = 500)
     private String experience;
 

@@ -29,12 +29,38 @@ public class AuthController {
             throw new AuthenticationException(ErrorCode.INVALID_PASSWORD);
         }
 
+        // 根據角色取得對應的 ID 和名稱
+        UUID roleId = null;
+        String roleName = null;
+
+        switch (users.getRole()) {
+            case CUSTOMER:
+                if (users.getCustomer() != null) {
+                    roleId = users.getCustomer().getId();
+                    roleName = users.getCustomer().getName();
+                }
+                break;
+            case SITTER:
+                if (users.getSitter() != null) {
+                    roleId = users.getSitter().getId();
+                    roleName = users.getSitter().getName();
+                }
+                break;
+            case ADMIN:
+                // 管理員可能沒有對應的角色資料
+                roleId = users.getId();
+                roleName = users.getUsername();
+                break;
+        }
+
         LoginResponseDto loginResponse = new LoginResponseDto(
                 users.getId(),
                 users.getUsername(),
                 users.getEmail(),
                 users.getPhone(),
-                users.getRole(),
+                users.getRole().name(),
+                roleId,
+                roleName,
                 "登入成功"
         );
 

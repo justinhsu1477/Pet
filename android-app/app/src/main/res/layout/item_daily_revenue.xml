@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="?attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="2024-01-01"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvBookingCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="3 筆"
+        android:textSize="14sp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/tvRevenue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NT$ 1,500"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/pet_orange" />
+
+</LinearLayout>

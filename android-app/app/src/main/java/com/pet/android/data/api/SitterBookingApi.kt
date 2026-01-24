@@ -1,6 +1,7 @@
 package com.pet.android.data.api
 
 import com.pet.android.data.model.ApiResponse
+import com.pet.android.data.model.BookingStatisticsResponse
 import com.pet.android.data.model.ConfirmBookingRequest
 import com.pet.android.data.model.RejectBookingRequest
 import com.pet.android.data.model.SitterBookingResponse
@@ -82,4 +83,18 @@ interface SitterBookingApi {
         @Path("bookingId") bookingId: String,
         @Body reason: String?
     ): ApiResponse<SitterBookingResponse>
+
+    /**
+     * 取得保母的統計資料
+     * GET /api/sitter/{sitterId}/statistics
+     *
+     * 包含：
+     * - 預約統計（本月總數、待確認、已完成、拒絕/取消）
+     * - 收入統計（本月收入、本週收入、每日趨勢）
+     * - 評價統計（平均評分、五星比例、星級分布、最新評價）
+     */
+    @GET("api/sitter/{sitterId}/statistics")
+    suspend fun getStatistics(
+        @Path("sitterId") sitterId: String
+    ): ApiResponse<BookingStatisticsResponse>
 }

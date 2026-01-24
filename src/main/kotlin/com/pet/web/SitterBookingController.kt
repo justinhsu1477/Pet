@@ -4,9 +4,10 @@ import com.pet.dto.BookingDto
 import com.pet.dto.request.ConfirmBookingRequest
 import com.pet.dto.request.RejectBookingRequest
 import com.pet.dto.response.ApiResponse
+import com.pet.dto.response.BookingStatisticsResponse
 import com.pet.service.BookingService
+import com.pet.service.BookingStatisticsService
 import jakarta.validation.Valid
-import lombok.RequiredArgsConstructor
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -20,7 +21,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/sitter")
 class SitterBookingController(
-    private val bookingService: BookingService
+    private val bookingService: BookingService,
+    private val bookingStatisticsService: BookingStatisticsService
 ) {
 
     /***
@@ -147,6 +149,29 @@ class SitterBookingController(
             ApiResponse.success(
                 "預約已取消。",
                 cancelled
+            )
+        )
+    }
+
+    /**
+     * 取得保母的統計資料
+     * GET /api/sitter/{sitterId}/statistics
+     *
+     * 包含：
+     * - 預約統計（本月總數、待確認、已完成、拒絕/取消）
+     * - 收入統計（本月收入、本週收入、每日趨勢）
+     * - 評價統計（平均評分、五星比例、星級分布、最新評價）
+     */
+    @GetMapping("/{sitterId}/statistics")
+    fun getStatistics(
+        @PathVariable sitterId: UUID
+    ): ResponseEntity<ApiResponse<BookingStatisticsResponse>> {
+        val statistics = bookingStatisticsService.getStatistics(sitterId)
+
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                "成功取得統計資料",
+                statistics
             )
         )
     }

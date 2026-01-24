@@ -196,6 +196,8 @@ class BookingHomeActivity : BaseActivity<ActivityBookingHomeBinding>() {
     }
 
     companion object {
+        private const val TAG = "BookingHomeActivity"
+
         fun start(context: Context) {
             context.startActivity(Intent(context, BookingHomeActivity::class.java))
         }

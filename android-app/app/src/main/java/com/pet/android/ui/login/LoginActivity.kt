@@ -20,6 +20,9 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : BaseActivity<ActivityLoginBinding>() {
+    companion object {
+        private const val TAG = "LoginActivity"
+    }
 
     private val viewModel: LoginViewModel by viewModels()
 

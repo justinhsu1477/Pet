@@ -1,8 +1,15 @@
 package com.pet.service
 
+import com.pet.domain.Booking
 import com.pet.dto.response.*
 import com.pet.repository.BookingRepository
 import com.pet.repository.SitterRatingRepository
+import com.pet.util.DateTimeUtils
+import com.pet.util.DateTimeUtils.getEndOfCurrentMonth
+import com.pet.util.DateTimeUtils.getEndOfCurrentWeek
+import com.pet.util.DateTimeUtils.getRecentDates
+import com.pet.util.DateTimeUtils.getStartOfCurrentMonth
+import com.pet.util.DateTimeUtils.getStartOfCurrentWeek
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -29,9 +36,11 @@ class BookingStatisticsService(
      * @return 包含預約、收入、評價的完整統計
      */
     fun getStatistics(sitterId: UUID): BookingStatisticsResponse {
-        // TODO: 組合所有統計資料並返回
-        // 提示：呼叫 getBookingStats、getRevenueStats、getRatingStats 三個方法
-        TODO("實作：組合三種統計資料")
+        return BookingStatisticsResponse(
+            bookingStats = getBookingStats(sitterId),
+            revenueStats = getRevenueStats(sitterId),
+            ratingStats = getRatingStats(sitterId)
+        )
     }
 
     /**
@@ -41,23 +50,22 @@ class BookingStatisticsService(
      * @return 本月預約統計（總數、待確認、已完成、拒絕/取消）
      */
     fun getBookingStats(sitterId: UUID): BookingStats {
-        // TODO: 計算本月的預約統計
-        // 提示：
-        // 1. 取得本月的起始和結束時間（自然月）
-        //    - 起始：本月1號 00:00:00
-        //    - 結束：本月最後一天 23:59:59
-        // 2. 使用 bookingRepository.findBySitterIdAndCreatedAtBetween() 查詢本月的預約
-        // 3. 按狀態分組計數：
-        //    - total: 所有預約總數
-        //    - pending: status = PENDING 的數量
-        //    - completed: status = COMPLETED 的數量
-        //    - rejectedOrCancelled: status = REJECTED 或 CANCELLED 的數量
-        // 4. 組裝成 MonthlyBookingStats 並包裝在 BookingStats 中返回
-        //
-        // 實作方式可選擇：
-        // 方法 1: 查詢所有預約，然後在記憶體中用 filter/count 統計（適合資料量小）
-        // 方法 2: 使用多個 count 查詢分別統計（適合資料量大）
-        TODO("實作：計算本月預約統計")
+        val start = getStartOfCurrentMonth()
+        val end = getEndOfCurrentMonth()
+
+        // 查詢本月所有的預約
+        val bookings = bookingRepository.findBySitterIdAndCreatedAtBetween(sitterId, start, end)
+
+        val monthlyStats = MonthlyBookingStats(
+            total = bookings.size.toLong(),
+            pending = bookings.count { it.status == Booking.BookingStatus.PENDING }.toLong(),
+            completed = bookings.count { it.status == Booking.BookingStatus.COMPLETED }.toLong(),
+            rejectedOrCancelled = bookings.count {
+                it.status == Booking.BookingStatus.REJECTED || it.status == Booking.BookingStatus.CANCELLED
+            }.toLong()
+        )
+
+        return BookingStats(currentMonth = monthlyStats)
     }
 
     /**
@@ -67,30 +75,45 @@ class BookingStatisticsService(
      * @return 收入統計（本月收入、本週收入、每日趨勢）
      */
     fun getRevenueStats(sitterId: UUID): RevenueStats {
-        // TODO: 計算收入統計
-        // 提示：
-        // 1. 計算本月收入：
-        //    - 時間範圍：本月1號 00:00:00 到本月最後一天 23:59:59
-        //    - 使用 bookingRepository.sumRevenueByCompletedBookings()
-        //    - 只計算 status = COMPLETED 的訂單
-        //
-        // 2. 計算本週收入：
-        //    - 時間範圍：本週週一 00:00:00 到本週週日 23:59:59
-        //    - 使用 bookingRepository.sumRevenueByCompletedBookings()
-        //
-        // 3. 計算每日收入趨勢（最近7天）：
-        //    - 取得最近7天的日期列表（包含今天）
-        //    - 對每一天：
-        //      a. 使用 bookingRepository.findCompletedBookingsByDate() 查詢該日的已完成預約
-        //      b. 計算該日總收入：bookings.sumOf { it.totalPrice ?: 0.0 }
-        //      c. 計算該日預約數：bookings.size
-        //      d. 組裝成 DailyRevenue
-        //    - 組合成 List<DailyRevenue>
-        //
-        // 4. 組裝成 RevenueStats 返回
-        //
-        // 注意：如果查詢結果為 null，要使用預設值 0.0 或 emptyList()
-        TODO("實作：計算收入統計")
+        val monthlyRevenue = bookingRepository.sumRevenueByCompletedBookings(
+            sitterId,
+            getStartOfCurrentMonth(),
+            getEndOfCurrentMonth()
+        ) ?: 0.0
+
+        val weeklyRevenue = bookingRepository.sumRevenueByCompletedBookings(
+            sitterId,
+            getStartOfCurrentWeek(),
+            getEndOfCurrentWeek()
+        ) ?: 0.0
+
+        // 優化每日趨勢查詢：
+        // 1. 取得最近 7 天的日期列表
+        val recentDates = getRecentDates(7)
+        val startDate = DateTimeUtils.getStartOfDay(recentDates.first())
+        val endDate = DateTimeUtils.getEndOfDay(recentDates.last())
+
+        // 2. 一次性查詢這 7 天內所有的已完成預約，避免 N+1
+        val recentBookings = bookingRepository.findBySitterIdAndCreatedAtBetween(sitterId, startDate, endDate)
+            .filter { it.status == Booking.BookingStatus.COMPLETED }
+
+        // 3. 按日期分組統計
+        val bookingsByDate = recentBookings.groupBy { it.createdAt.toLocalDate() }
+
+        val dailyTrend = recentDates.map { date ->
+            val dayBookings = bookingsByDate[date] ?: emptyList()
+            DailyRevenue(
+                date = date,
+                revenue = dayBookings.sumOf { it.totalPrice ?: 0.0 },
+                bookingCount = dayBookings.size.toLong()
+            )
+        }
+
+        return RevenueStats(
+            monthlyRevenue = monthlyRevenue,
+            weeklyRevenue = weeklyRevenue,
+            dailyTrend = dailyTrend
+        )
     }
 
     /**
@@ -101,106 +124,51 @@ class BookingStatisticsService(
      * @return 評價統計（平均分、五星比例、星級分布、最新評價）
      */
     fun getRatingStats(sitterId: UUID, limit: Int = 5): RatingStats {
-        // TODO: 計算評價統計
-        // 提示：
-        // 1. 取得平均評分：
-        //    - 使用 sitterRatingRepository.calculateAverageRating(sitterId)
-        //    - 如果沒有評價，預設為 0.0
-        //
-        // 2. 取得總評價數：
-        //    - 使用 sitterRatingRepository.countBySitterId(sitterId)
-        //
-        // 3. 取得星級分布（1-5星的數量）：
-        //    - 使用 sitterRatingRepository.countRatingsByStars(sitterId)
-        //    - 返回格式是 List<Array<Any>>，例如 [[5, 10], [4, 3], ...]
-        //    - 需要轉換成 Map<Int, Long>，例如 {5=10, 4=3, ...}
-        //    - 確保 1-5 星都有資料，沒有評價的星級要補 0
-        //      提示：(1..5).forEach { star -> if (!map.containsKey(star)) map[star] = 0L }
-        //
-        // 4. 計算五星比例：
-        //    - 五星數量 = starDistribution[5] ?: 0
-        //    - 五星比例 = (五星數量 / 總評價數) * 100
-        //    - 如果沒有評價，比例為 0.0
-        //
-        // 5. 取得最新評價：
-        //    - 使用 sitterRatingRepository.findBySitterIdOrderByCreatedAtDesc(sitterId)
-        //    - 取前 limit 筆
-        //    - 轉換成 SimpleRatingDto：
-        //      a. 如果 isAnonymous = true，userName 要設為 null
-        //      b. 如果 isAnonymous = false，userName = rating.user.username
-        //
-        // 6. 組裝成 RatingStats 返回
-        TODO("實作：計算評價統計")
+        val averageRating = sitterRatingRepository.calculateAverageRating(sitterId) ?: 0.0
+        val totalRatings = sitterRatingRepository.countBySitterId(sitterId)
+
+        // 星級分佈
+        val starCounts = sitterRatingRepository.countRatingsByStars(sitterId)
+        val starDistribution = mutableMapOf<Int, Long>()
+        (1..5).forEach { starDistribution[it] = 0L }
+        starCounts.forEach {
+            val star = it[0] as Int
+            val count = it[1] as Long
+            starDistribution[star] = count
+        }
+
+        // 五星比例
+        val fiveStarCount = starDistribution[5] ?: 0L
+        val fiveStarPercentage = if (totalRatings > 0) {
+            (fiveStarCount.toDouble() / totalRatings) * 100
+        } else {
+            0.0
+        }
+
+        // 最新評價
+        val latestRatingsRaw = sitterRatingRepository.findBySitterIdOrderByCreatedAtDesc(sitterId)
+        val latestRatings = latestRatingsRaw.take(limit).map { rating ->
+            SimpleRatingDto(
+                id = rating.id,
+                overallRating = rating.overallRating,
+                comment = rating.comment,
+                createdAt = rating.createdAt,
+                userName = if (rating.isAnonymous) null else rating.user?.username,
+                isAnonymous = rating.isAnonymous
+            )
+        }
+
+        return RatingStats(
+            averageRating = averageRating,
+            fiveStarPercentage = fiveStarPercentage,
+            totalRatings = totalRatings,
+            starDistribution = starDistribution,
+            latestRatings = latestRatings
+        )
     }
 
     // ============================================
-    // 輔助方法（時間計算）
+    // 輔助方法（時間計算）- 委派給 DateTimeUtils
     // ============================================
 
-    /**
-     * 取得本月的起始時間
-     * @return 本月1號 00:00:00
-     */
-    private fun getStartOfCurrentMonth(): LocalDateTime {
-        // TODO: 實作取得本月起始時間
-        // 提示：
-        // return LocalDate.now()
-        //     .withDayOfMonth(1)  // 月初第1天
-        //     .atStartOfDay()      // 00:00:00
-        TODO("實作：取得本月起始時間")
-    }
-
-    /**
-     * 取得本月的結束時間
-     * @return 本月最後一天 23:59:59.999999999
-     */
-    private fun getEndOfCurrentMonth(): LocalDateTime {
-        // TODO: 實作取得本月結束時間
-        // 提示：
-        // return LocalDate.now()
-        //     .with(TemporalAdjusters.lastDayOfMonth())  // 月底最後一天
-        //     .atTime(23, 59, 59, 999_999_999)           // 23:59:59.999999999
-        TODO("實作：取得本月結束時間")
-    }
-
-    /**
-     * 取得本週的起始時間
-     * @return 本週週一 00:00:00
-     */
-    private fun getStartOfCurrentWeek(): LocalDateTime {
-        // TODO: 實作取得本週起始時間
-        // 提示：
-        // return LocalDate.now()
-        //     .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))  // 本週週一
-        //     .atStartOfDay()
-        TODO("實作：取得本週起始時間")
-    }
-
-    /**
-     * 取得本週的結束時間
-     * @return 本週週日 23:59:59.999999999
-     */
-    private fun getEndOfCurrentWeek(): LocalDateTime {
-        // TODO: 實作取得本週結束時間
-        // 提示：
-        // return LocalDate.now()
-        //     .with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))  // 本週週日
-        //     .atTime(23, 59, 59, 999_999_999)
-        TODO("實作：取得本週結束時間")
-    }
-
-    /**
-     * 取得最近 N 天的日期列表（包含今天）
-     * @param days 天數
-     * @return 日期列表，從最舊到最新排序
-     *
-     * 例如：days = 7 會返回 [7天前, 6天前, ..., 昨天, 今天]
-     */
-    private fun getRecentDates(days: Int): List<LocalDate> {
-        // TODO: 實作取得最近 N 天的日期列表
-        // 提示：
-        // val today = LocalDate.now()
-        // return (days - 1 downTo 0).map { today.minusDays(it.toLong()) }
-        TODO("實作：取得最近 N 天的日期列表")
-    }
 }

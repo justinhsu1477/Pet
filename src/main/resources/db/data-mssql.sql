@@ -1,17 +1,58 @@
 -- MSSQL Test Data for Pet System
 
+-- ============================================
+-- Declare User IDs first
+-- ============================================
+DECLARE @admin_id UNIQUEIDENTIFIER = NEWID();
+DECLARE @user01_id UNIQUEIDENTIFIER = NEWID();
+DECLARE @user02_id UNIQUEIDENTIFIER = NEWID();
+DECLARE @sitter01_id UNIQUEIDENTIFIER = NEWID();
+DECLARE @sitter02_id UNIQUEIDENTIFIER = NEWID();
+DECLARE @sitter03_id UNIQUEIDENTIFIER = NEWID();
+DECLARE @sitter04_id UNIQUEIDENTIFIER = NEWID();
+
+-- ============================================
 -- Insert User test data (password encrypted with BCrypt)
+-- ============================================
+
 -- admin / admin123
 INSERT INTO users (id, username, password, email, phone, role)
-VALUES (NEWID(), 'admin', '$2a$10$ioaaP9Nongaib.l8BoFY1ehNWJBG7OvBW92w4/O1oADnWMF6PrY8O', 'admin@petcare.com', '0900-000-001', 'ADMIN');
+VALUES (@admin_id, 'admin', '$2a$10$ioaaP9Nongaib.l8BoFY1ehNWJBG7OvBW92w4/O1oADnWMF6PrY8O', 'admin@petcare.com', '0900-000-001', 'ADMIN');
 
--- user01 / password123
+-- user01 / password123 (一般用戶/飼主)
 INSERT INTO users (id, username, password, email, phone, role)
-VALUES (NEWID(), 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user01@example.com', '0911-222-333', 'USER');
+VALUES (@user01_id, 'user01', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user01@example.com', '0911-222-333', 'CUSTOMER');
 
--- sitter01 / sitter123
+-- user02 / password123 (一般用戶/飼主)
 INSERT INTO users (id, username, password, email, phone, role)
-VALUES (NEWID(), 'sitter01', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter01@example.com', '0922-333-444', 'SITTER');
+VALUES (@user02_id, 'user02', '$2a$10$6yBjB3V4XgBrAH04Ygo5M.hPdPg9f.G6I8IhQeZSRl79sAVgY6Nmi', 'user02@example.com', '0933-444-555', 'CUSTOMER');
+
+-- sitter01 / sitter123 (保母帳號)
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (@sitter01_id, 'sitter01', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter01@example.com', '0922-333-444', 'SITTER');
+
+-- sitter02 / sitter123 (保母帳號)
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (@sitter02_id, 'sitter02', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter02@example.com', '0933-555-666', 'SITTER');
+
+-- sitter03 / sitter123 (保母帳號)
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (@sitter03_id, 'sitter03', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter03@example.com', '0944-666-777', 'SITTER');
+
+-- sitter04 / sitter123 (保母帳號)
+INSERT INTO users (id, username, password, email, phone, role)
+VALUES (@sitter04_id, 'sitter04', '$2a$10$n3COcyIq.RwDo0jyMfYV1etGu47L4/2eRyyJ6UR9cBCYhSBdiytDS', 'sitter04@example.com', '0955-777-888', 'SITTER');
+
+-- ============================================
+-- Insert Customer (一般用戶詳細資料)
+-- 注意: phone 和 email 已統一在 users 表,這裡不再重複
+-- ============================================
+
+INSERT INTO customer (id, user_id, name, address, emergency_contact, emergency_phone, member_level, total_bookings, total_spent, created_at, updated_at)
+VALUES (NEWID(), @user01_id, N'王小明', N'台北市信義區信義路100號', N'王大明', '0912-333-444', 'SILVER', 5, 15000.0, GETDATE(), GETDATE());
+
+INSERT INTO customer (id, user_id, name, address, emergency_contact, emergency_phone, member_level, total_bookings, total_spent, created_at, updated_at)
+VALUES (NEWID(), @user02_id, N'陳小美', N'台北市大安區敦化南路200號', N'陳小華', '0934-555-666', 'BRONZE', 2, 6000.0, GETDATE(), GETDATE());
 
 -- Declare variables for Pet IDs
 DECLARE @dog1_id UNIQUEIDENTIFIER = NEWID();
@@ -56,24 +97,28 @@ VALUES (@cat2_id, 1, 'AUTOMATIC', 'MODERATE');
 INSERT INTO cat (id, is_indoor, litter_box_type, scratching_habit)
 VALUES (@cat3_id, 0, 'OPEN', 'HIGH');
 
--- Declare variables for Sitter IDs
+-- ============================================
+-- Insert Sitter (保母詳細資料)
+-- 注意: phone 和 email 已統一在 users 表,這裡不再重複
+-- ============================================
+
+-- Declare variables for Sitter entity IDs
 DECLARE @sitter1_id UNIQUEIDENTIFIER = NEWID();
 DECLARE @sitter2_id UNIQUEIDENTIFIER = NEWID();
 DECLARE @sitter3_id UNIQUEIDENTIFIER = NEWID();
 DECLARE @sitter4_id UNIQUEIDENTIFIER = NEWID();
 
--- Insert Sitter test data
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter1_id, N'張保母', '0911-111-222', 'zhang@example.com', N'5年寵物照護經驗，擅長照顧大型犬');
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES (@sitter1_id, @sitter01_id, N'張保母', N'5年寵物照護經驗，擅長照顧大型犬', 4.8, 15, 12);
 
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter2_id, N'李保母', '0922-222-333', 'lee@example.com', N'3年貓咪專業照護，有獸醫助理背景');
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES (@sitter2_id, @sitter02_id, N'李保母', N'3年貓咪專業照護，有獸醫助理背景', 4.9, 20, 18);
 
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter3_id, N'王保母', '0933-333-444', 'wang@example.com', N'2年小型寵物照護經驗');
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES (@sitter3_id, @sitter03_id, N'王保母', N'2年小型寵物照護經驗', 4.5, 8, 6);
 
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter4_id, N'陳保母', '0944-444-555', 'chen@example.com', N'7年全方位寵物照護，可處理特殊需求寵物');
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
+VALUES (@sitter4_id, @sitter04_id, N'陳保母', N'7年全方位寵物照護，可處理特殊需求寵物', 5.0, 25, 22);
 
 -- Insert SitterRecord test data
 INSERT INTO sitter_record (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)
