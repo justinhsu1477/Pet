@@ -13,7 +13,6 @@ import java.util.List;
 /**
  * CORS 設定
  * 允許前端跨來源存取 API
- * 
  * 可透過 application.yml 設定:
  * cors:
  *   allowed-origins: http://localhost:3000,http://example.com

@@ -1,9 +1,11 @@
 package com.pet.android.ui.setting
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pet.android.data.preferences.EnvironmentManager
 import com.pet.android.data.preferences.EnvironmentManager.Environment
+import com.pet.android.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,8 +15,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val environmentManager: EnvironmentManager
+    private val environmentManager: EnvironmentManager,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "SettingViewModel"
+    }
 
     // Expose current environment as a StateFlow for UI to observe
     val currentEnvironment: StateFlow<Environment> = environmentManager.currentEnvironment
@@ -30,10 +37,20 @@ class SettingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 登出
+     * 呼叫 AuthRepository 清除本地 Token 並通知後端
+     */
     fun logout() {
-        // TODO: Clear user session/token here when TokenManager is available
-        // For now, we just rely on the UI to navigate back to LoginActivity which
-        // usually clears its stack or handles re-login.
-        // If SharedPreferences has other keys, clear them here.
+        viewModelScope.launch {
+            try {
+                Log.d(TAG, "Performing logout")
+                authRepository.logout()
+                Log.d(TAG, "Logout completed successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during logout", e)
+                // 即使出錯也繼續，因為 AuthRepository.logout() 已經保證清除本地數據
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.pet.android.ui.sitter.profile
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.pet.android.data.preferences.UserPreferencesManager
 import com.pet.android.databinding.FragmentSitterProfileBinding
+import com.pet.android.ui.login.LoginActivity
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -63,6 +65,11 @@ class SitterProfileFragment : Fragment() {
         // 保存按鈕
         binding.btnSave.setOnClickListener {
             saveProfile()
+        }
+
+        // 登出按鈕
+        binding.btnLogout.setOnClickListener {
+            performLogout()
         }
 
         // 編輯照片按鈕 (暫時顯示 Toast)
@@ -192,6 +199,35 @@ class SitterProfileFragment : Fragment() {
 
             viewModel.saveProfile(id, profileData)
         }
+    }
+
+    /**
+     * 執行登出
+     * 呼叫 ViewModel 登出並導航回登入頁面
+     */
+    private fun performLogout() {
+        Log.d(TAG, "Logout button clicked")
+
+        // 呼叫 ViewModel 登出（清除 Token 和使用者資料）
+        viewModel.logout()
+
+        // 導航回登入頁面，清除 back stack
+        navigateToLogin()
+    }
+
+    /**
+     * 導航到登入頁面
+     */
+    private fun navigateToLogin() {
+        val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+            // 清除所有 Activity stack，使用者無法按返回鍵回到此頁面
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        requireActivity().finish()
+
+        Log.d(TAG, "Navigated to login screen")
+        Toast.makeText(requireContext(), "已登出", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {

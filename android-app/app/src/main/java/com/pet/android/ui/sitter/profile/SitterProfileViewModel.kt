@@ -1,9 +1,11 @@
 package com.pet.android.ui.sitter.profile
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pet.android.data.repository.AuthRepository
 import com.pet.android.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -19,7 +21,12 @@ import javax.inject.Inject
 class SitterProfileViewModel @Inject constructor(
     // TODO: 注入 SitterRepository 當後端 API 準備好時
     // private val sitterRepository: SitterRepository
+    private val authRepository: AuthRepository
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "SitterProfileViewModel"
+    }
 
     private val _profileState = MutableLiveData<Resource<SitterProfileData>>()
     val profileState: LiveData<Resource<SitterProfileData>> = _profileState
@@ -78,6 +85,23 @@ class SitterProfileViewModel @Inject constructor(
                 _profileState.value = Resource.Success(profileData)
             } catch (e: Exception) {
                 _saveState.value = Resource.Error(e.message ?: "儲存個人檔案失敗")
+            }
+        }
+    }
+
+    /**
+     * 登出
+     * 呼叫 AuthRepository 清除本地 Token 並通知後端
+     */
+    fun logout() {
+        viewModelScope.launch {
+            try {
+                Log.d(TAG, "Performing logout")
+                authRepository.logout()
+                Log.d(TAG, "Logout completed successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during logout", e)
+                // 即使出錯也繼續，因為 AuthRepository.logout() 已經保證清除本地數據
             }
         }
     }

@@ -19,7 +19,6 @@ import java.io.IOException;
 
 /**
  * JWT 認證過濾器
- *
  * 職責:
  * 1. 從 HTTP Header 中提取 JWT Token
  * 2. 驗證 Token 有效性
