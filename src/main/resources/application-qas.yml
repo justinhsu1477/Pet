@@ -29,3 +29,7 @@ spring:
       schema-locations: classpath:db/schema-mssql.sql  # MSSQL Schema - 建立表格
       data-locations: classpath:db/data-mssql-simple.sql  # MSSQL Data - 插入測試資料 (簡化版,無變數)
       continue-on-error: true  # 如果資料已存在，繼續執行
+
+# CORS 設定 - 允許前端跨來源存取
+cors:
+  allowed-origins: http://localhost,http://localhost:80,http://localhost:3000

@@ -1,0 +1,56 @@
+# Maven
+target/
+!target/petSystem-*.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Data
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+!README.md
+
+# Frontend build artifacts (we copy the source)
+frontend/node_modules/
+frontend/package-lock.json
+
+# Android app
+android-app/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
