@@ -76,9 +76,19 @@ const App = {
 
     // ===== Logout =====
     setupLogout() {
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
             e.preventDefault();
+
+            try {
+                // Call logout API
+                await API.auth.logout();
+            } catch (error) {
+                console.error('Logout API error:', error);
+            }
+
+            // Clear all session data
             sessionStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+            sessionStorage.removeItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
             window.location.href = 'index.html';
         });
     },
@@ -104,18 +114,20 @@ const App = {
     async loadDashboard() {
         try {
             // Load stats
-            const [sittersRes, petsRes] = await Promise.all([
+            const [sittersRes, petsRes, usersRes] = await Promise.all([
                 API.sitters.getAllWithRating(),
-                API.pets.getAll()
+                API.pets.getAll(),
+                API.users.getAll()
             ]);
 
             const sitters = sittersRes.data || [];
             const pets = petsRes.data || [];
+            const users = usersRes.data || [];
 
             // Update stats
             document.getElementById('stat-sitters').textContent = sitters.length;
             document.getElementById('stat-pets').textContent = pets.length;
-            document.getElementById('stat-users').textContent = '-'; // No direct users API
+            document.getElementById('stat-users').textContent = users.length;
 
             // Update sitters table
             this.renderDashboardSitters(sitters.slice(0, 5));

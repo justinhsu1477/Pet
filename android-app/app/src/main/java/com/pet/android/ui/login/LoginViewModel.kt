@@ -34,7 +34,15 @@ class LoginViewModel @Inject constructor(
 
     /**
      * 舊版登入方法（保留向後兼容）
+     *
+     * @deprecated 此方法已棄用，請使用 jwtLogin()
+     * 此方法將在未來版本中移除
      */
+    @Deprecated(
+        message = "使用 jwtLogin() 代替，此方法將在未來版本中移除",
+        replaceWith = ReplaceWith("jwtLogin(username, password)"),
+        level = DeprecationLevel.WARNING
+    )
     fun login(username: String, password: String) {
         if (username.isBlank() || password.isBlank()) {
             _loginState.value = Resource.Error("請輸入帳號和密碼")

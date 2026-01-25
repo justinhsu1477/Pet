@@ -75,11 +75,22 @@ public class AuthenticationService {
                 ipAddress
         );
 
-        log.info("User {} logged in successfully from device: {}",
-                user.getUsername(), deviceType);
-
         // 6. 構建響應
-        return buildAuthResponse(user, accessToken, refreshToken);
+        JwtAuthenticationResponse authResponse = buildAuthResponse(user, accessToken, refreshToken);
+
+        // 7. 記錄登入資訊
+        log.info("===== 登入成功 =====");
+        log.info("帳號: {}", user.getUsername());
+        log.info("角色: {}", user.getRole().name());
+        log.info("使用者ID: {}", user.getId());
+        log.info("角色ID: {}", authResponse.getRoleId());
+        log.info("角色名稱: {}", authResponse.getRoleName());
+        log.info("Email: {}", user.getEmail());
+        log.info("設備類型: {}", deviceType);
+        log.info("IP 位址: {}", ipAddress);
+        log.info("==================");
+
+        return authResponse;
     }
 
     /**
@@ -135,9 +146,14 @@ public class AuthenticationService {
 
     /**
      * 舊版認證方法 (保留向後兼容)
+     *
+     * @deprecated 此方法已棄用，請使用 login(LoginRequestDto, HttpServletRequest)
+     * 此方法將在未來版本中移除
      */
-    @Deprecated
+    @Deprecated(since = "2.0", forRemoval = true)
     public Users authenticate(String username, String password) {
+        log.warn("⚠️ 使用了已棄用的方法: authenticate() - 請使用 login() 方法");
+
         Users users = userRepository.findByUsername(username).orElse(null);
         if (users == null) {
             return null;

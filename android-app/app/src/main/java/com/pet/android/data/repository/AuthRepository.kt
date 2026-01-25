@@ -25,6 +25,17 @@ class AuthRepository @Inject constructor(
         private const val TAG = "AuthRepository"
     }
 
+    /**
+     * 舊版登入方法（保留向後兼容）
+     *
+     * @deprecated 此方法已棄用，請使用 jwtLogin()
+     * 此方法將在未來版本中移除
+     */
+    @Deprecated(
+        message = "使用 jwtLogin() 代替，此方法將在未來版本中移除",
+        replaceWith = ReplaceWith("jwtLogin(username, password)"),
+        level = DeprecationLevel.WARNING
+    )
     suspend fun login(username: String, password: String): Resource<LoginResponse> {
         return withContext(Dispatchers.IO) {
             try {
@@ -106,22 +117,31 @@ class AuthRepository @Inject constructor(
                 if (response.success && response.data != null) {
                     val jwtData = response.data
 
-                    // 保存 Tokens
-                    tokenManager.saveTokens(jwtData.accessToken, jwtData.refreshToken)
-                    Log.d(TAG, "JWT tokens saved successfully")
+                    // 保存 Tokens (refreshToken 可能為 null，因為 Web 端使用 Cookie)
+                    val refreshToken = jwtData.refreshToken
+                    if (refreshToken != null) {
+                        tokenManager.saveTokens(jwtData.accessToken, refreshToken)
+                        Log.d(TAG, "JWT tokens saved successfully")
+                    } else {
+                        // 如果沒有 refreshToken (Web 端用 Cookie)，只保存 accessToken
+                        tokenManager.saveAccessToken(jwtData.accessToken)
+                        Log.d(TAG, "Access token saved successfully (no refresh token in response)")
+                    }
 
-                    // 如果有用戶信息，也保存到 UserPreferences
-                    jwtData.userInfo?.let { userInfo ->
-                        val effectiveId = userInfo.id ?: userInfo.username
-                        Log.d(TAG, "Saving user info - userId: ${userInfo.userId}, roleId: ${userInfo.roleId}, username: ${userInfo.username}, role: ${userInfo.role}")
+                    // 保存用戶信息到 UserPreferences
+                    if (jwtData.username != null && jwtData.role != null) {
+                        val effectiveId = jwtData.effectiveId ?: jwtData.username
+                        Log.d(TAG, "Saving user info - userId: ${jwtData.userId}, roleId: ${jwtData.roleId}, username: ${jwtData.username}, role: ${jwtData.role}")
 
                         userPreferencesManager.saveLoginData(
-                            username = userInfo.username,
-                            role = userInfo.role,
+                            username = jwtData.username,
+                            role = jwtData.role,
                             userId = effectiveId,
-                            roleName = userInfo.roleName
+                            roleName = jwtData.roleName
                         )
                         Log.d(TAG, "User info saved to preferences")
+                    } else {
+                        Log.w(TAG, "User info incomplete in JWT response")
                     }
 
                     Resource.Success(jwtData)
@@ -156,8 +176,16 @@ class AuthRepository @Inject constructor(
                     val jwtData = response.data
 
                     // 保存新的 Tokens
-                    tokenManager.saveTokens(jwtData.accessToken, jwtData.refreshToken)
-                    Log.d(TAG, "Tokens refreshed and saved successfully")
+                    // 注意：後端可能只返回新的 accessToken，refreshToken 沿用舊的
+                    if (jwtData.refreshToken != null) {
+                        // 如果有新的 refreshToken，兩個都更新
+                        tokenManager.saveTokens(jwtData.accessToken, jwtData.refreshToken)
+                        Log.d(TAG, "Tokens refreshed and saved successfully (both tokens)")
+                    } else {
+                        // 如果沒有新的 refreshToken，只更新 accessToken
+                        tokenManager.saveAccessToken(jwtData.accessToken)
+                        Log.d(TAG, "Access token refreshed successfully (refresh token unchanged)")
+                    }
 
                     Resource.Success(jwtData)
                 } else {

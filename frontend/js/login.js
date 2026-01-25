@@ -40,20 +40,34 @@ document.addEventListener('DOMContentLoaded', () => {
         setLoading(true);
 
         try {
-            const response = await API.auth.login(username, password);
+            const response = await API.auth.jwtLogin(username, password);
 
             if (response.success && response.data) {
-                const userData = response.data;
+                const jwtData = response.data;
 
                 // Check if user is admin
-                if (userData.role !== 'ADMIN') {
+                if (jwtData.role !== 'ADMIN') {
                     showError('此帳號不是管理員，無法登入');
                     setLoading(false);
                     return;
                 }
 
+                // Store access token
+                sessionStorage.setItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN, jwtData.accessToken);
+
                 // Store user data
+                const userData = {
+                    userId: jwtData.userId,
+                    username: jwtData.username,
+                    role: jwtData.role,
+                    roleId: jwtData.roleId,
+                    roleName: jwtData.roleName,
+                    email: jwtData.email,
+                    phone: jwtData.phone
+                };
                 sessionStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(userData));
+
+                console.log('登入成功:', userData);
 
                 // Redirect to dashboard
                 window.location.href = 'dashboard.html';

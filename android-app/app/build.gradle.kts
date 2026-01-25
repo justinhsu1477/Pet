@@ -78,6 +78,12 @@ dependencies {
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    // Security - EncryptedSharedPreferences
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // JWT Parsing
+    implementation("com.auth0:java-jwt:4.4.0")
+
     // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")

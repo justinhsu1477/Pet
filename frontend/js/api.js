@@ -9,12 +9,21 @@ const API = {
     async request(endpoint, options = {}) {
         const url = `${CONFIG.API_BASE_URL}${endpoint}`;
 
+        // Get access token from sessionStorage
+        const accessToken = sessionStorage.getItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+
         const defaultOptions = {
             headers: {
                 'Content-Type': 'application/json',
+                'X-Device-Type': CONFIG.DEVICE_TYPE
             },
             credentials: 'include' // For cookies/session
         };
+
+        // Add Authorization header if token exists
+        if (accessToken) {
+            defaultOptions.headers['Authorization'] = `Bearer ${accessToken}`;
+        }
 
         const mergedOptions = {
             ...defaultOptions,
@@ -27,6 +36,15 @@ const API = {
 
         try {
             const response = await fetch(url, mergedOptions);
+
+            // Handle 401 Unauthorized - token expired or invalid
+            if (response.status === 401) {
+                console.error('Token expired or invalid, redirecting to login...');
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+                throw new Error('登入已過期，請重新登入');
+            }
+
             const data = await response.json();
 
             if (!response.ok) {
@@ -44,10 +62,16 @@ const API = {
      * Auth APIs
      */
     auth: {
-        async login(username, password) {
-            return API.request('/auth/login', {
+        async jwtLogin(username, password) {
+            return API.request('/auth/jwt/login', {
                 method: 'POST',
                 body: JSON.stringify({ username, password })
+            });
+        },
+
+        async logout() {
+            return API.request('/auth/jwt/logout', {
+                method: 'POST'
             });
         }
     },

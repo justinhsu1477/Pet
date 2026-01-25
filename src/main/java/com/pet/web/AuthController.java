@@ -133,26 +133,38 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    /**
+     * 設置 Refresh Token Cookie
+     * 使用 HttpOnly 防止 XSS 攻擊，適合面試展示
+     */
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(false) // 開發環境先設為 false，正式環境應為 true
-                .path("/")
-                .maxAge(jwtProperties.getRefreshTokenExpiration() / 1000)
-                .sameSite("Lax")
+                .httpOnly(true)        // JavaScript 無法讀取
+                .secure(false)         // HTTP 環境（面試展示用）
+                .path("/")             // 所有路徑都可用
+                .maxAge(jwtProperties.getRefreshTokenExpiration() / 1000)  // 7 天
+                .sameSite("Lax")       // 允許同站點請求
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        log.debug("Set refresh token cookie - maxAge: {} seconds",
+                jwtProperties.getRefreshTokenExpiration() / 1000);
     }
 
+    /**
+     * 清除 Refresh Token Cookie
+     */
     private void clearRefreshTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(0)
+                .maxAge(0)            // 立即過期
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        log.debug("Cleared refresh token cookie");
     }
 
     /**
@@ -176,11 +188,22 @@ public class AuthController {
     /**
      * 舊版登入端點 (向後兼容)
      *
-     * @deprecated 請使用 /api/auth/jwt/login
+     * @deprecated 此 API 已棄用，請使用 /api/auth/jwt/login
+     * 此 API 將在未來版本中移除
+     *
+     * 舊版 API 的問題：
+     * - 不返回 JWT Token，無法實現 stateless 認證
+     * - 缺少 Refresh Token 機制
+     * - 無法支援設備管理和登出所有設備
+     *
+     * 請遷移至新版 JWT API：
+     * POST /api/auth/jwt/login
      */
     @PostMapping("/login")
-    @Deprecated
+    @Deprecated(since = "2.0", forRemoval = true)
     public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequest) {
+        log.warn("⚠️ 使用了已棄用的 API: /api/auth/login - 請遷移至 /api/auth/jwt/login");
+
         Users users = authenticationService.authenticate(loginRequest.username(), loginRequest.password());
 
         if (users == null) {

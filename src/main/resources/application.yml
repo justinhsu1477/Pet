@@ -5,7 +5,14 @@ spring:
     active: dev
   jpa:
     defer-datasource-initialization: true
-    show-sql: true
+    show-sql: false
+
+# Logging Configuration
+logging:
+  level:
+    com.pet: INFO
+    com.pet.service: INFO
+    com.pet.web: INFO
 
 # JWT Configuration
 jwt:

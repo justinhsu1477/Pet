@@ -113,10 +113,18 @@ class TokenAuthenticator @Inject constructor(
                 val newRefreshToken = response.data.refreshToken
 
                 // 保存新的 Tokens
-                tokenManager.saveTokens(newAccessToken, newRefreshToken)
+                if (newRefreshToken != null) {
+                    // 如果有新的 refreshToken，兩個都更新
+                    tokenManager.saveTokens(newAccessToken, newRefreshToken)
+                    Log.d(TAG, "New tokens saved (both tokens)")
+                } else {
+                    // 如果沒有新的 refreshToken，只更新 accessToken（沿用舊的 refreshToken）
+                    tokenManager.saveAccessToken(newAccessToken)
+                    Log.d(TAG, "New access token saved (refresh token unchanged)")
+                }
 
-                Log.d(TAG, "New tokens saved")
-                Pair(newAccessToken, newRefreshToken)
+                // 返回新的 accessToken 和 refreshToken（可能是舊的）
+                Pair(newAccessToken, newRefreshToken ?: refreshToken)
             } else {
                 Log.e(TAG, "Token refresh API returned unsuccessful response: ${response.message}")
                 null

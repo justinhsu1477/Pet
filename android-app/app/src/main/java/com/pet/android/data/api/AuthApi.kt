@@ -12,7 +12,17 @@ import retrofit2.http.POST
 interface AuthApi {
     /**
      * 舊版登入 API (保持向後兼容)
+     *
+     * @deprecated 此 API 已棄用，請使用 jwtLogin()
+     * 此 API 將在未來版本中移除
+     *
+     * 請使用新版 JWT API: jwtLogin(deviceType, request)
      */
+    @Deprecated(
+        message = "使用 jwtLogin() 代替，此方法將在未來版本中移除",
+        replaceWith = ReplaceWith("jwtLogin(deviceType = \"APP\", request = request)"),
+        level = DeprecationLevel.WARNING
+    )
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): ApiResponse<LoginResponse>
 
