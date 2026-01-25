@@ -54,7 +54,7 @@ public class RefreshTokenService {
         String tokenHash = hashToken(token);
 
         // 撤銷該用戶在該設備上的舊 Token (同一設備只保留最新的 Token)
-        refreshTokenRepository.revokeUserDeviceTokens(user.getId(), deviceType);
+        refreshTokenRepository.revokeUserDeviceTokens(user.getId(), deviceType, true);
 
         // 創建新 Token
         RefreshToken refreshToken = new RefreshToken();
@@ -127,7 +127,7 @@ public class RefreshTokenService {
      */
     @Transactional
     public void revokeAllUserTokens(UUID userId) {
-        refreshTokenRepository.revokeAllUserTokens(userId);
+        refreshTokenRepository.revokeAllUserTokens(userId, true);
         log.info("Revoked all refresh tokens for user: {}", userId);
     }
 
@@ -136,7 +136,7 @@ public class RefreshTokenService {
      */
     @Transactional
     public void revokeUserDeviceTokens(UUID userId, String deviceType) {
-        refreshTokenRepository.revokeUserDeviceTokens(userId, deviceType);
+        refreshTokenRepository.revokeUserDeviceTokens(userId, deviceType, true);
         log.info("Revoked {} refresh tokens for user: {}", deviceType, userId);
     }
 
@@ -144,7 +144,7 @@ public class RefreshTokenService {
      * 獲取用戶的所有有效 Token
      */
     public List<RefreshToken> getUserValidTokens(UUID userId) {
-        return refreshTokenRepository.findValidTokensByUser(userId, LocalDateTime.now());
+        return refreshTokenRepository.findValidTokensByUser(userId, false, LocalDateTime.now());
     }
 
     /**
@@ -161,7 +161,7 @@ public class RefreshTokenService {
      */
     @Transactional
     public void cleanupRevokedExpiredTokens() {
-        int deleted = refreshTokenRepository.deleteRevokedExpiredTokens(LocalDateTime.now());
+        int deleted = refreshTokenRepository.deleteRevokedExpiredTokens(true, LocalDateTime.now());
         log.info("Cleaned up {} revoked and expired refresh tokens", deleted);
     }
 
@@ -169,7 +169,7 @@ public class RefreshTokenService {
      * 統計用戶活躍設備數量
      */
     public long countActiveDevices(UUID userId) {
-        return refreshTokenRepository.countActiveDevicesByUser(userId, LocalDateTime.now());
+        return refreshTokenRepository.countActiveDevicesByUser(userId, false, LocalDateTime.now());
     }
 
     /**

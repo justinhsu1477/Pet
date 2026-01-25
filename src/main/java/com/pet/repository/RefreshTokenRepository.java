@@ -25,11 +25,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
      * 根據用戶和設備類型查找有效的 Token
      */
     @Query("SELECT rt FROM RefreshToken rt WHERE rt.user = :user " +
-           "AND rt.deviceType = :deviceType AND rt.revoked = false " +
+           "AND rt.deviceType = :deviceType AND rt.revoked = :revoked " +
            "AND rt.expiryDate > :now")
     Optional<RefreshToken> findValidTokenByUserAndDevice(
         @Param("user") Users user,
         @Param("deviceType") String deviceType,
+        @Param("revoked") boolean revoked,
         @Param("now") LocalDateTime now
     );
 
@@ -37,9 +38,10 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
      * 查找用戶的所有有效 Token
      */
     @Query("SELECT rt FROM RefreshToken rt WHERE rt.user.id = :userId " +
-           "AND rt.revoked = false AND rt.expiryDate > :now")
+           "AND rt.revoked = :revoked AND rt.expiryDate > :now")
     List<RefreshToken> findValidTokensByUser(
         @Param("userId") UUID userId,
+        @Param("revoked") boolean revoked,
         @Param("now") LocalDateTime now
     );
 
@@ -47,18 +49,22 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
      * 撤銷用戶的所有 Token
      */
     @Modifying
-    @Query("UPDATE RefreshToken rt SET rt.revoked = true WHERE rt.user.id = :userId")
-    void revokeAllUserTokens(@Param("userId") UUID userId);
+    @Query("UPDATE RefreshToken rt SET rt.revoked = :revoked WHERE rt.user.id = :userId")
+    void revokeAllUserTokens(
+        @Param("userId") UUID userId,
+        @Param("revoked") boolean revoked
+    );
 
     /**
      * 撤銷用戶特定設備的所有 Token
      */
     @Modifying
-    @Query("UPDATE RefreshToken rt SET rt.revoked = true " +
+    @Query("UPDATE RefreshToken rt SET rt.revoked = :revoked " +
            "WHERE rt.user.id = :userId AND rt.deviceType = :deviceType")
     void revokeUserDeviceTokens(
         @Param("userId") UUID userId,
-        @Param("deviceType") String deviceType
+        @Param("deviceType") String deviceType,
+        @Param("revoked") boolean revoked
     );
 
     /**
@@ -72,8 +78,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
      * 刪除已撤銷且過期的 Token (定期清理任務用)
      */
     @Modifying
-    @Query("DELETE FROM RefreshToken rt WHERE rt.revoked = true AND rt.expiryDate < :now")
-    int deleteRevokedExpiredTokens(@Param("now") LocalDateTime now);
+    @Query("DELETE FROM RefreshToken rt WHERE rt.revoked = :revoked AND rt.expiryDate < :now")
+    int deleteRevokedExpiredTokens(
+        @Param("revoked") boolean revoked,
+        @Param("now") LocalDateTime now
+    );
 
     /**
      * 刪除用戶的所有 Token
@@ -84,10 +93,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
      * 統計用戶活躍設備數量
      */
     @Query("SELECT COUNT(DISTINCT rt.deviceType) FROM RefreshToken rt " +
-           "WHERE rt.user.id = :userId AND rt.revoked = false " +
+           "WHERE rt.user.id = :userId AND rt.revoked = :revoked " +
            "AND rt.expiryDate > :now")
     long countActiveDevicesByUser(
         @Param("userId") UUID userId,
+        @Param("revoked") boolean revoked,
         @Param("now") LocalDateTime now
     );
 }

@@ -2,7 +2,7 @@ spring:
   application:
     name: petSystem
   profiles:
-    active: dev
+    active: qas
   jpa:
     defer-datasource-initialization: true
     show-sql: false

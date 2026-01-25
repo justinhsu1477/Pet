@@ -21,10 +21,14 @@ public class SitterRecord {
     @JoinColumn(name = "sitter_id")
     private Sitter sitter;
 
+    @Column(name = "record_time")
     private LocalDateTime recordTime;
+
     private String activity;
     private Boolean fed;
     private Boolean walked;
+
+    @Column(name = "mood_status")
     private String moodStatus;
 
     @Column(length = 1000)

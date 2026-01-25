@@ -11,12 +11,15 @@ import lombok.Setter;
 public class Cat extends Pet {
 
     // 貓特有屬性
+    @Column(name = "is_indoor")
     private Boolean isIndoor;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "litter_box_type")
     private LitterBoxType litterBoxType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "scratching_habit")
     private ScratchingHabit scratchingHabit;
 
     @Override

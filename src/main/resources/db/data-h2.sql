@@ -48,38 +48,38 @@ VALUES ('40000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000
 -- 插入 Pet (Dogs)
 -- ============================================
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, special_needs, is_neutered, vaccine_status)
 VALUES ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'DOG', '阿福', 5, '黃金獵犬', 'MALE', '需要每天散步兩次', true, '已完成年度疫苗');
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, special_needs, is_neutered, vaccine_status)
 VALUES ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'DOG', '皮皮', 2, '柴犬', 'FEMALE', NULL, false, '已完成基本疫苗');
 
-INSERT INTO Dog (id, size, isWalkRequired, walkFrequencyPerDay, trainingLevel, isFriendlyWithDogs, isFriendlyWithPeople, isFriendlyWithChildren)
+INSERT INTO Dog (id, size, is_walk_required, walk_frequency_per_day, training_level, is_friendly_with_dogs, is_friendly_with_people, is_friendly_with_children)
 VALUES ('10000000-0000-0000-0000-000000000001', 'LARGE', true, 2, 'BASIC', true, true, true);
 
-INSERT INTO Dog (id, size, isWalkRequired, walkFrequencyPerDay, trainingLevel, isFriendlyWithDogs, isFriendlyWithPeople, isFriendlyWithChildren)
+INSERT INTO Dog (id, size, is_walk_required, walk_frequency_per_day, training_level, is_friendly_with_dogs, is_friendly_with_people, is_friendly_with_children)
 VALUES ('10000000-0000-0000-0000-000000000002', 'MEDIUM', true, 3, 'INTERMEDIATE', true, true, false);
 
 -- ============================================
 -- 插入 Pet (Cats)
 -- ============================================
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, special_needs, is_neutered, vaccine_status)
 VALUES ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'CAT', '喵喵', 3, '波斯貓', 'FEMALE', '對海鮮過敏', true, '已完成年度疫苗');
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, special_needs, is_neutered, vaccine_status)
 VALUES ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'CAT', '咪咪', 4, '美國短毛貓', 'MALE', '需要定期梳毛', true, '已完成基本疫苗');
 
-INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, specialNeeds, isNeutered, vaccineStatus)
+INSERT INTO Pet (id, user_id, pet_type, name, age, breed, gender, special_needs, is_neutered, vaccine_status)
 VALUES ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'CAT', '小橘', 2, '橘貓', 'MALE', NULL, false, NULL);
 
-INSERT INTO Cat (id, isIndoor, litterBoxType, scratchingHabit)
+INSERT INTO Cat (id, is_indoor, litter_box_type, scratching_habit)
 VALUES ('20000000-0000-0000-0000-000000000001', true, 'COVERED', 'LOW');
 
-INSERT INTO Cat (id, isIndoor, litterBoxType, scratchingHabit)
+INSERT INTO Cat (id, is_indoor, litter_box_type, scratching_habit)
 VALUES ('20000000-0000-0000-0000-000000000002', true, 'AUTOMATIC', 'MODERATE');
 
-INSERT INTO Cat (id, isIndoor, litterBoxType, scratchingHabit)
+INSERT INTO Cat (id, is_indoor, litter_box_type, scratching_habit)
 VALUES ('20000000-0000-0000-0000-000000000003', false, 'OPEN', 'HIGH');
 
 -- ============================================
@@ -104,30 +104,30 @@ VALUES ('30000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-0000000
 -- ============================================
 
 -- 張保母
-INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, serviceArea, isActive)
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
 VALUES (RANDOM_UUID(), '30000000-0000-0000-0000-000000000001', 'MONDAY', '08:00:00', '20:00:00', '台北市大安區', true);
 
-INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, serviceArea, isActive)
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
 VALUES (RANDOM_UUID(), '30000000-0000-0000-0000-000000000001', 'TUESDAY', '08:00:00', '20:00:00', '台北市大安區', true);
 
-INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, serviceArea, isActive)
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
 VALUES (RANDOM_UUID(), '30000000-0000-0000-0000-000000000001', 'FRIDAY', '08:00:00', '20:00:00', '台北市大安區', true);
 
 -- 李保母
-INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, serviceArea, isActive)
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
 VALUES (RANDOM_UUID(), '30000000-0000-0000-0000-000000000002', 'TUESDAY', '09:00:00', '18:00:00', '台北市信義區', true);
 
-INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, serviceArea, isActive)
+INSERT INTO sitter_availability (id, sitter_id, day_of_week, start_time, end_time, service_area, is_active)
 VALUES (RANDOM_UUID(), '30000000-0000-0000-0000-000000000002', 'SATURDAY', '10:00:00', '20:00:00', '台北市信義區', true);
 
 -- ============================================
 -- 插入 SitterRecord
 -- ============================================
 
-INSERT INTO SitterRecord (id, pet_id, sitter_id, recordTime, activity, fed, walked, moodStatus, notes, photos)
+INSERT INTO SitterRecord (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)
 VALUES (RANDOM_UUID(), '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '2025-01-01 09:00:00', '晨間散步', true, true, '活潑開心', '阿福今天精神很好,在公園玩得很開心', NULL);
 
-INSERT INTO SitterRecord (id, pet_id, sitter_id, recordTime, activity, fed, walked, moodStatus, notes, photos)
+INSERT INTO SitterRecord (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)
 VALUES (RANDOM_UUID(), '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', '2025-01-01 10:00:00', '餵食與梳毛', true, false, '慵懶', '喵喵今天比較想睡覺,梳毛時很配合', NULL);
 
 -- ============================================
@@ -135,20 +135,20 @@ VALUES (RANDOM_UUID(), '20000000-0000-0000-0000-000000000001', '30000000-0000-00
 -- ============================================
 
 -- 張保母的預約
-INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, totalPrice, created_at, updated_at, version)
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
 VALUES ('40000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '2025-01-05 09:00:00', '2025-01-05 18:00:00', 'COMPLETED', '請幫忙遛狗兩次', 800.00, '2025-01-04 10:00:00', '2025-01-05 19:00:00', 0);
 
-INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, totalPrice, created_at, updated_at, version)
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
 VALUES ('40000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '2025-01-08 10:00:00', '2025-01-08 17:00:00', 'COMPLETED', '皮皮需要多運動', 700.00, '2025-01-07 14:00:00', '2025-01-08 18:00:00', 0);
 
-INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, totalPrice, created_at, updated_at, version)
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
 VALUES ('40000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '2025-01-12 09:00:00', '2025-01-12 18:00:00', 'COMPLETED', NULL, 800.00, '2025-01-11 08:00:00', '2025-01-12 19:00:00', 0);
 
 -- 李保母的預約
-INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, totalPrice, created_at, updated_at, version)
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
 VALUES ('40000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '2025-01-06 10:00:00', '2025-01-06 18:00:00', 'COMPLETED', '喵喵對海鮮過敏請注意', 750.00, '2025-01-05 15:00:00', '2025-01-06 19:00:00', 0);
 
-INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, totalPrice, created_at, updated_at, version)
+INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
 VALUES ('40000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', '2025-01-10 09:00:00', '2025-01-10 17:00:00', 'COMPLETED', '需要定期梳毛', 700.00, '2025-01-09 12:00:00', '2025-01-10 18:00:00', 0);
 
 -- ============================================
@@ -156,18 +156,18 @@ VALUES ('40000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-0000000
 -- ============================================
 
 -- 張保母的評價
-INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overallRating, professionalismRating, communicationRating, punctualityRating, comment, sitterReply, isAnonymous, created_at, updated_at)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
 VALUES (RANDOM_UUID(), '40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, '張保母非常專業！阿福被照顧得很好', '謝謝您的肯定！', false, '2025-01-06 10:30:00', '2025-01-06 10:30:00');
 
-INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overallRating, professionalismRating, communicationRating, punctualityRating, comment, sitterReply, isAnonymous, created_at, updated_at)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
 VALUES (RANDOM_UUID(), '40000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 4, 4, 5, 4, '皮皮玩得很開心', '感謝您的建議！', false, '2025-01-09 14:00:00', '2025-01-09 14:00:00');
 
-INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overallRating, professionalismRating, communicationRating, punctualityRating, comment, sitterReply, isAnonymous, created_at, updated_at)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
 VALUES (RANDOM_UUID(), '40000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, '服務一如既往的好', NULL, false, '2025-01-13 09:00:00', '2025-01-13 09:00:00');
 
 -- 李保母的評價
-INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overallRating, professionalismRating, communicationRating, punctualityRating, comment, sitterReply, isAnonymous, created_at, updated_at)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
 VALUES (RANDOM_UUID(), '40000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, '李保母對貓咪超級有愛！', '謝謝您！', false, '2025-01-07 19:00:00', '2025-01-07 19:00:00');
 
-INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overallRating, professionalismRating, communicationRating, punctualityRating, comment, sitterReply, isAnonymous, created_at, updated_at)
+INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
 VALUES (RANDOM_UUID(), '40000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 5, 5, 4, 5, '咪咪被梳得很漂亮', NULL, false, '2025-01-11 18:30:00', '2025-01-11 18:30:00');

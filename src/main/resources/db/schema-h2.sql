@@ -7,7 +7,9 @@ DROP TABLE IF EXISTS sitter_record;
 DROP TABLE IF EXISTS dog;
 DROP TABLE IF EXISTS cat;
 DROP TABLE IF EXISTS pet;
+DROP TABLE IF EXISTS customer;
 DROP TABLE IF EXISTS sitter;
+DROP TABLE IF EXISTS refresh_tokens;
 DROP TABLE IF EXISTS users;
 
 -- Users 表
@@ -20,6 +22,42 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(20)
 );
 
+-- RefreshToken 表 (JWT 認證用)
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    token_hash VARCHAR(64) UNIQUE NOT NULL,
+    user_id UUID NOT NULL,
+    expiry_date TIMESTAMP NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    device_type VARCHAR(20) NOT NULL,
+    device_info VARCHAR(200),
+    ip_address VARCHAR(45),
+    last_used_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- RefreshToken 索引
+CREATE INDEX IF NOT EXISTS idx_token_hash ON refresh_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_user_device ON refresh_tokens(user_id, device_type);
+CREATE INDEX IF NOT EXISTS idx_expiry ON refresh_tokens(expiry_date);
+
+-- Customer 表 (一般用戶/飼主詳細資料)
+CREATE TABLE IF NOT EXISTS customer (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    user_id UUID UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(500),
+    emergency_contact VARCHAR(255),
+    emergency_phone VARCHAR(20),
+    member_level VARCHAR(20) DEFAULT 'BRONZE',
+    total_bookings INT DEFAULT 0,
+    total_spent DOUBLE DEFAULT 0.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 -- Pet 表 (父類別，使用 JOINED 繼承策略)
 CREATE TABLE IF NOT EXISTS pet (
     id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
@@ -29,8 +67,6 @@ CREATE TABLE IF NOT EXISTS pet (
     age INT,
     breed VARCHAR(100),
     gender VARCHAR(10),
-    owner_name VARCHAR(100),
-    owner_phone VARCHAR(20),
     special_needs VARCHAR(500),
     is_neutered BOOLEAN,
     vaccine_status VARCHAR(255),
@@ -62,13 +98,13 @@ CREATE TABLE IF NOT EXISTS cat (
 -- Sitter 表
 CREATE TABLE IF NOT EXISTS sitter (
     id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    user_id UUID UNIQUE,
     name VARCHAR(255),
-    phone VARCHAR(255),
-    email VARCHAR(255),
     experience VARCHAR(500),
     average_rating DOUBLE,
     rating_count INT DEFAULT 0,
-    completed_bookings INT DEFAULT 0
+    completed_bookings INT DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- SitterRecord 表

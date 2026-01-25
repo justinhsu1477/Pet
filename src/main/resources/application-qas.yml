@@ -1,23 +1,23 @@
 spring:
   datasource:
     primary:
-      url: ${MSSQL_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb;encrypt=false;trustServerCertificate=true}
+      url: ${MSSQL_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true;characterEncoding=UTF-8}
       driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
       username: ${MSSQL_USERNAME:sa}
       password: ${MSSQL_PASSWORD:Passw0rd}
     log:
-      url: ${MSSQL_LOG_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb_log;encrypt=false;trustServerCertificate=true}
+      url: ${MSSQL_LOG_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb_log;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true;characterEncoding=UTF-8}
       driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
       username: ${MSSQL_LOG_USERNAME:sa}
       password: ${MSSQL_LOG_PASSWORD:Passw0rd}
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
-      ddl-auto: update  # QAS 環境用 update，方便開發測試
+      ddl-auto: none  # 不使用 Hibernate 自動建表，完全由 SQL 腳本控制
     log:
       database-platform: org.hibernate.dialect.SQLServerDialect
       hibernate:
-        ddl-auto: update
+        ddl-auto: none
     show-sql: true
     properties:
       hibernate:
@@ -26,5 +26,6 @@ spring:
   sql:
     init:
       mode: always  # 啟用自動執行 SQL
-      data-locations: classpath:db/data.sql  # 載入測試資料
+      schema-locations: classpath:db/schema-mssql.sql  # MSSQL Schema - 建立表格
+      data-locations: classpath:db/data-mssql-simple.sql  # MSSQL Data - 插入測試資料 (簡化版,無變數)
       continue-on-error: true  # 如果資料已存在，繼續執行

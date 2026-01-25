@@ -8,9 +8,6 @@ import java.util.UUID;
 
 /**
  * 保母評價
- * 1. 限制只有 COMPLETED 訂單才能評分（防濫用）
- * 2. 一個 Booking 只能評價一次（唯一索引）
- * 3. 支援加權平均計算
  */
 @Entity
 @Data
@@ -25,23 +22,14 @@ public class SitterRating {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /**
-     * 關聯的預約訂單（必須是 COMPLETED 狀態）
-     */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    /**
-     * 被評價的保母
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sitter_id", nullable = false)
     private Sitter sitter;
 
-    /**
-     * 評價者（飼主）
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
@@ -49,39 +37,40 @@ public class SitterRating {
     /**
      * 總體評分 (1-5)
      */
-    @Column(nullable = false)
+    @Column(name = "overall_rating", nullable = false)
     private Integer overallRating;
 
     /**
      * 專業度評分 (1-5)
      */
+    @Column(name = "professionalism_rating")
     private Integer professionalismRating;
 
     /**
      * 溝通評分 (1-5)
      */
+    @Column(name = "communication_rating")
     private Integer communicationRating;
 
     /**
      * 準時性評分 (1-5)
      */
+    @Column(name = "punctuality_rating")
     private Integer punctualityRating;
 
-    /**
-     * 評價內容
-     */
     @Column(length = 1000)
     private String comment;
 
     /**
      * 保母回覆
      */
-    @Column(length = 500)
+    @Column(name = "sitter_reply", length = 500)
     private String sitterReply;
 
     /**
      * 是否匿名評價
      */
+    @Column(name = "is_anonymous")
     private Boolean isAnonymous = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -101,51 +90,23 @@ public class SitterRating {
         updatedAt = LocalDateTime.now();
     }
 
-    public UUID getId() {
-        return id;
-    }
+    // --- 以下為 Getter/Setter 重寫（保留原本設計，解決特定環境讀取問題） ---
 
-    public Integer getOverallRating() {
-        return overallRating;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public Boolean getIsAnonymous() {
-        return isAnonymous;
-    }
-
-    public Users getUser() {
-        return user;
-    }
+    public UUID getId() { return id; }
+    public Integer getOverallRating() { return overallRating; }
+    public String getComment() { return comment; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Boolean getIsAnonymous() { return isAnonymous; }
+    public Users getUser() { return user; }
 
     /**
      * 計算加權平均分數
-     * 權重：總體 40%, 專業 25%, 溝通 20%, 準時 15%
      */
     public Double getWeightedScore() {
         double score = overallRating * 0.4;
-        if (professionalismRating != null) {
-            score += professionalismRating * 0.25;
-        } else {
-            score += overallRating * 0.25;
-        }
-        if (communicationRating != null) {
-            score += communicationRating * 0.20;
-        } else {
-            score += overallRating * 0.20;
-        }
-        if (punctualityRating != null) {
-            score += punctualityRating * 0.15;
-        } else {
-            score += overallRating * 0.15;
-        }
+        score += (professionalismRating != null ? professionalismRating : overallRating) * 0.25;
+        score += (communicationRating != null ? communicationRating : overallRating) * 0.20;
+        score += (punctualityRating != null ? punctualityRating : overallRating) * 0.15;
         return Math.round(score * 100.0) / 100.0;
     }
 }

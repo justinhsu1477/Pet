@@ -20,9 +20,9 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "refresh_tokens", indexes = {
-    @Index(name = "idx_token_hash", columnList = "tokenHash"),
-    @Index(name = "idx_user_device", columnList = "user_id,deviceType"),
-    @Index(name = "idx_expiry", columnList = "expiryDate")
+    @Index(name = "idx_token_hash", columnList = "token_hash"),
+    @Index(name = "idx_user_device", columnList = "user_id,device_type"),
+    @Index(name = "idx_expiry", columnList = "expiry_date")
 })
 @Getter
 @Setter
@@ -50,7 +50,7 @@ public class RefreshToken {
     /**
      * 過期時間
      */
-    @Column(nullable = false)
+    @Column(nullable = false, name = "expiry_date")
     private LocalDateTime expiryDate;
 
     /**
@@ -62,30 +62,31 @@ public class RefreshToken {
     /**
      * 設備類型: WEB/APP
      */
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, name = "device_type")
     private String deviceType;
 
     /**
      * 設備信息 (可選): "Chrome 120 on Windows", "iOS 17.2"
      */
-    @Column(length = 200)
+    @Column(length = 200, name = "device_info")
     private String deviceInfo;
 
     /**
      * 登入 IP (可選,用於異常檢測)
      */
-    @Column(length = 45)
+    @Column(length = 45, name = "ip_address")
     private String ipAddress;
 
     /**
      * 最後使用時間
      */
+    @Column(name = "last_used_at")
     private LocalDateTime lastUsedAt;
 
     /**
      * 創建時間
      */
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

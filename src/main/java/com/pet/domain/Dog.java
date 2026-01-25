@@ -14,14 +14,23 @@ public class Dog extends Pet {
     @Enumerated(EnumType.STRING)
     private Size size;
 
+    @Column(name = "is_walk_required")
     private Boolean isWalkRequired;
+
+    @Column(name = "walk_frequency_per_day")
     private Integer walkFrequencyPerDay;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "training_level")
     private TrainingLevel trainingLevel;
 
+    @Column(name = "is_friendly_with_dogs")
     private Boolean isFriendlyWithDogs;
+
+    @Column(name = "is_friendly_with_people")
     private Boolean isFriendlyWithPeople;
+
+    @Column(name = "is_friendly_with_children")
     private Boolean isFriendlyWithChildren;
 
     @Override

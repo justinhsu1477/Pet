@@ -17,5 +17,18 @@ RUN apt-get update && \
 # Add sqlcmd to PATH
 ENV PATH="${PATH}:/opt/mssql-tools/bin"
 
+# Create directory for initialization scripts
+RUN mkdir -p /docker-entrypoint-initdb.d
+
+# Copy initialization SQL script
+COPY init-db.sql /docker-entrypoint-initdb.d/
+
+# Copy and set permissions for entrypoint script
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Switch back to the non-root mssql user
 USER mssql
+
+# Use custom entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -28,10 +28,13 @@ public abstract class Pet {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(length = 500)
+    @Column(length = 500, name = "special_needs")
     private String specialNeeds;
 
+    @Column(name = "is_neutered")
     private Boolean isNeutered;
+
+    @Column(name = "vaccine_status")
     private String vaccineStatus;
 
     /**

@@ -81,13 +81,6 @@ public class ApplicationStartupRunner implements CommandLineRunner {
             log.info("Hibernate DDL Auto  : {}", ddlAuto);
         }
 
-        // H2 Console (如果啟用)
-        String h2ConsoleEnabled = environment.getProperty("spring.h2.console.enabled");
-        if ("true".equalsIgnoreCase(h2ConsoleEnabled)) {
-            String h2ConsolePath = environment.getProperty("spring.h2.console.path", "/h2-console");
-            log.info("H2 Console Enabled  : true");
-            log.info("H2 Console URL      : http://localhost:{}{}", serverPort, h2ConsolePath);
-        }
 
         log.info("\n{}", separator);
         log.info("✅ Application is ready to accept requests");

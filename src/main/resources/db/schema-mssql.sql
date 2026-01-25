@@ -10,7 +10,9 @@ IF OBJECT_ID('sitter_record', 'U') IS NOT NULL DROP TABLE sitter_record;
 IF OBJECT_ID('dog', 'U') IS NOT NULL DROP TABLE dog;
 IF OBJECT_ID('cat', 'U') IS NOT NULL DROP TABLE cat;
 IF OBJECT_ID('pet', 'U') IS NOT NULL DROP TABLE pet;
+IF OBJECT_ID('customer', 'U') IS NOT NULL DROP TABLE customer;
 IF OBJECT_ID('sitter', 'U') IS NOT NULL DROP TABLE sitter;
+IF OBJECT_ID('refresh_tokens', 'U') IS NOT NULL DROP TABLE refresh_tokens;
 IF OBJECT_ID('users', 'U') IS NOT NULL DROP TABLE users;
 
 -- Users table
@@ -23,19 +25,55 @@ CREATE TABLE users (
     role VARCHAR(20)
 );
 
+-- RefreshToken table (JWT 認證用)
+CREATE TABLE refresh_tokens (
+    id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+    token_hash VARCHAR(64) UNIQUE NOT NULL,
+    user_id UNIQUEIDENTIFIER NOT NULL,
+    expiry_date DATETIME2 NOT NULL,
+    revoked BIT NOT NULL DEFAULT 0,
+    device_type VARCHAR(20) NOT NULL,
+    device_info VARCHAR(200),
+    ip_address VARCHAR(45),
+    last_used_at DATETIME2,
+    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- RefreshToken indexes
+CREATE INDEX idx_token_hash ON refresh_tokens(token_hash);
+CREATE INDEX idx_user_device ON refresh_tokens(user_id, device_type);
+CREATE INDEX idx_expiry ON refresh_tokens(expiry_date);
+
+-- Customer table (一般用戶/飼主詳細資料)
+CREATE TABLE customer (
+    id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+    user_id UNIQUEIDENTIFIER UNIQUE NOT NULL,
+    name NVARCHAR(255) NOT NULL,
+    address NVARCHAR(500),
+    emergency_contact NVARCHAR(255),
+    emergency_phone VARCHAR(20),
+    member_level VARCHAR(20) DEFAULT 'BRONZE',
+    total_bookings INT DEFAULT 0,
+    total_spent FLOAT DEFAULT 0.0,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 -- Pet table (parent class, JOINED inheritance strategy)
 CREATE TABLE pet (
     id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+    user_id UNIQUEIDENTIFIER,
     pet_type VARCHAR(31) NOT NULL,
-    name VARCHAR(100),
+    name NVARCHAR(100),
     age INT,
-    breed VARCHAR(100),
+    breed NVARCHAR(100),
     gender VARCHAR(10),
-    owner_name VARCHAR(100),
-    owner_phone VARCHAR(20),
-    special_needs VARCHAR(500),
+    special_needs NVARCHAR(500),
     is_neutered BIT,
-    vaccine_status VARCHAR(255)
+    vaccine_status NVARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Dog table (child class, inherits Pet)
@@ -63,13 +101,15 @@ CREATE TABLE cat (
 -- Sitter table
 CREATE TABLE sitter (
     id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
-    name VARCHAR(255),
+    user_id UNIQUEIDENTIFIER UNIQUE,
+    name NVARCHAR(255),
     phone VARCHAR(255),
     email VARCHAR(255),
-    experience VARCHAR(500),
+    experience NVARCHAR(500),
     average_rating FLOAT,
     rating_count INT DEFAULT 0,
-    completed_bookings INT DEFAULT 0
+    completed_bookings INT DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- SitterRecord table
@@ -78,11 +118,11 @@ CREATE TABLE sitter_record (
     pet_id UNIQUEIDENTIFIER,
     sitter_id UNIQUEIDENTIFIER,
     record_time DATETIME2,
-    activity VARCHAR(255),
+    activity NVARCHAR(255),
     fed BIT,
     walked BIT,
-    mood_status VARCHAR(255),
-    notes VARCHAR(1000),
+    mood_status NVARCHAR(255),
+    notes NVARCHAR(1000),
     photos VARCHAR(500),
     FOREIGN KEY (pet_id) REFERENCES pet(id),
     FOREIGN KEY (sitter_id) REFERENCES sitter(id)
@@ -97,7 +137,7 @@ CREATE TABLE pet_activity (
     walk_time DATETIME2,
     fed BIT DEFAULT 0,
     feed_time DATETIME2,
-    notes VARCHAR(500),
+    notes NVARCHAR(500),
     created_at DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (pet_id) REFERENCES pet(id) ON DELETE CASCADE
 );
@@ -113,7 +153,7 @@ CREATE TABLE sitter_availability (
     day_of_week VARCHAR(20) NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    service_area VARCHAR(100),
+    service_area NVARCHAR(100),
     is_active BIT DEFAULT 1,
     FOREIGN KEY (sitter_id) REFERENCES sitter(id) ON DELETE CASCADE,
     CONSTRAINT uk_sitter_availability UNIQUE (sitter_id, day_of_week, start_time, end_time)
@@ -129,8 +169,8 @@ CREATE TABLE booking (
     end_time DATETIME2 NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     version BIGINT DEFAULT 0,
-    notes VARCHAR(500),
-    sitter_response VARCHAR(500),
+    notes NVARCHAR(500),
+    sitter_response NVARCHAR(500),
     total_price FLOAT,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
@@ -153,8 +193,8 @@ CREATE TABLE sitter_rating (
     professionalism_rating INT,
     communication_rating INT,
     punctuality_rating INT,
-    comment VARCHAR(1000),
-    sitter_reply VARCHAR(500),
+    comment NVARCHAR(1000),
+    sitter_reply NVARCHAR(500),
     is_anonymous BIT DEFAULT 0,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),

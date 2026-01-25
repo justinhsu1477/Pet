@@ -65,6 +65,7 @@ public class Booking {
     /**
      * 服務費用
      */
+    @Column(name = "total_price")
     private Double totalPrice;
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -39,11 +39,12 @@ public class SitterAvailability {
     /**
      * 服務地區（可擴展為獨立表）
      */
-    @Column(length = 100)
+    @Column(length = 100, name = "service_area")
     private String serviceArea;
 
     /**
      * 是否啟用此時段
      */
+    @Column(name = "is_active")
     private Boolean isActive = true;
 }
