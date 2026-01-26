@@ -139,7 +139,6 @@ class AuthenticationServiceTest {
             request.setRefreshToken("valid-refresh-token");
 
             RefreshToken refreshToken = new RefreshToken();
-            refreshToken.setToken("valid-refresh-token");
             refreshToken.setUser(testUser);
 
             given(refreshTokenService.validateRefreshToken("valid-refresh-token")).willReturn(refreshToken);
@@ -165,7 +164,6 @@ class AuthenticationServiceTest {
             request.setRefreshToken("invalid-token");
 
             RefreshToken refreshToken = new RefreshToken();
-            refreshToken.setToken("invalid-token");
             refreshToken.setUser(testUser);
 
             given(refreshTokenService.validateRefreshToken("invalid-token")).willReturn(refreshToken);
@@ -184,7 +182,6 @@ class AuthenticationServiceTest {
             request.setRefreshToken("access-token-not-refresh");
 
             RefreshToken refreshToken = new RefreshToken();
-            refreshToken.setToken("access-token-not-refresh");
             refreshToken.setUser(testUser);
 
             given(refreshTokenService.validateRefreshToken("access-token-not-refresh")).willReturn(refreshToken);
