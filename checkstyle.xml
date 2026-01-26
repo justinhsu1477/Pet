@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+    Checkstyle configuration for Pet Sitter System
+    Based on Google Java Style with some relaxations for practical use
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="warning"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- Exclude generated files -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\-info\.java$"/>
+    </module>
+
+    <!-- File length check -->
+    <module name="FileLength">
+        <property name="max" value="500"/>
+        <property name="severity" value="warning"/>
+    </module>
+
+    <!-- No tab characters -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <!-- Trailing whitespace -->
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$"/>
+        <property name="minimum" value="0"/>
+        <property name="maximum" value="0"/>
+        <property name="message" value="Line has trailing spaces."/>
+        <property name="severity" value="info"/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- =============== Naming Conventions =============== -->
+
+        <!-- Class names: UpperCamelCase -->
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" value="Type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+
+        <!-- Method names: lowerCamelCase (allow underscore for Spring Data JPA conventions like findBySitter_Id) -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
+            <message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+
+        <!-- Parameter names: lowerCamelCase -->
+        <module name="ParameterName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+
+        <!-- Local variable names: lowerCamelCase -->
+        <module name="LocalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" value="Local variable name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+
+        <!-- Constant names: UPPER_SNAKE_CASE (allow common lowercase logger convention) -->
+        <module name="ConstantName">
+            <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+)*|logger|log)$"/>
+        </module>
+
+        <!-- Package names: lowercase -->
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+            <message key="name.invalidPattern" value="Package name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+
+        <!-- =============== Import Checks =============== -->
+
+        <!-- No star imports (disabled for now, can enable later)
+        <module name="AvoidStarImport">
+            <property name="severity" value="warning"/>
+        </module>
+        -->
+
+        <!-- No redundant imports -->
+        <module name="RedundantImport"/>
+
+        <!-- No unused imports -->
+        <module name="UnusedImports"/>
+
+        <!-- =============== Code Structure =============== -->
+
+        <!-- One top-level class per file -->
+        <module name="OneTopLevelClass"/>
+
+        <!-- Method length -->
+        <module name="MethodLength">
+            <property name="tokens" value="METHOD_DEF"/>
+            <property name="max" value="80"/>
+            <property name="severity" value="warning"/>
+        </module>
+
+        <!-- Parameter number -->
+        <module name="ParameterNumber">
+            <property name="max" value="7"/>
+            <property name="severity" value="warning"/>
+        </module>
+
+        <!-- =============== Whitespace =============== -->
+
+        <!-- No whitespace after certain tokens -->
+        <module name="NoWhitespaceAfter">
+            <property name="tokens" value="AT, INC, DEC, UNARY_MINUS, UNARY_PLUS, BNOT, LNOT, DOT, ARRAY_DECLARATOR, INDEX_OP"/>
+        </module>
+
+        <!-- No whitespace before certain tokens -->
+        <module name="NoWhitespaceBefore">
+            <property name="tokens" value="COMMA, SEMI, POST_INC, POST_DEC, ELLIPSIS"/>
+        </module>
+
+        <!-- Whitespace around operators -->
+        <module name="WhitespaceAround">
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyMethods" value="true"/>
+            <property name="allowEmptyTypes" value="true"/>
+            <property name="allowEmptyLoops" value="true"/>
+        </module>
+
+        <!-- =============== Braces =============== -->
+
+        <!-- Left curly brace style (disabled - pure style preference)
+        <module name="LeftCurly">
+            <property name="option" value="eol"/>
+        </module>
+        -->
+
+        <!-- Right curly brace style (disabled - pure style preference)
+        <module name="RightCurly">
+            <property name="option" value="alone"/>
+            <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT, INSTANCE_INIT"/>
+        </module>
+        -->
+
+        <!-- Need braces for control statements -->
+        <module name="NeedBraces">
+            <property name="severity" value="warning"/>
+        </module>
+
+        <!-- =============== Common Mistakes =============== -->
+
+        <!-- Avoid empty blocks -->
+        <module name="EmptyBlock">
+            <property name="option" value="TEXT"/>
+            <property name="tokens" value="LITERAL_TRY, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_SWITCH"/>
+        </module>
+
+        <!-- Equals and hashCode together -->
+        <module name="EqualsHashCode"/>
+
+        <!-- No fall through in switch -->
+        <module name="FallThrough"/>
+
+        <!-- Missing switch default -->
+        <module name="MissingSwitchDefault">
+            <property name="severity" value="info"/>
+        </module>
+
+        <!-- Simplify boolean expression -->
+        <module name="SimplifyBooleanExpression"/>
+
+        <!-- Simplify boolean return -->
+        <module name="SimplifyBooleanReturn"/>
+
+        <!-- =============== Annotations =============== -->
+
+        <!-- Override annotation required when overriding -->
+        <module name="MissingOverride"/>
+    </module>
+</module>

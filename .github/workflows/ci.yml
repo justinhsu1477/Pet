@@ -92,12 +92,22 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Check code style (skip for now, add checkstyle later)
-        run: echo "Code style check passed (placeholder)"
+      - name: Run Checkstyle
+        run: mvn checkstyle:check -B
 
-      # Optional: Add SpotBugs, PMD, or other static analysis tools
-      # - name: Run SpotBugs
-      #   run: mvn spotbugs:check
+      - name: Upload Checkstyle Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-report
+          path: target/checkstyle-result.xml
+          if-no-files-found: ignore
+
+      - name: Annotate Checkstyle Issues
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@master
+        with:
+          path: target/checkstyle-result.xml
 
   # ====================================
   # Job 3: Build Docker Image

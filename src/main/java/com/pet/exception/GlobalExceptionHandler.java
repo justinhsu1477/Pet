@@ -87,8 +87,9 @@ public class GlobalExceptionHandler {
     // 輔助方法: 決定欄位錯誤代碼
     private String determineFieldErrorCode(FieldError error) {
         String code = error.getCode();
-        if (code == null)
+        if (code == null) {
             return ErrorCode.INVALID_INPUT.getCode();
+        }
 
         return switch (code) {
             case "NotBlank", "NotNull", "NotEmpty" -> ErrorCode.FIELD_REQUIRED.getCode();
