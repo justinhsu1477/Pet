@@ -219,6 +219,19 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+                <configuration>
+                    <excludes>
+                        <!-- 配置類 - 沒有業務邏輯 -->
+                        <exclude>**/*Config.*</exclude>
+                        <exclude>**/*Configuration.*</exclude>
+                        <!-- Spring Boot 啟動入口 -->
+                        <exclude>**/*Application.*</exclude>
+                        <!-- DTO - 只是數據傳輸物件 -->
+                        <exclude>**/dto/**</exclude>
+                        <!-- 自動生成的程式碼 -->
+                        <exclude>**/generated/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
