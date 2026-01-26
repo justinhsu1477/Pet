@@ -138,10 +138,11 @@ class BookingServiceTest {
             try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
                 // given
                 txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
-                given(petRepository.findById(testPetId)).willReturn(Optional.of(testPet));
-                given(sitterRepository.findById(testSitterId)).willReturn(Optional.of(testSitter));
-                given(userRepository.findById(testUserId)).willReturn(Optional.of(testUser));
+                // 注意：新的 createBooking 流程是先用悲觀鎖取得保母，再取得寵物和用戶
+                given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
                 given(bookingRepository.countConflictingBookings(any(), any(), any())).willReturn(0L);
+                given(petRepository.findById(testPetId)).willReturn(Optional.of(testPet));
+                given(userRepository.findById(testUserId)).willReturn(Optional.of(testUser));
                 given(bookingRepository.save(any(Booking.class))).willReturn(testBooking);
 
                 // when
@@ -160,6 +161,9 @@ class BookingServiceTest {
         @DisplayName("當寵物不存在時應該拋出例外")
         void shouldThrowExceptionWhenPetNotFound() {
             // given
+            // 新流程：先取得保母（悲觀鎖），檢查時段衝突，再取得寵物
+            given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
+            given(bookingRepository.countConflictingBookings(any(), any(), any())).willReturn(0L);
             given(petRepository.findById(testPetId)).willReturn(Optional.empty());
 
             // when & then
@@ -172,8 +176,8 @@ class BookingServiceTest {
         @DisplayName("當保母不存在時應該拋出例外")
         void shouldThrowExceptionWhenSitterNotFound() {
             // given
-            given(petRepository.findById(testPetId)).willReturn(Optional.of(testPet));
-            given(sitterRepository.findById(testSitterId)).willReturn(Optional.empty());
+            // 新流程：先用悲觀鎖取得保母，若不存在直接拋例外
+            given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> bookingService.createBooking(testBookingDto, testUserId))
@@ -185,6 +189,8 @@ class BookingServiceTest {
         @DisplayName("當時間衝突時應該拋出例外")
         void shouldThrowExceptionWhenTimeConflict() {
             // given
+            // 新流程：先用悲觀鎖取得保母，再檢查時段衝突
+            given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
             given(bookingRepository.countConflictingBookings(any(), any(), any())).willReturn(1L);
 
             // when & then
@@ -242,6 +248,8 @@ class BookingServiceTest {
                 // given
                 txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
                 given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+                // 確認預約時會用悲觀鎖鎖定保母以防止時段衝突
+                given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
                 given(bookingRepository.countConflictingBookingsExcluding(any(), any(), any(), any())).willReturn(0L);
 
                 Booking confirmedBooking = new Booking();
