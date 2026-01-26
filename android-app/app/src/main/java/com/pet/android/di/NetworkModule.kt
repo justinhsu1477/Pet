@@ -34,39 +34,27 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCookieJar(): CookieJar {
-        return object : CookieJar {
-            private val cookieStore = mutableMapOf<String, List<Cookie>>()
-
-            override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-                cookieStore[url.host] = cookies
-            }
-
-            override fun loadForRequest(url: HttpUrl): List<Cookie> {
-                return cookieStore[url.host] ?: emptyList()
-            }
+    fun provideCookieJar(): CookieJar = object : CookieJar {
+        private val cookieStore = mutableMapOf<String, List<Cookie>>()
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+            cookieStore[url.host] = cookies
         }
+        override fun loadForRequest(url: HttpUrl): List<Cookie> = cookieStore[url.host] ?: emptyList()
+    }
+
+    private fun logging(): HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
     }
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(
+    @BaseOkHttp
+    fun provideBaseOkHttpClient(
         cookieJar: CookieJar,
-        authInterceptor: AuthInterceptor,
-        tokenAuthenticator: TokenAuthenticator
     ): OkHttpClient {
-        val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-
         return OkHttpClient.Builder()
             .cookieJar(cookieJar)
-            // 添加 Logging Interceptor（應該在最前面，記錄所有請求）
-            .addInterceptor(loggingInterceptor)
-            // 添加 Auth Interceptor（自動注入 Token）
-            .addInterceptor(authInterceptor)
-            // 添加 Authenticator（處理 401，自動刷新 Token）
-            .authenticator(tokenAuthenticator)
+            .addInterceptor(logging())
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
@@ -75,15 +63,26 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(
-        okHttpClient: OkHttpClient,
+    @AuthedOkHttp
+    fun provideAuthedOkHttpClient(
+        @BaseOkHttp base: OkHttpClient,
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator
+    ): OkHttpClient {
+        return base.newBuilder()
+            .addInterceptor(authInterceptor)
+            .authenticator(tokenAuthenticator)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @AuthRetrofit
+    fun provideAuthRetrofit(
+        @BaseOkHttp okHttpClient: OkHttpClient,
         environmentManager: EnvironmentManager
     ): Retrofit {
-        // Get current environment's BASE_URL
-        val baseUrl = runBlocking {
-            environmentManager.currentEnvironment.first().baseUrl
-        }
-        
+        val baseUrl = runBlocking { environmentManager.currentEnvironment.first().baseUrl }
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(okHttpClient)
@@ -93,55 +92,61 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthApi(retrofit: Retrofit): AuthApi {
-        return retrofit.create(AuthApi::class.java)
+    @ApiRetrofit
+    fun provideApiRetrofit(
+        @AuthedOkHttp okHttpClient: OkHttpClient,
+        environmentManager: EnvironmentManager
+    ): Retrofit {
+        val baseUrl = runBlocking { environmentManager.currentEnvironment.first().baseUrl }
+        return Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
     }
 
     @Provides
     @Singleton
-    fun providePetApi(retrofit: Retrofit): PetApi {
-        return retrofit.create(PetApi::class.java)
-    }
+    fun provideAuthApi(@AuthRetrofit retrofit: Retrofit): AuthApi =
+        retrofit.create(AuthApi::class.java)
 
     @Provides
     @Singleton
-    fun provideSitterApi(retrofit: Retrofit): SitterApi {
-        return retrofit.create(SitterApi::class.java)
-    }
+    fun providePetApi(@ApiRetrofit retrofit: Retrofit): PetApi =
+        retrofit.create(PetApi::class.java)
 
     @Provides
     @Singleton
-    fun provideCatApi(retrofit: Retrofit): CatApi {
-        return retrofit.create(CatApi::class.java)
-    }
+    fun provideSitterApi(@ApiRetrofit retrofit: Retrofit): SitterApi =
+        retrofit.create(SitterApi::class.java)
 
     @Provides
     @Singleton
-    fun provideDogApi(retrofit: Retrofit): DogApi {
-        return retrofit.create(DogApi::class.java)
-    }
+    fun provideCatApi(@ApiRetrofit retrofit: Retrofit): CatApi =
+        retrofit.create(CatApi::class.java)
 
     @Provides
     @Singleton
-    fun providePetActivityApi(retrofit: Retrofit): PetActivityApi {
-        return retrofit.create(PetActivityApi::class.java)
-    }
+    fun provideDogApi(@ApiRetrofit retrofit: Retrofit): DogApi =
+        retrofit.create(DogApi::class.java)
 
     @Provides
     @Singleton
-    fun provideSitterRatingApi(retrofit: Retrofit): SitterRatingApi {
-        return retrofit.create(SitterRatingApi::class.java)
-    }
+    fun providePetActivityApi(@ApiRetrofit retrofit: Retrofit): PetActivityApi =
+        retrofit.create(PetActivityApi::class.java)
 
     @Provides
     @Singleton
-    fun provideBookingApi(retrofit: Retrofit): BookingApi {
-        return retrofit.create(BookingApi::class.java)
-    }
+    fun provideSitterRatingApi(@ApiRetrofit retrofit: Retrofit): SitterRatingApi =
+        retrofit.create(SitterRatingApi::class.java)
 
     @Provides
     @Singleton
-    fun provideSitterBookingApi(retrofit: Retrofit): SitterBookingApi {
-        return retrofit.create(SitterBookingApi::class.java)
-    }
+    fun provideBookingApi(@ApiRetrofit retrofit: Retrofit): BookingApi =
+        retrofit.create(BookingApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSitterBookingApi(@ApiRetrofit retrofit: Retrofit): SitterBookingApi =
+        retrofit.create(SitterBookingApi::class.java)
 }
