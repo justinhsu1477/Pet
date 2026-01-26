@@ -1,0 +1,102 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  # ====================================
+  # Quick validation for PRs
+  # ====================================
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Validate Maven build
+        run: mvn validate -B
+
+      - name: Compile
+        run: mvn compile -B -q
+
+      - name: Run Tests with Coverage
+        run: mvn test -B
+
+      - name: Check for uncommitted changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "::error::Found uncommitted changes after build"
+            git status
+            exit 1
+          fi
+
+  # ====================================
+  # PR Size Check
+  # ====================================
+  pr-size:
+    name: PR Size Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        run: |
+          # Get changed files count
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          echo "Changed files: $CHANGED_FILES"
+
+          # Get lines changed
+          LINES_CHANGED=$(git diff --stat origin/${{ github.base_ref }}...HEAD | tail -1 | grep -oE '[0-9]+' | head -1 || echo "0")
+          echo "Lines changed: $LINES_CHANGED"
+
+          # Warn if PR is too large
+          if [ "$CHANGED_FILES" -gt 50 ]; then
+            echo "::warning::This PR changes $CHANGED_FILES files. Consider breaking it into smaller PRs."
+          fi
+
+          if [ "$LINES_CHANGED" -gt 1000 ]; then
+            echo "::warning::This PR has $LINES_CHANGED lines changed. Consider breaking it into smaller PRs."
+          fi
+
+  # ====================================
+  # Commit Message Check
+  # ====================================
+  commit-lint:
+    name: Commit Message Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          echo "Checking commit messages..."
+          # Simple check: commits should not be empty
+          git log origin/${{ github.base_ref }}..HEAD --pretty=format:"%s" | while read msg; do
+            if [ ${#msg} -lt 10 ]; then
+              echo "::warning::Commit message too short: '$msg'"
+            fi
+          done
+          echo "Commit message check completed"
