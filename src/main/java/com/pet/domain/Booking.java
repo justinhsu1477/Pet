@@ -59,7 +59,7 @@ public class Booking {
     /**
      * 保母回覆/拒絕原因
      */
-    @Column(length = 500)
+    @Column(name = "sitter_response", length = 500)
     private String sitterResponse;
 
     /**

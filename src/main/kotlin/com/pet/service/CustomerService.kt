@@ -24,7 +24,7 @@ class CustomerService(
         
         return users.map { user ->
             // 嘗試取得關聯的 Customer 資料
-            val customer = user.getCustomer()
+            val customer = user.customer
             if (customer != null) {
                 convertToDto(customer)
             } else {

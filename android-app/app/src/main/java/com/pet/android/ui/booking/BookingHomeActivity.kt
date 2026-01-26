@@ -3,6 +3,8 @@ package com.pet.android.ui.booking
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -13,8 +15,11 @@ import com.pet.android.data.model.Pet
 import com.pet.android.data.preferences.UserPreferencesManager
 import com.pet.android.databinding.ActivityBookingHomeBinding
 import com.pet.android.ui.base.BaseActivity
+import com.pet.android.ui.user.pet.UserPetListActivity
+import com.pet.android.util.LogoutHelper
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -35,7 +40,19 @@ class BookingHomeActivity : BaseActivity<ActivityBookingHomeBinding>() {
     @Inject
     lateinit var userPreferences: UserPreferencesManager
 
+    @Inject
+    lateinit var logoutHelper: LogoutHelper
+
     private var pets: List<Pet> = emptyList()
+
+    private val myPetsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Refresh pets list when returning from pet management
+            loadUserPets()
+        }
+    }
 
     override fun getViewBinding(): ActivityBookingHomeBinding =
         ActivityBookingHomeBinding.inflate(layoutInflater)
@@ -53,7 +70,30 @@ class BookingHomeActivity : BaseActivity<ActivityBookingHomeBinding>() {
     }
 
     private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        setupToolbar(binding.toolbar, getString(R.string.booking_title), false)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_user_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_my_pets -> {
+                myPetsLauncher.launch(Intent(this, UserPetListActivity::class.java))
+                true
+            }
+            R.id.action_logout -> {
+                logoutHelper.performLogout(this)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onBackButtonPressed() {
+        finishAffinity()
     }
 
     private fun setupCalendar() {
