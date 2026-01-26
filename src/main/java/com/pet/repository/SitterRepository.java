@@ -1,11 +1,15 @@
 package com.pet.repository;
 
 import com.pet.domain.Sitter;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -16,4 +20,13 @@ public interface SitterRepository extends JpaRepository<Sitter, UUID> {
      */
     @Query("SELECT s FROM Sitter s JOIN FETCH s.user ORDER BY s.name ASC")
     List<Sitter> findAllWithUser();
+
+    /**
+     * 使用悲觀鎖查詢保母
+     * 用於建立預約時防止時段衝突的 race condition
+     * 鎖定保母資料列，確保同一時間只有一個 transaction 可以為該保母建立預約
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Sitter s WHERE s.id = :id")
+    Optional<Sitter> findByIdWithLock(@Param("id") UUID id);
 }

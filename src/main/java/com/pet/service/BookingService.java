@@ -60,29 +60,37 @@ public class BookingService {
 
     /**
      * 建立預約
-     * 檢查時間衝突，避免雙重預約
+     * 使用悲觀鎖防止時段衝突的 race condition
+     *
+     * 問題場景：兩個飼主同時對同一保母的同一時段建立預約
+     * 若不加鎖，兩個 transaction 可能同時通過 countConflictingBookings 檢查，導致重複預約
+     *
+     * 解法：先用悲觀鎖鎖定保母資料列，確保同一時間只有一個 transaction 可以進行檢查和寫入
      */
     public BookingDto createBooking(BookingDto dto, UUID userId) {
         // 1. 驗證時間
         validateBookingTime(dto.startTime(), dto.endTime());
 
-        // 2. 檢查時段是否已被預約（防止雙重預約）
+        // 2. 使用悲觀鎖取得保母（防止併發建立預約的 race condition）
+        // 其他嘗試為同一保母建立預約的 transaction 會在此等待
+        Sitter sitter = sitterRepository.findByIdWithLock(dto.sitterId())
+                .orElseThrow(() -> new ResourceNotFoundException("保母", "id", dto.sitterId()));
+
+        // 3. 檢查時段是否已被預約（此時已持有鎖，檢查是安全的）
         if (bookingRepository.countConflictingBookings(dto.sitterId(), dto.startTime(), dto.endTime()) > 0) {
             throw new BusinessException(ErrorCode.BOOKING_CONFLICT);
         }
 
-        // 3. 取得關聯實體
+        // 4. 取得其他關聯實體
         Pet pet = petRepository.findById(dto.petId())
                 .orElseThrow(() -> new ResourceNotFoundException("寵物", "id", dto.petId()));
-        Sitter sitter = sitterRepository.findById(dto.sitterId())
-                .orElseThrow(() -> new ResourceNotFoundException("保母", "id", dto.sitterId()));
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("使用者", "id", userId));
 
-        // 4. 計算費用（後端計算，不依賴前端傳入）
+        // 5. 計算費用（後端計算，不依賴前端傳入）
         double totalPrice = calculateBookingPrice(sitter, dto.startTime(), dto.endTime());
 
-        // 5. 建立預約
+        // 6. 建立預約
         Booking booking = new Booking();
         booking.setPet(pet);
         booking.setSitter(sitter);
@@ -105,7 +113,7 @@ public class BookingService {
     }
 
     /**
-     * 更新預約狀態（使用樂觀鎖）
+     * 更新預約狀態（使用樂觀鎖 + 確認時悲觀鎖防止時段衝突）
      */
     public BookingDto updateBookingStatus(UUID bookingId, BookingStatusUpdateDto updateDto) {
         try {
@@ -118,8 +126,12 @@ public class BookingService {
                         String.format("無法從 %s 轉換到 %s", booking.getStatus(), updateDto.targetStatus()));
             }
 
-            // 如果是確認預約，再次檢查是否有衝突（防止併發確認）
+            // 如果是確認預約，使用悲觀鎖防止併發確認導致時段衝突
             if (updateDto.targetStatus() == BookingStatus.CONFIRMED) {
+                // 鎖定保母資料列，確保同時只有一個確認操作
+                sitterRepository.findByIdWithLock(booking.getSitter().getId());
+
+                // 此時已持有鎖，檢查是安全的
                 if (bookingRepository.countConflictingBookingsExcluding(
                         booking.getSitter().getId(),
                         booking.getStartTime(),
@@ -182,8 +194,11 @@ public class BookingService {
                     String.format("無法從 %s 轉換到 %s", booking.getStatus(), updateDto.targetStatus()));
         }
 
-        // 如果是確認預約，再次檢查是否有衝突（防止併發確認）
+        // 如果是確認預約，也鎖定保母以防止時段衝突
         if (updateDto.targetStatus() == BookingStatus.CONFIRMED) {
+            // 鎖定保母資料列，確保同時只有一個確認操作
+            sitterRepository.findByIdWithLock(booking.getSitter().getId());
+
             if (bookingRepository.countConflictingBookingsExcluding(
                     booking.getSitter().getId(),
                     booking.getStartTime(),
