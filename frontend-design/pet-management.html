@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的寵物 - Pet Care</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --secondary: #F7931E;
+            --accent: #FDC830;
+            --dark: #1A1A2E;
+            --light: #FFEAA7;
+            --success: #00D2A0;
+            --danger: #FF5252;
+            --bg: #FFF8E7;
+            --card-bg: #FFFFFF;
+            --shadow: rgba(255, 107, 53, 0.15);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #FFE8D6 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 裝飾性背景元素 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -30%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -50%;
+            left: -30%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(247, 147, 30, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 60px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            font-family: 'Righteous', cursive;
+            font-size: 3.5rem;
+            color: var(--primary);
+            text-shadow:
+                3px 3px 0 var(--secondary),
+                6px 6px 0 var(--accent);
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        h1::after {
+            content: '🐾';
+            position: absolute;
+            right: -60px;
+            top: -10px;
+            font-size: 2rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 8px 30px var(--shadow);
+            border: 3px solid var(--accent);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Actions Bar */
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 0.2s backwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 15px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: 3px solid var(--accent);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            color: var(--primary);
+            border: 3px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .filter-select {
+            padding: 15px 25px;
+            border: 3px solid var(--primary);
+            border-radius: 15px;
+            background: var(--card-bg);
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.2);
+        }
+
+        /* Pet Grid */
+        .pets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .pet-card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 40px var(--shadow);
+            border: 4px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            animation: scaleIn 0.6s ease-out backwards;
+        }
+
+        .pet-card:nth-child(1) { animation-delay: 0.1s; }
+        .pet-card:nth-child(2) { animation-delay: 0.2s; }
+        .pet-card:nth-child(3) { animation-delay: 0.3s; }
+        .pet-card:nth-child(4) { animation-delay: 0.4s; }
+        .pet-card:nth-child(5) { animation-delay: 0.5s; }
+        .pet-card:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotateY(45deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        .pet-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+
+        .pet-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(255, 107, 53, 0.25);
+            border-color: var(--accent);
+        }
+
+        .pet-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .pet-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--light), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 6px 20px rgba(253, 200, 48, 0.3);
+            flex-shrink: 0;
+        }
+
+        .pet-info {
+            flex: 1;
+        }
+
+        .pet-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .pet-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .pet-type.cat {
+            background: linear-gradient(135deg, #FF6B9D, #FFC371);
+            color: white;
+        }
+
+        .pet-type.dog {
+            background: linear-gradient(135deg, #4FACFE, #00F2FE);
+            color: white;
+        }
+
+        .pet-breed {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .pet-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255, 235, 167, 0.3), rgba(255, 200, 48, 0.1));
+            border-radius: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .detail-text {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .pet-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pet-actions .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background: var(--success);
+            color: white;
+            border: 3px solid #00B894;
+        }
+
+        .btn-edit:hover {
+            background: #00B894;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            border: 3px solid #E74C3C;
+        }
+
+        .btn-delete:hover {
+            background: #E74C3C;
+            transform: translateY(-2px);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.3);
+            border: 5px solid var(--accent);
+            animation: scaleIn 0.4s ease-out;
+            position: relative;
+        }
+
+        .modal-header {
+            margin-bottom: 30px;
+        }
+
+        .modal-title {
+            font-family: 'Righteous', cursive;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: #E74C3C;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-checkbox input {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .empty-icon {
+            font-size: 6rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 1.5rem;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+            border: 6px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .pets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pet-details {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-bar {
+                flex-direction: column;
+            }
+
+            .actions-bar .btn,
+            .actions-bar .filter-select {
+                width: 100%;
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--dark);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 2000;
+            animation: slideInRight 0.4s ease-out;
+        }
+
+        .toast.active {
+            display: block;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>My Pets</h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--dark);" id="userName">Loading...</div>
+                        <div style="font-size: 0.85rem; color: #888;">寵物主人</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="actions-bar">
+            <button class="btn btn-primary" onclick="openAddPetModal()">
+                ➕ 新增寵物
+            </button>
+            <select class="filter-select" id="petTypeFilter" onchange="filterPets()">
+                <option value="all">🐾 全部寵物</option>
+                <option value="CAT">🐱 貓咪</option>
+                <option value="DOG">🐶 狗狗</option>
+            </select>
+            <button class="btn btn-secondary" onclick="loadPets()">
+                🔄 重新整理
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 20px; color: var(--primary); font-weight: 600;">載入中...</p>
+        </div>
+
+        <div class="pets-grid" id="petsGrid"></div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">🐾</div>
+            <div class="empty-text">還沒有寵物哦！</div>
+            <button class="btn btn-primary" onclick="openAddPetModal()">
+                新增第一隻寵物
+            </button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Pet Modal -->
+    <div class="modal" id="petModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closePetModal()">×</button>
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">新增寵物</h2>
+            </div>
+            <form id="petForm" onsubmit="savePet(event)">
+                <input type="hidden" id="petId">
+
+                <div class="form-group">
+                    <label class="form-label">寵物類型 *</label>
+                    <select class="form-select" id="petType" required onchange="updatePetTypeFields()">
+                        <option value="">請選擇</option>
+                        <option value="CAT">🐱 貓咪</option>
+                        <option value="DOG">🐶 狗狗</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">名字 *</label>
+                    <input type="text" class="form-input" id="petName" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">年齡</label>
+                    <input type="number" class="form-input" id="petAge" min="0" max="30">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">品種</label>
+                    <input type="text" class="form-input" id="petBreed">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">性別</label>
+                    <select class="form-select" id="petGender">
+                        <option value="">請選擇</option>
+                        <option value="Male">公</option>
+                        <option value="Female">母</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-checkbox">
+                        <input type="checkbox" id="isNeutered">
+                        <span>已結紮</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">疫苗狀態</label>
+                    <input type="text" class="form-input" id="vaccineStatus">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">特殊需求</label>
+                    <textarea class="form-textarea" id="specialNeeds"></textarea>
+                </div>
+
+                <!-- Cat specific fields -->
+                <div id="catFields" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="isIndoor">
+                            <span>室內貓</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">貓砂盆類型</label>
+                        <select class="form-select" id="litterBoxType">
+                            <option value="OPEN">開放式</option>
+                            <option value="COVERED">封閉式</option>
+                            <option value="AUTOMATIC">自動式</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">抓撓習慣</label>
+                        <select class="form-select" id="scratchingHabit">
+                            <option value="RARE">很少</option>
+                            <option value="MODERATE">適中</option>
+                            <option value="FREQUENT">頻繁</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dog specific fields -->
+                <div id="dogFields" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">體型</label>
+                        <select class="form-select" id="dogSize">
+                            <option value="SMALL">小型</option>
+                            <option value="MEDIUM">中型</option>
+                            <option value="LARGE">大型</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="isWalkRequired">
+                            <span>需要遛狗</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">每日散步次數</label>
+                        <input type="number" class="form-input" id="walkFrequency" min="0" max="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">訓練程度</label>
+                        <select class="form-select" id="trainingLevel">
+                            <option value="UNTRAINED">未訓練</option>
+                            <option value="BASIC">基礎</option>
+                            <option value="INTERMEDIATE">中級</option>
+                            <option value="ADVANCED">高級</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="friendlyWithDogs">
+                            <span>對其他狗友善</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="friendlyWithChildren">
+                            <span>對小孩友善</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closePetModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // API 配置
+        const API_BASE_URL = 'http://localhost:8080/api';
+        let currentUserId = null;
+        let allPets = [];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserInfo();
+            loadPets();
+        });
+
+        // 載入使用者資訊
+        async function loadUserInfo() {
+            try {
+                // 從 localStorage 或 sessionStorage 取得使用者資訊
+                const userInfo = JSON.parse(localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo') || '{}');
+
+                if (userInfo.userId) {
+                    currentUserId = userInfo.userId;
+                    document.getElementById('userName').textContent = userInfo.username || userInfo.roleName || '使用者';
+                    document.getElementById('userAvatar').textContent = (userInfo.username || 'U').charAt(0).toUpperCase();
+                } else {
+                    // 如果沒有使用者資訊，使用測試 ID
+                    showToast('請先登入', 'error');
+                    // 設置一個測試 userId
+                    currentUserId = '00000000-0000-0000-0000-000000000001';
+                }
+            } catch (error) {
+                console.error('Failed to load user info:', error);
+                currentUserId = '00000000-0000-0000-0000-000000000001';
+            }
+        }
+
+        // 載入寵物列表
+        async function loadPets() {
+            showLoading(true);
+
+            try {
+                const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/pets/user/${currentUserId}`, {
+                    headers: headers
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    allPets = data.data || [];
+                    displayPets(allPets);
+                } else {
+                    showToast('載入寵物列表失敗', 'error');
+                    allPets = [];
+                    displayPets([]);
+                }
+            } catch (error) {
+                console.error('Failed to load pets:', error);
+                showToast('無法連接到伺服器', 'error');
+                allPets = [];
+                displayPets([]);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 顯示寵物列表
+        function displayPets(pets) {
+            const grid = document.getElementById('petsGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (pets.length === 0) {
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            grid.innerHTML = pets.map(pet => `
+                <div class="pet-card">
+                    <div class="pet-header">
+                        <div class="pet-icon">${pet.petType === 'CAT' ? '🐱' : '🐶'}</div>
+                        <div class="pet-info">
+                            <h3 class="pet-name">${pet.name}</h3>
+                            <span class="pet-type ${pet.petType.toLowerCase()}">${pet.petTypeName || pet.petType}</span>
+                            <div class="pet-breed">${pet.breed || '品種未知'}</div>
+                        </div>
+                    </div>
+
+                    <div class="pet-details">
+                        <div class="detail-item">
+                            <div class="detail-icon">🎂</div>
+                            <div class="detail-text">
+                                <div class="detail-label">年齡</div>
+                                <div class="detail-value">${pet.age || '未知'} 歲</div>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">${pet.gender === 'Male' ? '♂️' : pet.gender === 'Female' ? '♀️' : '❓'}</div>
+                            <div class="detail-text">
+                                <div class="detail-label">性別</div>
+                                <div class="detail-value">${pet.gender === 'Male' ? '公' : pet.gender === 'Female' ? '母' : '未知'}</div>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">💉</div>
+                            <div class="detail-text">
+                                <div class="detail-label">疫苗</div>
+                                <div class="detail-value">${pet.vaccineStatus || '未填寫'}</div>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">✂️</div>
+                            <div class="detail-text">
+                                <div class="detail-label">結紮</div>
+                                <div class="detail-value">${pet.isNeutered ? '已結紮' : '未結紮'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${pet.specialNeeds ? `
+                        <div style="padding: 15px; background: rgba(255, 107, 53, 0.1); border-radius: 12px; margin-top: 15px;">
+                            <div style="font-size: 0.85rem; color: #888; margin-bottom: 5px;">特殊需求</div>
+                            <div style="color: var(--dark); font-weight: 500;">${pet.specialNeeds}</div>
+                        </div>
+                    ` : ''}
+
+                    <div class="pet-actions">
+                        <button class="btn btn-edit" onclick="editPet('${pet.id}')">
+                            ✏️ 編輯
+                        </button>
+                        <button class="btn btn-delete" onclick="confirmDeletePet('${pet.id}', '${pet.name}')">
+                            🗑️ 刪除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 篩選寵物
+        function filterPets() {
+            const filterValue = document.getElementById('petTypeFilter').value;
+
+            if (filterValue === 'all') {
+                displayPets(allPets);
+            } else {
+                const filtered = allPets.filter(pet => pet.petType === filterValue);
+                displayPets(filtered);
+            }
+        }
+
+        // 開啟新增寵物 Modal
+        function openAddPetModal() {
+            document.getElementById('modalTitle').textContent = '新增寵物';
+            document.getElementById('petForm').reset();
+            document.getElementById('petId').value = '';
+            document.getElementById('petModal').classList.add('active');
+            updatePetTypeFields();
+        }
+
+        // 編輯寵物
+        async function editPet(petId) {
+            const pet = allPets.find(p => p.id === petId);
+            if (!pet) return;
+
+            document.getElementById('modalTitle').textContent = '編輯寵物';
+            document.getElementById('petId').value = pet.id;
+            document.getElementById('petType').value = pet.petType;
+            document.getElementById('petName').value = pet.name;
+            document.getElementById('petAge').value = pet.age || '';
+            document.getElementById('petBreed').value = pet.breed || '';
+            document.getElementById('petGender').value = pet.gender || '';
+            document.getElementById('isNeutered').checked = pet.isNeutered || false;
+            document.getElementById('vaccineStatus').value = pet.vaccineStatus || '';
+            document.getElementById('specialNeeds').value = pet.specialNeeds || '';
+
+            updatePetTypeFields();
+
+            // 載入特定欄位
+            if (pet.petType === 'CAT') {
+                // 載入貓咪特定資料
+                try {
+                    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                    const response = await fetch(`${API_BASE_URL}/cats/${petId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        const catData = await response.json();
+                        const cat = catData.data;
+                        document.getElementById('isIndoor').checked = cat.isIndoor || false;
+                        document.getElementById('litterBoxType').value = cat.litterBoxType || 'OPEN';
+                        document.getElementById('scratchingHabit').value = cat.scratchingHabit || 'MODERATE';
+                    }
+                } catch (error) {
+                    console.error('Failed to load cat details:', error);
+                }
+            } else if (pet.petType === 'DOG') {
+                // 載入狗狗特定資料
+                try {
+                    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                    const response = await fetch(`${API_BASE_URL}/dogs/${petId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        const dogData = await response.json();
+                        const dog = dogData.data;
+                        document.getElementById('dogSize').value = dog.size || 'MEDIUM';
+                        document.getElementById('isWalkRequired').checked = dog.isWalkRequired || false;
+                        document.getElementById('walkFrequency').value = dog.walkFrequencyPerDay || 0;
+                        document.getElementById('trainingLevel').value = dog.trainingLevel || 'BASIC';
+                        document.getElementById('friendlyWithDogs').checked = dog.isFriendlyWithDogs || false;
+                        document.getElementById('friendlyWithChildren').checked = dog.isFriendlyWithChildren || false;
+                    }
+                } catch (error) {
+                    console.error('Failed to load dog details:', error);
+                }
+            }
+
+            document.getElementById('petModal').classList.add('active');
+        }
+
+        // 更新寵物類型特定欄位
+        function updatePetTypeFields() {
+            const petType = document.getElementById('petType').value;
+            document.getElementById('catFields').style.display = petType === 'CAT' ? 'block' : 'none';
+            document.getElementById('dogFields').style.display = petType === 'DOG' ? 'block' : 'none';
+        }
+
+        // 儲存寵物
+        async function savePet(event) {
+            event.preventDefault();
+
+            const petId = document.getElementById('petId').value;
+            const petType = document.getElementById('petType').value;
+            const isEdit = !!petId;
+
+            const baseData = {
+                name: document.getElementById('petName').value,
+                age: parseInt(document.getElementById('petAge').value) || null,
+                breed: document.getElementById('petBreed').value,
+                gender: document.getElementById('petGender').value,
+                isNeutered: document.getElementById('isNeutered').checked,
+                vaccineStatus: document.getElementById('vaccineStatus').value,
+                specialNeeds: document.getElementById('specialNeeds').value
+            };
+
+            let petData = {};
+            let endpoint = '';
+
+            if (petType === 'CAT') {
+                petData = {
+                    ...baseData,
+                    isIndoor: document.getElementById('isIndoor').checked,
+                    litterBoxType: document.getElementById('litterBoxType').value,
+                    scratchingHabit: document.getElementById('scratchingHabit').value
+                };
+                endpoint = `${API_BASE_URL}/cats`;
+            } else if (petType === 'DOG') {
+                petData = {
+                    ...baseData,
+                    size: document.getElementById('dogSize').value,
+                    isWalkRequired: document.getElementById('isWalkRequired').checked,
+                    walkFrequencyPerDay: parseInt(document.getElementById('walkFrequency').value) || 0,
+                    trainingLevel: document.getElementById('trainingLevel').value,
+                    isFriendlyWithDogs: document.getElementById('friendlyWithDogs').checked,
+                    isFriendlyWithPeople: true,
+                    isFriendlyWithChildren: document.getElementById('friendlyWithChildren').checked
+                };
+                endpoint = `${API_BASE_URL}/dogs`;
+            }
+
+            try {
+                const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                const url = isEdit ? `${endpoint}/${petId}` : endpoint;
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(petData)
+                });
+
+                if (response.ok) {
+                    showToast(isEdit ? '寵物資料已更新' : '寵物已新增', 'success');
+                    closePetModal();
+                    loadPets();
+                } else {
+                    const error = await response.json();
+                    showToast(error.message || '儲存失敗', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to save pet:', error);
+                showToast('無法連接到伺服器', 'error');
+            }
+        }
+
+        // 確認刪除寵物
+        function confirmDeletePet(petId, petName) {
+            if (confirm(`確定要刪除 ${petName} 嗎？此操作無法復原。`)) {
+                deletePet(petId);
+            }
+        }
+
+        // 刪除寵物
+        async function deletePet(petId) {
+            try {
+                const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                const response = await fetch(`${API_BASE_URL}/pets/${petId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    showToast('寵物已刪除', 'success');
+                    loadPets();
+                } else {
+                    showToast('刪除失敗', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to delete pet:', error);
+                showToast('無法連接到伺服器', 'error');
+            }
+        }
+
+        // 關閉 Modal
+        function closePetModal() {
+            document.getElementById('petModal').classList.remove('active');
+        }
+
+        // 顯示載入狀態
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        // 顯示 Toast 訊息
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} active`;
+
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

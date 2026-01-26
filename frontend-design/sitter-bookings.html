@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>預約管理 - 保母中心</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6A4C93;
+            --secondary: #8B5CF6;
+            --accent: #C77DFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --pending: #3B82F6;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --border: #E5E7EB;
+            --shadow: rgba(106, 76, 147, 0.15);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 動態背景裝飾 */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: 0;
+            animation: morph 20s ease-in-out infinite;
+        }
+
+        body::before {
+            top: -10%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+        }
+
+        body::after {
+            bottom: -15%;
+            left: -15%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(199, 125, 255, 0.08) 0%, transparent 70%);
+            animation-delay: -10s;
+        }
+
+        @keyframes morph {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 50px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 25px;
+            box-shadow: 0 10px 40px var(--shadow);
+            border-left: 8px solid var(--primary);
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+            position: relative;
+        }
+
+        h1::after {
+            content: '📅';
+            position: absolute;
+            right: -60px;
+            top: -5px;
+            font-size: 2.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .sitter-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sitter-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 1.5rem;
+            box-shadow: 0 6px 20px rgba(106, 76, 147, 0.3);
+        }
+
+        .sitter-details h3 {
+            font-size: 1.2rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .sitter-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px var(--shadow);
+            border-top: 5px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 50px rgba(106, 76, 147, 0.25);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-card.pending .stat-icon { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+        .stat-card.confirmed .stat-icon { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+        .stat-card.completed .stat-icon { background: linear-gradient(135deg, #E9D5FF, #D8B4FE); }
+        .stat-card.total .stat-icon { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6B7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.3s backwards;
+        }
+
+        .filter-btn {
+            padding: 14px 28px;
+            border: 3px solid var(--border);
+            border-radius: 50px;
+            background: var(--card-bg);
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: var(--primary);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .filter-btn:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        .filter-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .filter-btn:hover {
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 6px 20px rgba(106, 76, 147, 0.3);
+        }
+
+        .filter-count {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Bookings Grid */
+        .bookings-grid {
+            display: grid;
+            gap: 25px;
+        }
+
+        .booking-card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 40px var(--shadow);
+            border-left: 8px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            animation: scaleIn 0.6s ease-out backwards;
+        }
+
+        .booking-card:nth-child(1) { animation-delay: 0.1s; }
+        .booking-card:nth-child(2) { animation-delay: 0.15s; }
+        .booking-card:nth-child(3) { animation-delay: 0.2s; }
+        .booking-card:nth-child(4) { animation-delay: 0.25s; }
+        .booking-card:nth-child(5) { animation-delay: 0.3s; }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .booking-card.pending { border-left-color: var(--pending); }
+        .booking-card.confirmed { border-left-color: var(--success); }
+        .booking-card.rejected { border-left-color: var(--danger); }
+        .booking-card.cancelled { border-left-color: #6B7280; }
+        .booking-card.completed { border-left-color: var(--primary); }
+
+        .booking-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(106, 76, 147, 0.25);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .booking-id {
+            font-size: 0.85rem;
+            color: #9CA3AF;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge.PENDING {
+            background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+            color: #1E40AF;
+        }
+
+        .status-badge.CONFIRMED {
+            background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+            color: #065F46;
+        }
+
+        .status-badge.REJECTED {
+            background: linear-gradient(135deg, #FEE2E2, #FECACA);
+            color: #991B1B;
+        }
+
+        .status-badge.CANCELLED {
+            background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+            color: #374151;
+        }
+
+        .status-badge.COMPLETED {
+            background: linear-gradient(135deg, #E9D5FF, #D8B4FE);
+            color: #6B21A8;
+        }
+
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .detail-group {
+            background: linear-gradient(135deg, rgba(106, 76, 147, 0.05), rgba(199, 125, 255, 0.05));
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(106, 76, 147, 0.1);
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: #6B7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .detail-value.large {
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+
+        .time-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .time-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .time-label {
+            font-size: 0.75rem;
+            color: #9CA3AF;
+            margin-bottom: 4px;
+        }
+
+        .time-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .notes-section {
+            background: #FEF3C7;
+            padding: 18px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid var(--warning);
+        }
+
+        .notes-section h4 {
+            font-size: 0.9rem;
+            color: #92400E;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .notes-content {
+            color: #78350F;
+            line-height: 1.6;
+        }
+
+        .response-section {
+            background: #D1FAE5;
+            padding: 18px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid var(--success);
+        }
+
+        .response-section h4 {
+            font-size: 0.9rem;
+            color: #065F46;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        /* Actions */
+        .booking-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, var(--danger), #DC2626);
+            color: white;
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-reject:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-complete {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 6px 20px rgba(106, 76, 147, 0.3);
+        }
+
+        .btn-complete:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(106, 76, 147, 0.4);
+        }
+
+        .btn-cancel {
+            background: #E5E7EB;
+            color: #374151;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-cancel:hover {
+            background: #D1D5DB;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            border: 4px solid var(--primary);
+            animation: scaleIn 0.4s ease-out;
+        }
+
+        .modal-header {
+            margin-bottom: 30px;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            border: none;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(106, 76, 147, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .empty-icon {
+            font-size: 8rem;
+            margin-bottom: 30px;
+            opacity: 0.4;
+        }
+
+        .empty-text {
+            font-size: 1.8rem;
+            color: #9CA3AF;
+            font-weight: 600;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto;
+            border: 7px solid rgba(106, 76, 147, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--dark);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 2000;
+            animation: slideInRight 0.4s ease-out;
+            max-width: 400px;
+        }
+
+        .toast.active {
+            display: block;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-details {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-actions {
+                flex-direction: column;
+            }
+
+            .booking-actions .btn {
+                width: 100%;
+            }
+        }
+
+        /* State Flow Indicator */
+        .state-flow {
+            background: linear-gradient(135deg, rgba(106, 76, 147, 0.05), rgba(199, 125, 255, 0.05));
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px dashed rgba(106, 76, 147, 0.3);
+        }
+
+        .state-flow h4 {
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .state-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .state-option {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6B7280;
+        }
+
+        .state-option.available {
+            border-color: var(--success);
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Booking Control</h1>
+                <div class="sitter-info">
+                    <div class="sitter-avatar" id="sitterAvatar">S</div>
+                    <div class="sitter-details">
+                        <h3 id="sitterName">Loading...</h3>
+                        <span class="sitter-badge">🏆 專業保母</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Statistics -->
+        <div class="stats-bar">
+            <div class="stat-card pending">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" id="pendingCount">0</div>
+                <div class="stat-label">待處理</div>
+            </div>
+            <div class="stat-card confirmed">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="confirmedCount">0</div>
+                <div class="stat-label">已確認</div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-icon">🎉</div>
+                <div class="stat-value" id="completedCount">0</div>
+                <div class="stat-label">已完成</div>
+            </div>
+            <div class="stat-card total">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">總預約</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <button class="filter-btn active" onclick="filterBookings('all')">
+                <span>🌟 全部預約 <span class="filter-count" id="allCount">0</span></span>
+            </button>
+            <button class="filter-btn" onclick="filterBookings('PENDING')">
+                <span>⏳ 待處理 <span class="filter-count" id="filterPendingCount">0</span></span>
+            </button>
+            <button class="filter-btn" onclick="filterBookings('CONFIRMED')">
+                <span>✅ 已確認 <span class="filter-count" id="filterConfirmedCount">0</span></span>
+            </button>
+            <button class="filter-btn" onclick="filterBookings('COMPLETED')">
+                <span>🎉 已完成 <span class="filter-count" id="filterCompletedCount">0</span></span>
+            </button>
+            <button class="filter-btn" onclick="filterBookings('CANCELLED')">
+                <span>❌ 已取消 <span class="filter-count" id="filterCancelledCount">0</span></span>
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 20px; color: var(--primary); font-weight: 700; font-size: 1.2rem;">載入預約資料...</p>
+        </div>
+
+        <!-- Bookings Grid -->
+        <div class="bookings-grid" id="bookingsGrid"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📭</div>
+            <div class="empty-text">目前沒有預約</div>
+        </div>
+    </div>
+
+    <!-- Response Modal -->
+    <div class="modal" id="responseModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">×</button>
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">輸入回覆</h2>
+            </div>
+            <form id="responseForm" onsubmit="submitResponse(event)">
+                <input type="hidden" id="currentBookingId">
+                <input type="hidden" id="currentAction">
+
+                <div class="form-group">
+                    <label class="form-label" id="responseLabel">回覆內容</label>
+                    <textarea class="form-textarea" id="responseText" placeholder="輸入您的回覆..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn" id="submitBtn">送出</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // API 設定
+        const API_BASE_URL = 'http://localhost:8080/api';
+        let currentSitterId = null;
+        let allBookings = [];
+        let currentFilter = 'all';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSitterInfo();
+            loadBookings();
+        });
+
+        // 載入保母資訊
+        function loadSitterInfo() {
+            try {
+                const userInfo = JSON.parse(localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo') || '{}');
+
+                if (userInfo.roleId && userInfo.role === 'SITTER') {
+                    currentSitterId = userInfo.roleId;
+                    document.getElementById('sitterName').textContent = userInfo.roleName || userInfo.username || '保母';
+                    document.getElementById('sitterAvatar').textContent = (userInfo.roleName || 'S').charAt(0).toUpperCase();
+                } else {
+                    showToast('請使用保母帳號登入', 'error');
+                    currentSitterId = '00000000-0000-0000-0000-000000000001';
+                }
+            } catch (error) {
+                console.error('Failed to load sitter info:', error);
+                currentSitterId = '00000000-0000-0000-0000-000000000001';
+            }
+        }
+
+        // 載入預約列表
+        async function loadBookings() {
+            showLoading(true);
+
+            try {
+                const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                const response = await fetch(`${API_BASE_URL}/sitter/${currentSitterId}/bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    allBookings = data.data || [];
+                    updateStats();
+                    displayBookings(allBookings);
+                } else {
+                    showToast('載入預約失敗', 'error');
+                    allBookings = [];
+                    displayBookings([]);
+                }
+            } catch (error) {
+                console.error('Failed to load bookings:', error);
+                showToast('無法連接到伺服器', 'error');
+                allBookings = [];
+                displayBookings([]);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 更新統計
+        function updateStats() {
+            const pending = allBookings.filter(b => b.status === 'PENDING').length;
+            const confirmed = allBookings.filter(b => b.status === 'CONFIRMED').length;
+            const completed = allBookings.filter(b => b.status === 'COMPLETED').length;
+            const cancelled = allBookings.filter(b => b.status === 'CANCELLED').length;
+            const rejected = allBookings.filter(b => b.status === 'REJECTED').length;
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('confirmedCount').textContent = confirmed;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalCount').textContent = allBookings.length;
+
+            document.getElementById('allCount').textContent = allBookings.length;
+            document.getElementById('filterPendingCount').textContent = pending;
+            document.getElementById('filterConfirmedCount').textContent = confirmed;
+            document.getElementById('filterCompletedCount').textContent = completed;
+            document.getElementById('filterCancelledCount').textContent = cancelled + rejected;
+        }
+
+        // 顯示預約列表
+        function displayBookings(bookings) {
+            const grid = document.getElementById('bookingsGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (bookings.length === 0) {
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            grid.innerHTML = bookings.map(booking => createBookingCard(booking)).join('');
+        }
+
+        // 創建預約卡片
+        function createBookingCard(booking) {
+            const statusEmojis = {
+                'PENDING': '⏳',
+                'CONFIRMED': '✅',
+                'REJECTED': '❌',
+                'CANCELLED': '🚫',
+                'COMPLETED': '🎉'
+            };
+
+            const statusTexts = {
+                'PENDING': '待確認',
+                'CONFIRMED': '已確認',
+                'REJECTED': '已拒絕',
+                'CANCELLED': '已取消',
+                'COMPLETED': '已完成'
+            };
+
+            // 計算可執行的操作
+            const actions = getAvailableActions(booking.status);
+
+            return `
+                <div class="booking-card ${booking.status.toLowerCase()}">
+                    <div class="booking-header">
+                        <div class="booking-id">ID: ${booking.id.substring(0, 8)}...</div>
+                        <span class="status-badge ${booking.status}">
+                            ${statusEmojis[booking.status]} ${statusTexts[booking.status]}
+                        </span>
+                    </div>
+
+                    <div class="booking-details">
+                        <div class="detail-group">
+                            <div class="detail-label">🐾 寵物</div>
+                            <div class="detail-value large">${booking.petName}</div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">👤 飼主</div>
+                            <div class="detail-value">${booking.username}</div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">📅 服務時間</div>
+                            <div class="time-range">
+                                <div class="time-item">
+                                    <div class="time-label">開始</div>
+                                    <div class="time-value">${formatDateTime(booking.startTime)}</div>
+                                </div>
+                                <span style="color: var(--primary); font-size: 1.2rem;">→</span>
+                                <div class="time-item">
+                                    <div class="time-label">結束</div>
+                                    <div class="time-value">${formatDateTime(booking.endTime)}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">💰 服務費用</div>
+                            <div class="detail-value large">NT$ ${booking.totalPrice || 0}</div>
+                        </div>
+                    </div>
+
+                    ${booking.notes ? `
+                        <div class="notes-section">
+                            <h4>📝 飼主備註</h4>
+                            <div class="notes-content">${booking.notes}</div>
+                        </div>
+                    ` : ''}
+
+                    ${booking.sitterResponse ? `
+                        <div class="response-section">
+                            <h4>💬 您的回覆</h4>
+                            <div class="notes-content">${booking.sitterResponse}</div>
+                        </div>
+                    ` : ''}
+
+                    ${actions.length > 0 ? `
+                        <div class="state-flow">
+                            <h4>📋 可執行操作</h4>
+                            <div class="state-options">
+                                ${actions.map(action => `<span class="state-option available">${action}</span>`).join('')}
+                            </div>
+                        </div>
+
+                        <div class="booking-actions">
+                            ${getActionButtons(booking)}
+                        </div>
+                    ` : ''}
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--border); font-size: 0.85rem; color: #9CA3AF;">
+                        建立時間: ${formatDateTime(booking.createdAt)}
+                        ${booking.updatedAt !== booking.createdAt ? ` | 更新時間: ${formatDateTime(booking.updatedAt)}` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 取得可用操作
+        function getAvailableActions(status) {
+            switch(status) {
+                case 'PENDING':
+                    return ['✅ 確認預約', '❌ 拒絕預約', '🚫 取消預約'];
+                case 'CONFIRMED':
+                    return ['🎉 完成服務', '🚫 取消預約'];
+                case 'REJECTED':
+                case 'CANCELLED':
+                case 'COMPLETED':
+                    return [];
+                default:
+                    return [];
+            }
+        }
+
+        // 取得操作按鈕
+        function getActionButtons(booking) {
+            let buttons = '';
+
+            if (booking.status === 'PENDING') {
+                buttons += `
+                    <button class="btn btn-confirm" onclick="confirmBooking('${booking.id}')">
+                        ✅ 確認預約
+                    </button>
+                    <button class="btn btn-reject" onclick="openRejectModal('${booking.id}')">
+                        ❌ 拒絕
+                    </button>
+                    <button class="btn btn-cancel" onclick="openCancelModal('${booking.id}')">
+                        🚫 取消
+                    </button>
+                `;
+            } else if (booking.status === 'CONFIRMED') {
+                buttons += `
+                    <button class="btn btn-complete" onclick="completeBooking('${booking.id}')">
+                        🎉 完成服務
+                    </button>
+                    <button class="btn btn-cancel" onclick="openCancelModal('${booking.id}')">
+                        🚫 取消
+                    </button>
+                `;
+            }
+
+            return buttons;
+        }
+
+        // 確認預約
+        async function confirmBooking(bookingId) {
+            if (!confirm('確定要接受這個預約嗎？')) return;
+
+            try {
+                const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                const response = await fetch(`${API_BASE_URL}/sitter/${currentSitterId}/bookings/${bookingId}/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify('感謝您的預約，我會準時為您服務！')
+                });
+
+                if (response.ok) {
+                    showToast('預約已確認', 'success');
+                    loadBookings();
+                } else {
+                    const error = await response.json();
+                    showToast(error.message || '操作失敗', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to confirm booking:', error);
+                showToast('無法連接到伺服器', 'error');
+            }
+        }
+
+        // 開啟拒絕 Modal
+        function openRejectModal(bookingId) {
+            document.getElementById('currentBookingId').value = bookingId;
+            document.getElementById('currentAction').value = 'reject';
+            document.getElementById('modalTitle').textContent = '拒絕預約';
+            document.getElementById('responseLabel').textContent = '拒絕原因 *';
+            document.getElementById('responseText').value = '';
+            document.getElementById('responseText').placeholder = '請說明拒絕原因...';
+            document.getElementById('submitBtn').textContent = '確認拒絕';
+            document.getElementById('submitBtn').className = 'btn btn-reject';
+            document.getElementById('responseModal').classList.add('active');
+        }
+
+        // 開啟取消 Modal
+        function openCancelModal(bookingId) {
+            document.getElementById('currentBookingId').value = bookingId;
+            document.getElementById('currentAction').value = 'cancel';
+            document.getElementById('modalTitle').textContent = '取消預約';
+            document.getElementById('responseLabel').textContent = '取消原因';
+            document.getElementById('responseText').value = '';
+            document.getElementById('responseText').placeholder = '請說明取消原因（選填）...';
+            document.getElementById('submitBtn').textContent = '確認取消';
+            document.getElementById('submitBtn').className = 'btn btn-cancel';
+            document.getElementById('responseModal').classList.add('active');
+        }
+
+        // 完成預約
+        async function completeBooking(bookingId) {
+            if (!confirm('確認已完成此次服務嗎？')) return;
+
+            try {
+                const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                const response = await fetch(`${API_BASE_URL}/sitter/${currentSitterId}/bookings/${bookingId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    showToast('服務已完成', 'success');
+                    loadBookings();
+                } else {
+                    const error = await response.json();
+                    showToast(error.message || '操作失敗', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to complete booking:', error);
+                showToast('無法連接到伺服器', 'error');
+            }
+        }
+
+        // 提交回應
+        async function submitResponse(event) {
+            event.preventDefault();
+
+            const bookingId = document.getElementById('currentBookingId').value;
+            const action = document.getElementById('currentAction').value;
+            const reason = document.getElementById('responseText').value;
+
+            if (action === 'reject' && !reason.trim()) {
+                showToast('請填寫拒絕原因', 'error');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                const endpoint = action === 'reject' ? 'reject' : 'cancel';
+
+                const response = await fetch(`${API_BASE_URL}/sitter/${currentSitterId}/bookings/${bookingId}/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reason)
+                });
+
+                if (response.ok) {
+                    showToast(action === 'reject' ? '已拒絕預約' : '已取消預約', 'success');
+                    closeModal();
+                    loadBookings();
+                } else {
+                    const error = await response.json();
+                    showToast(error.message || '操作失敗', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to submit response:', error);
+                showToast('無法連接到伺服器', 'error');
+            }
+        }
+
+        // 篩選預約
+        function filterBookings(filter) {
+            currentFilter = filter;
+
+            // 更新按鈕狀態
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.filter-btn').classList.add('active');
+
+            // 篩選資料
+            let filtered = allBookings;
+            if (filter !== 'all') {
+                if (filter === 'CANCELLED') {
+                    filtered = allBookings.filter(b => b.status === 'CANCELLED' || b.status === 'REJECTED');
+                } else {
+                    filtered = allBookings.filter(b => b.status === filter);
+                }
+            }
+
+            displayBookings(filtered);
+        }
+
+        // 格式化日期時間
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr) return '';
+            const date = new Date(dateTimeStr);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${month}/${day} ${hours}:${minutes}`;
+        }
+
+        // 關閉 Modal
+        function closeModal() {
+            document.getElementById('responseModal').classList.remove('active');
+        }
+
+        // 顯示載入
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        // 顯示 Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} active`;
+
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
