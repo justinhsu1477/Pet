@@ -1,8 +1,0 @@
-spring:
-  application:
-    name: petSystem
-  profiles:
-    active: dev
-  jpa:
-    defer-datasource-initialization: true
-    show-sql: true
