@@ -85,6 +85,9 @@ public class SecurityConfig {
                                 // 登入、註冊、Refresh Token 等 API 不需要先登入
                                 .requestMatchers("/api/auth/**").permitAll()
 
+                                // 健康檢查端點（給 K8s probe / 監控系統用）
+                                .requestMatchers("/api/health/**").permitAll()
+
                                 // H2 Console（僅開發環境用）
 //                        .requestMatchers("/h2-console/**").permitAll()
 
