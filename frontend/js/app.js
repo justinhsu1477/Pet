@@ -258,7 +258,7 @@ const App = {
                 <h4 style="margin: 1.5rem 0 0.5rem; color: var(--color-primary);">寵物 (${pets.length})</h4>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     ${pets.map(pet => `
-                        <span class="badge badge-info">${pet.type === 'DOG' ? '🐕' : '🐈'} ${pet.name}</span>
+                        <span class="badge badge-info">${pet.petType === 'DOG' ? '🐕' : '🐈'} ${pet.name}</span>
                     `).join('') || '<span class="text-muted">無寵物</span>'}
                 </div>
                 
@@ -494,6 +494,8 @@ const App = {
     },
 
     filterPets(filter) {
+        console.log('filterPets called with:', filter);
+        console.log('All pets:', this.allPets);
         this.currentPetFilter = filter;
 
         // Update button states
@@ -501,14 +503,24 @@ const App = {
             btn.classList.remove('btn-secondary');
             btn.classList.add('btn-ghost');
         });
-        document.getElementById(`filter-${filter}`).classList.remove('btn-ghost');
-        document.getElementById(`filter-${filter}`).classList.add('btn-secondary');
+
+        const filterBtn = document.getElementById(`filter-${filter}`);
+        console.log('Filter button found:', filterBtn);
+        if (filterBtn) {
+            filterBtn.classList.remove('btn-ghost');
+            filterBtn.classList.add('btn-secondary');
+        }
 
         // Filter pets
         if (filter === 'all') {
+            console.log('Showing all pets');
             this.displayPets(this.allPets);
         } else {
-            const filtered = this.allPets.filter(p => p.petType === filter);
+            const filtered = this.allPets.filter(p => {
+                console.log(`Checking pet ${p.name}: petType=${p.petType}, filter=${filter}, match=${p.petType === filter}`);
+                return p.petType === filter;
+            });
+            console.log('Filtered pets:', filtered);
             this.displayPets(filtered);
         }
     },
@@ -758,6 +770,8 @@ const App = {
     },
 
     filterBookings(filter) {
+        console.log('filterBookings called with:', filter);
+        console.log('All bookings:', this.allBookings);
         this.currentBookingFilter = filter;
 
         // Update button states
@@ -765,17 +779,28 @@ const App = {
             btn.classList.remove('btn-secondary');
             btn.classList.add('btn-ghost');
         });
-        document.getElementById(`booking-filter-${filter}`).classList.remove('btn-ghost');
-        document.getElementById(`booking-filter-${filter}`).classList.add('btn-secondary');
+
+        const filterBtn = document.getElementById(`booking-filter-${filter}`);
+        console.log('Filter button found:', filterBtn);
+        if (filterBtn) {
+            filterBtn.classList.remove('btn-ghost');
+            filterBtn.classList.add('btn-secondary');
+        }
 
         // Filter bookings
         if (filter === 'all') {
+            console.log('Showing all bookings');
             this.displayBookings(this.allBookings);
         } else if (filter === 'CANCELLED') {
             const filtered = this.allBookings.filter(b => b.status === 'CANCELLED' || b.status === 'REJECTED');
+            console.log('Filtered cancelled/rejected bookings:', filtered);
             this.displayBookings(filtered);
         } else {
-            const filtered = this.allBookings.filter(b => b.status === filter);
+            const filtered = this.allBookings.filter(b => {
+                console.log(`Checking booking ${b.id}: status=${b.status}, filter=${filter}, match=${b.status === filter}`);
+                return b.status === filter;
+            });
+            console.log('Filtered bookings:', filtered);
             this.displayBookings(filtered);
         }
     },
@@ -785,6 +810,32 @@ const App = {
         if (!booking) return;
 
         const contentEl = document.getElementById('booking-detail-content');
+
+        // 根據當前狀態決定可用的操作按鈕
+        let statusActions = '';
+        if (booking.status === 'PENDING') {
+            statusActions = `
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="App.changeBookingStatus('${bookingId}', 'CONFIRMED')">✅ 確認預約</button>
+                    <button class="btn btn-ghost" style="color: var(--color-error);" onclick="App.changeBookingStatus('${bookingId}', 'REJECTED')">❌ 拒絕預約</button>
+                    <button class="btn btn-ghost" onclick="App.changeBookingStatus('${bookingId}', 'CANCELLED')">🚫 取消預約</button>
+                </div>
+            `;
+        } else if (booking.status === 'CONFIRMED') {
+            statusActions = `
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="App.changeBookingStatus('${bookingId}', 'COMPLETED')">🎉 標記完成</button>
+                    <button class="btn btn-ghost" onclick="App.changeBookingStatus('${bookingId}', 'CANCELLED')">🚫 取消預約</button>
+                </div>
+            `;
+        } else {
+            statusActions = `
+                <div style="margin-top: 1rem;">
+                    <p class="text-muted">此預約已結束，無法變更狀態</p>
+                </div>
+            `;
+        }
+
         contentEl.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div>
@@ -817,14 +868,51 @@ const App = {
             ` : ''}
 
             ${booking.sitterResponse ? `
-                <div style="padding: 1rem; background: var(--color-accent); border-radius: var(--radius-md);">
+                <div style="padding: 1rem; background: var(--color-accent); border-radius: var(--radius-md); margin-bottom: 1rem;">
                     <h4 style="margin-bottom: 0.5rem; color: var(--color-primary);">保母回覆</h4>
                     <p>${booking.sitterResponse}</p>
                 </div>
             ` : ''}
+
+            <div style="border-top: 1px solid var(--color-border); padding-top: 1rem;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--color-primary);">狀態操作</h4>
+                ${statusActions}
+            </div>
         `;
 
         this.showModal('booking-detail-modal');
+    },
+
+    async changeBookingStatus(bookingId, targetStatus) {
+        const statusNames = {
+            'CONFIRMED': '確認',
+            'REJECTED': '拒絕',
+            'CANCELLED': '取消',
+            'COMPLETED': '完成'
+        };
+
+        const statusName = statusNames[targetStatus];
+        let reason = null;
+
+        // 如果是拒絕或取消，詢問原因
+        if (targetStatus === 'REJECTED' || targetStatus === 'CANCELLED') {
+            reason = prompt(`請輸入${statusName}原因（選填）：`);
+            if (reason === null) return; // 用戶點擊取消
+        }
+
+        if (!confirm(`確定要${statusName}此預約嗎？`)) return;
+
+        try {
+            await API.bookings.updateStatus(bookingId, targetStatus, reason);
+            alert(`預約已${statusName}`);
+
+            // 關閉 modal 並重新加載列表
+            this.hideModal('booking-detail-modal');
+            await this.loadBookings();
+        } catch (error) {
+            console.error('Change booking status error:', error);
+            alert(`狀態變更失敗：${error.message || '未知錯誤'}`);
+        }
     },
 
     formatDateTime(dateTimeStr) {

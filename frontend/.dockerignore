@@ -1,0 +1,28 @@
+# Docker files
+Dockerfile
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Documentation (if not needed in production)
+README.md
+docs/
+
+# Node modules (if you have any)
+node_modules/

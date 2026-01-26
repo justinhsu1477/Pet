@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -93,8 +95,8 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        // 同步到 Log DB
-        syncToLogDb(saved);
+        // 註冊 afterCommit callback，在主交易 commit 後才同步到 Log DB
+        registerAfterCommitSync(saved);
 
         // TODO: 發送通知給保母（Domain Event）
         // eventPublisher.publishEvent(new BookingCreatedEvent(saved));
@@ -142,8 +144,8 @@ public class BookingService {
 
             Booking updated = bookingRepository.save(booking);
 
-            // 同步到 Log DB
-            syncToLogDb(updated);
+            // 註冊 afterCommit callback，在主交易 commit 後才同步到 Log DB
+            registerAfterCommitSync(updated);
 
             // TODO: 發送狀態變更通知
             // eventPublisher.publishEvent(new BookingStatusChangedEvent(updated));
@@ -257,16 +259,26 @@ public class BookingService {
     // ============ Private Methods ============
 
     /**
-     * 同步 Booking 到 Log DB
-     * 失敗時只記錄錯誤，不影響主流程
+     * 註冊 afterCommit callback
+     * 確保只在主交易成功 commit 後才同步到 Log DB
+     * 這樣可以避免：
+     * 1. 主 DB rollback 但 log 已寫入的不一致問題
+     * 2. log 寫入拖長主交易時間的效能問題
      */
-    private void syncToLogDb(Booking booking) {
-        try {
-            bookingLogService.syncBookingToLog(booking);
-        } catch (Exception e) {
-            logger.error("Failed to sync booking {} to log DB, will continue with main operation: {}",
-                    booking.getId(), e.getMessage());
-        }
+    private void registerAfterCommitSync(Booking booking) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    logger.info("Main transaction committed, syncing booking {} to log DB", booking.getId());
+                    bookingLogService.syncBookingToLog(booking);
+                } catch (Exception e) {
+                    // Log DB 寫入失敗不影響主流程（主交易已經 commit）
+                    logger.error("Failed to sync booking {} to log DB after commit: {}",
+                            booking.getId(), e.getMessage());
+                }
+            }
+        });
     }
 
     /**

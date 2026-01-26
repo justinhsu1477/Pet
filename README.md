@@ -233,11 +233,12 @@ Pet/
 
 ```bash
 # 查看所有服務狀態
+# .env 沒有給 project name時 前面要加 -p pet-qas
 docker-compose -f docker-compose.qas.yml ps
 
 # 查看服務日誌
 docker-compose -f docker-compose.qas.yml logs -f          # 所有服務
-docker-compose -f docker-compose.qas.yml logs -f backend  # 只看 Backend
+docker-compose -f docker-compose.qas.yml logs -f backend # 只看 Backend
 docker-compose -f docker-compose.qas.yml logs -f mssql    # 只看資料庫
 
 # 重啟特定服務

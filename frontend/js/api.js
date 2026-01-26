@@ -2,6 +2,37 @@
  * Pet Care Admin - API Client
  */
 
+// Simple refresh concurrency lock to avoid multiple parallel refresh calls
+let __refreshPromise = null;
+
+async function refreshAccessToken() {
+    if (__refreshPromise) {
+        return __refreshPromise;
+    }
+    __refreshPromise = (async () => {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/auth/jwt/refresh`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Device-Type': 'WEB'
+            },
+            credentials: 'include'
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok || !body || body.success === false || !body.data || !body.data.accessToken) {
+            throw new Error((body && body.message) || `HTTP ${res.status}`);
+        }
+        const newAccessToken = body.data.accessToken;
+        sessionStorage.setItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN, newAccessToken);
+        return newAccessToken;
+    })();
+    try {
+        return await __refreshPromise;
+    } finally {
+        __refreshPromise = null;
+    }
+}
+
 const API = {
     /**
      * Make an API request
@@ -9,53 +40,49 @@ const API = {
     async request(endpoint, options = {}) {
         const url = `${CONFIG.API_BASE_URL}${endpoint}`;
 
-        // Get access token from sessionStorage
-        const accessToken = sessionStorage.getItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+        const tokenKey = CONFIG.STORAGE_KEYS.ACCESS_TOKEN;
+        const getToken = () => sessionStorage.getItem(tokenKey);
 
-        const defaultOptions = {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Device-Type': CONFIG.DEVICE_TYPE
-            },
-            credentials: 'include' // For cookies/session
+        const defaultHeaders = {
+            'Content-Type': 'application/json',
+            'X-Device-Type': 'WEB'
         };
+        const baseOptions = { credentials: 'include' };
 
-        // Add Authorization header if token exists
-        if (accessToken) {
-            defaultOptions.headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        const mergedOptions = {
-            ...defaultOptions,
+        const buildOptionsWithToken = (token) => ({
+            ...baseOptions,
             ...options,
             headers: {
-                ...defaultOptions.headers,
-                ...options.headers
+                ...defaultHeaders,
+                ...(options.headers || {}),
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
             }
-        };
+        });
 
-        try {
-            const response = await fetch(url, mergedOptions);
+        // 先嘗試請求一次
+        let response = await fetch(url, buildOptionsWithToken(getToken()));
 
-            // Handle 401 Unauthorized - token expired or invalid
-            if (response.status === 401) {
-                console.error('Token expired or invalid, redirecting to login...');
+        // 如果 Access Token 過期，嘗試刷新一次並重試原請求
+        if (response.status === 401 && endpoint !== '/auth/jwt/refresh') {
+            try {
+                const newToken = await refreshAccessToken();
+                response = await fetch(url, buildOptionsWithToken(newToken));
+            } catch (e) {
+                // 刷新失敗，視為未登入
                 sessionStorage.clear();
                 window.location.href = 'index.html';
-                throw new Error('登入已過期，請重新登入');
+                throw e;
             }
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || `HTTP ${response.status}`);
-            }
-
-            return data;
-        } catch (error) {
-            console.error('API Error:', error);
-            throw error;
         }
+
+        // 嘗試解析 JSON，若失敗給空物件
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || (data && data.success === false)) {
+            throw new Error((data && data.message) || `HTTP ${response.status}`);
+        }
+
+        return data;
     },
 
     /**
@@ -194,6 +221,13 @@ const API = {
 
         async getById(id) {
             return API.request(`/bookings/${id}`);
+        },
+
+        async updateStatus(id, targetStatus, reason = null) {
+            return API.request(`/bookings/${id}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ targetStatus, reason })
+            });
         }
     },
 

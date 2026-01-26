@@ -61,12 +61,23 @@ public class CatService implements PetServiceInterface<CatDto> {
 
     @Override
     public CatDto update(UUID id, CatDto dto) {
-        if (!catRepository.existsById(id)) {
-            throw new ResourceNotFoundException("貓咪", "id", id);
-        }
-        Cat cat = convertToEntity(dto);
-        cat.setId(id);
-        Cat updatedCat = catRepository.save(cat);
+        // 先從數據庫加載現有的 Cat（包含 owner 關聯）
+        Cat existingCat = catRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("貓咪", "id", id));
+
+        // 更新屬性（保留 owner）
+        existingCat.setName(dto.name());
+        existingCat.setAge(dto.age());
+        existingCat.setBreed(dto.breed());
+        existingCat.setGender(dto.gender());
+        existingCat.setSpecialNeeds(dto.specialNeeds());
+        existingCat.setIsNeutered(dto.isNeutered());
+        existingCat.setVaccineStatus(dto.vaccineStatus());
+        existingCat.setIsIndoor(dto.isIndoor());
+        existingCat.setLitterBoxType(dto.litterBoxType());
+        existingCat.setScratchingHabit(dto.scratchingHabit());
+
+        Cat updatedCat = catRepository.save(existingCat);
         return convertToDto(updatedCat);
     }
 

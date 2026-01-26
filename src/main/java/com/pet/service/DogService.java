@@ -61,12 +61,27 @@ public class DogService implements PetServiceInterface<DogDto> {
 
     @Override
     public DogDto update(UUID id, DogDto dto) {
-        if (!dogRepository.existsById(id)) {
-            throw new ResourceNotFoundException("狗狗", "id", id);
-        }
-        Dog dog = convertToEntity(dto);
-        dog.setId(id);
-        Dog updatedDog = dogRepository.save(dog);
+        // 先從數據庫加載現有的 Dog（包含 owner 關聯）
+        Dog existingDog = dogRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("狗狗", "id", id));
+
+        // 更新屬性（保留 owner）
+        existingDog.setName(dto.name());
+        existingDog.setAge(dto.age());
+        existingDog.setBreed(dto.breed());
+        existingDog.setGender(dto.gender());
+        existingDog.setSpecialNeeds(dto.specialNeeds());
+        existingDog.setIsNeutered(dto.isNeutered());
+        existingDog.setVaccineStatus(dto.vaccineStatus());
+        existingDog.setSize(dto.size());
+        existingDog.setIsWalkRequired(dto.isWalkRequired());
+        existingDog.setWalkFrequencyPerDay(dto.walkFrequencyPerDay());
+        existingDog.setTrainingLevel(dto.trainingLevel());
+        existingDog.setIsFriendlyWithDogs(dto.isFriendlyWithDogs());
+        existingDog.setIsFriendlyWithPeople(dto.isFriendlyWithPeople());
+        existingDog.setIsFriendlyWithChildren(dto.isFriendlyWithChildren());
+
+        Dog updatedDog = dogRepository.save(existingDog);
         return convertToDto(updatedDog);
     }
 

@@ -88,7 +88,7 @@ VALUES ('20000000-0000-0000-0000-000000000003', false, 'OPEN', 'HIGH');
 -- ============================================
 
 INSERT INTO Sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
-VALUES ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', '張保母', '5年寵物照護經驗,擅長照顧大型犬', 4.5, 4, 4, 220.00, 'SENIOR');
+VALUES ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', '張保母', '5年寵物照護經驗,擅長照顧大型犬', 4.5, 4, 4, 220.00, 'EXPERT');
 
 INSERT INTO Sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
 VALUES ('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', '李保母', '3年貓咪專業照護,有獸醫助理背景', 4.7, 3, 3, 250.00, 'SENIOR');
