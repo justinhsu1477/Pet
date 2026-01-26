@@ -8,6 +8,7 @@ import com.pet.exception.BusinessException;
 import com.pet.exception.ErrorCode;
 import com.pet.exception.ResourceNotFoundException;
 import com.pet.log.service.BookingLogService;
+import com.pet.pricing.PricingStrategyFactory;
 import com.pet.repository.BookingRepository;
 import com.pet.repository.PetRepository;
 import com.pet.repository.SitterRepository;
@@ -18,6 +19,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -63,7 +65,7 @@ public class BookingService {
         validateBookingTime(dto.startTime(), dto.endTime());
 
         // 2. 檢查時段是否已被預約（防止雙重預約）
-        if (bookingRepository.hasConflictingBooking(dto.sitterId(), dto.startTime(), dto.endTime())) {
+        if (bookingRepository.countConflictingBookings(dto.sitterId(), dto.startTime(), dto.endTime()) > 0) {
             throw new BusinessException(ErrorCode.BOOKING_CONFLICT);
         }
 
@@ -75,7 +77,10 @@ public class BookingService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("使用者", "id", userId));
 
-        // 4. 建立預約
+        // 4. 計算費用（後端計算，不依賴前端傳入）
+        double totalPrice = calculateBookingPrice(sitter, dto.startTime(), dto.endTime());
+
+        // 5. 建立預約
         Booking booking = new Booking();
         booking.setPet(pet);
         booking.setSitter(sitter);
@@ -84,7 +89,7 @@ public class BookingService {
         booking.setEndTime(dto.endTime());
         booking.setNotes(dto.notes());
         booking.setStatus(BookingStatus.PENDING);
-        booking.setTotalPrice(dto.totalPrice());
+        booking.setTotalPrice(totalPrice);
 
         Booking saved = bookingRepository.save(booking);
 
@@ -113,11 +118,11 @@ public class BookingService {
 
             // 如果是確認預約，再次檢查是否有衝突（防止併發確認）
             if (updateDto.targetStatus() == BookingStatus.CONFIRMED) {
-                if (bookingRepository.hasConflictingBookingExcluding(
+                if (bookingRepository.countConflictingBookingsExcluding(
                         booking.getSitter().getId(),
                         booking.getStartTime(),
                         booking.getEndTime(),
-                        bookingId)) {
+                        bookingId) > 0) {
                     throw new BusinessException(ErrorCode.BOOKING_CONFLICT);
                 }
             }
@@ -262,6 +267,23 @@ public class BookingService {
             logger.error("Failed to sync booking {} to log DB, will continue with main operation: {}",
                     booking.getId(), e.getMessage());
         }
+    }
+
+    /**
+     * 計算預約費用
+     * 使用保母的經驗等級和時薪來計算
+     */
+    private double calculateBookingPrice(Sitter sitter, LocalDateTime startTime, LocalDateTime endTime) {
+        // 計算時長（小時）
+        Duration duration = Duration.between(startTime, endTime);
+        long hours = duration.toHours();
+
+        // 使用計費策略計算費用
+        return PricingStrategyFactory.calculateBookingPrice(
+                sitter.getExperienceLevel(),
+                sitter.getHourlyRate(),
+                (int) hours
+        );
     }
 
     private void validateBookingTime(LocalDateTime startTime, LocalDateTime endTime) {

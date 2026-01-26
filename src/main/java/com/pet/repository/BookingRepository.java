@@ -71,11 +71,11 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     /**
      * 檢查時段是否有衝突（防止雙重預約）
      */
-    @Query("SELECT COUNT(b) > 0 FROM Booking b " +
+    @Query("SELECT COUNT(b) FROM Booking b " +
            "WHERE b.sitter.id = :sitterId " +
            "AND b.status IN ('PENDING', 'CONFIRMED') " +
            "AND ((b.startTime < :endTime AND b.endTime > :startTime))")
-    boolean hasConflictingBooking(
+    long countConflictingBookings(
             @Param("sitterId") UUID sitterId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
@@ -83,12 +83,12 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     /**
      * 排除特定預約的衝突檢查（用於更新時）
      */
-    @Query("SELECT COUNT(b) > 0 FROM Booking b " +
+    @Query("SELECT COUNT(b) FROM Booking b " +
            "WHERE b.sitter.id = :sitterId " +
            "AND b.id != :excludeId " +
            "AND b.status IN ('PENDING', 'CONFIRMED') " +
            "AND ((b.startTime < :endTime AND b.endTime > :startTime))")
-    boolean hasConflictingBookingExcluding(
+    long countConflictingBookingsExcluding(
             @Param("sitterId") UUID sitterId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,

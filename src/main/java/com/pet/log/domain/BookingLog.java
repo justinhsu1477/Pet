@@ -9,18 +9,14 @@ import java.util.UUID;
 
 /**
  * Booking Log Entity (扁平化存儲)
- * 用於 Log DB (PostgreSQL)，專門用於報表/分析
+ * 用於 Log DB ，專門用於報表/分析
  * 不包含 @ManyToOne 關聯，直接存儲關聯實體的 ID 和名稱
  */
 @Entity
 @Data
 @Table(name = "booking_log",
         indexes = {
-                @Index(name = "idx_booking_log_booking_id", columnList = "booking_id"),
-                @Index(name = "idx_booking_log_sitter_id", columnList = "sitter_id"),
-                @Index(name = "idx_booking_log_user_id", columnList = "user_id"),
-                @Index(name = "idx_booking_log_status", columnList = "status"),
-                @Index(name = "idx_booking_log_sync_time", columnList = "sync_time")
+                @Index(name = "idx_booking_log_booking_id", columnList = "booking_id")
         })
 public class BookingLog {
 

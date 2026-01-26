@@ -7,7 +7,11 @@ import javax.inject.Inject
 class BookingRepository @Inject constructor(
     private val api: BookingApi
 ) {
-    suspend fun getAvailableSitters(date: String) = api.getAvailableSitters(date)
+    suspend fun getAvailableSitters(
+        date: String,
+        startTime: String? = null,
+        endTime: String? = null
+    ) = api.getAvailableSitters(date, startTime, endTime)
 
     suspend fun getAllSittersWithRating() = api.getAllSittersWithRating()
 

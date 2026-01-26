@@ -10,5 +10,7 @@ data class AvailableSitterResponse(
     val experience: String?,
     val averageRating: Double?,
     val ratingCount: Int?,
-    val completedBookings: Int?
+    val completedBookings: Int?,
+    val hourlyRate: Double?,
+    val experienceLevel: String?
 ) : Serializable

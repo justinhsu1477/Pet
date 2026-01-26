@@ -27,11 +27,9 @@ public record BookingDto(
         String username,
 
         @NotNull(message = "開始時間不能為空")
-        @FutureOrPresent(message = "開始時間不能是過去時間")
         LocalDateTime startTime,
 
         @NotNull(message = "結束時間不能為空")
-        @Future(message = "結束時間必須是未來時間")
         LocalDateTime endTime,
 
         BookingStatus status,

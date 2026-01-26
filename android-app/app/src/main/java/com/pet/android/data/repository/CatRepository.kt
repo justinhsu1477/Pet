@@ -27,10 +27,10 @@ class CatRepository @Inject constructor(
         }
     }
 
-    suspend fun createCat(cat: CatRequest): Resource<CatRequest> {
+    suspend fun createCat(cat: CatRequest, userId: String): Resource<CatRequest> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = catApi.createCat(cat)
+                val response = catApi.createCat(cat, userId)
                 if (response.success && response.data != null) {
                     Resource.Success(response.data)
                 } else {

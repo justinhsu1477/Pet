@@ -59,12 +59,15 @@ public class SitterController {
 
     /**
      * 取得指定日期可用的保母列表
-     * GET /api/sitters/available?date=2026-01-22
+     * GET /api/sitters/available?date=2026-01-22&startTime=2026-01-22T09:00&endTime=2026-01-22T17:00
+     * startTime 和 endTime 為可選參數，如果提供則會排除在該時段已有預約的保母
      */
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<AvailableSitterDto>>> getAvailableSitters(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        List<AvailableSitterDto> sitters = sitterService.getAvailableSitters(date);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime endTime) {
+        List<AvailableSitterDto> sitters = sitterService.getAvailableSitters(date, startTime, endTime);
         return ResponseEntity.ok(ApiResponse.success(sitters));
     }
 

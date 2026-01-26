@@ -31,12 +31,12 @@ class TokenManager @Inject constructor(
 
     private val sharedPreferences: SharedPreferences by lazy {
         try {
-            // 創建 MasterKey
+            // 建立 MasterKey
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
 
-            // 創建 EncryptedSharedPreferences
+            // 建立 EncryptedSharedPreferences
             EncryptedSharedPreferences.create(
                 context,
                 PREFS_FILE_NAME,
@@ -46,7 +46,7 @@ class TokenManager @Inject constructor(
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error creating EncryptedSharedPreferences, falling back to regular SharedPreferences", e)
-            // Fallback to regular SharedPreferences if encryption fails
+            // 如果加密失敗，回退到普通的 SharedPreferences
             context.getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE)
         }
     }
@@ -170,7 +170,7 @@ class TokenManager @Inject constructor(
 
         return try {
             val jwt = JWT.decode(token)
-            jwt.expiresAt?.time?.div(1000) // Convert to seconds
+            jwt.expiresAt?.time?.div(1000) // 轉換為秒
         } catch (e: Exception) {
             Log.e(TAG, "Error getting token expiry time", e)
             null

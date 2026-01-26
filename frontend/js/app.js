@@ -442,7 +442,14 @@ const App = {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">載入中...</td></tr>';
 
         try {
-            const res = await API.pets.getAll();
+            let res;
+            // If user is CUSTOMER, only load their pets
+            if (this.currentUser && this.currentUser.role !== 'ADMIN') {
+                res = await API.pets.getByUser(this.currentUser.userId);
+            } else {
+                // ADMIN can see all pets
+                res = await API.pets.getAll();
+            }
             this.allPets = res.data || [];
 
             // Update stats
@@ -512,15 +519,25 @@ const App = {
         document.getElementById('pet-id').value = '';
         document.getElementById('pet-user-id').value = '';
 
-        // Show select for new pet, hide readonly display
         const ownerSelect = document.getElementById('pet-owner');
         const ownerDisplay = document.getElementById('pet-owner-display');
-        ownerSelect.style.display = 'block';
-        ownerSelect.required = true;
-        ownerDisplay.style.display = 'none';
+
+        // If user is CUSTOMER, auto-fill with their userId and hide selection
+        if (this.currentUser && this.currentUser.role !== 'ADMIN') {
+            document.getElementById('pet-user-id').value = this.currentUser.userId;
+            ownerSelect.style.display = 'none';
+            ownerSelect.required = false;
+            ownerDisplay.style.display = 'block';
+            ownerDisplay.value = `${this.currentUser.roleName || this.currentUser.username} (本人)`;
+        } else {
+            // ADMIN can select owner
+            ownerSelect.style.display = 'block';
+            ownerSelect.required = true;
+            ownerDisplay.style.display = 'none';
+            await this.loadOwnerOptions();
+        }
 
         this.updatePetTypeFields();
-        await this.loadOwnerOptions();
         this.showModal('pet-modal');
     },
 
@@ -601,10 +618,18 @@ const App = {
         const petType = document.getElementById('pet-type').value;
         const isEdit = !!petId;
 
-        // For edit mode, use the hidden field value since select is disabled
-        const userId = isEdit
-            ? document.getElementById('pet-user-id').value
-            : document.getElementById('pet-owner').value;
+        // Get userId from hidden field or select depending on context
+        let userId;
+        if (isEdit) {
+            // Editing: use hidden field
+            userId = document.getElementById('pet-user-id').value;
+        } else if (this.currentUser && this.currentUser.role !== 'ADMIN') {
+            // New pet, CUSTOMER: use their userId from hidden field
+            userId = document.getElementById('pet-user-id').value;
+        } else {
+            // New pet, ADMIN: use selected owner
+            userId = document.getElementById('pet-owner').value;
+        }
 
         if (!userId && !isEdit) {
             alert('請選擇飼主');

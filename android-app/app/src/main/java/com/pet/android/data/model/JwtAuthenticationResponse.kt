@@ -46,12 +46,13 @@ data class JwtAuthenticationResponse(
     /**
      * 提供一個方便的屬性來取得應該使用的 ID
      * 根據角色決定使用 userId 還是 roleId
+     *
+     * 注意：Pet.user_id 指向 Users.id，所以 CUSTOMER 需要使用 userId
+     * 只有 SITTER 需要使用 roleId (Sitter.id) 來查詢保母相關數據
      */
     val effectiveId: String?
         get() = when (role?.uppercase()) {
-            "CUSTOMER" -> roleId  // Customer 使用 Customer.id (roleId)
-            "SITTER" -> roleId    // Sitter 使用 Sitter.id (roleId)
-            "ADMIN" -> userId     // Admin 使用 Users.id (userId)
-            else -> userId        // 預設使用 userId
+            "SITTER" -> roleId    // Sitter 使用 Sitter.id (roleId) - 用於查詢保母相關數據
+            else -> userId        // CUSTOMER 和 ADMIN 都使用 Users.id (userId) - 用於查詢 Pet 等數據
         }
 }

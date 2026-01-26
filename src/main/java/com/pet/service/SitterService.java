@@ -4,6 +4,7 @@ import com.pet.domain.Sitter;
 import com.pet.dto.AvailableSitterDto;
 import com.pet.dto.SitterDto;
 import com.pet.exception.ResourceNotFoundException;
+import com.pet.repository.BookingRepository;
 import com.pet.repository.SitterAvailabilityRepository;
 import com.pet.repository.SitterRepository;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,14 @@ public class SitterService {
 
     private final SitterRepository sitterRepository;
     private final SitterAvailabilityRepository availabilityRepository;
+    private final BookingRepository bookingRepository;
 
     public SitterService(SitterRepository sitterRepository,
-                         SitterAvailabilityRepository availabilityRepository) {
+                         SitterAvailabilityRepository availabilityRepository,
+                         BookingRepository bookingRepository) {
         this.sitterRepository = sitterRepository;
         this.availabilityRepository = availabilityRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     public List<SitterDto> getAllSitters() {
@@ -71,14 +75,35 @@ public class SitterService {
 
     /**
      * 取得指定日期可用的保母列表
+     * @param date 預約日期
+     * @param startTime 可選：開始時間，如果提供則會排除在該時段已有預約的保母
+     * @param endTime 可選：結束時間，如果提供則會排除在該時段已有預約的保母
      */
     @Transactional(readOnly = true)
-    public List<AvailableSitterDto> getAvailableSitters(LocalDate date) {
+    public List<AvailableSitterDto> getAvailableSitters(LocalDate date,
+                                                         java.time.LocalDateTime startTime,
+                                                         java.time.LocalDateTime endTime) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
-        List<Sitter> sitters = availabilityRepository.findAvailableSittersByDayOfWeek(dayOfWeek);
+        List<Sitter> sitters = availabilityRepository.findAvailableSittersByDayOfWeek(dayOfWeek, true);
+
+        // 如果提供了時間範圍，過濾掉在該時段已有預約的保母
+        if (startTime != null && endTime != null) {
+            sitters = sitters.stream()
+                    .filter(sitter -> !hasConflictingBooking(sitter.getId(), startTime, endTime))
+                    .toList();
+        }
+
         return sitters.stream()
                 .map(this::convertToAvailableDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 檢查保母在指定時段是否有衝突的預約
+     * 只檢查 PENDING 和 CONFIRMED 狀態的預約
+     */
+    private boolean hasConflictingBooking(UUID sitterId, java.time.LocalDateTime startTime, java.time.LocalDateTime endTime) {
+        return bookingRepository.countConflictingBookings(sitterId, startTime, endTime) > 0;
     }
 
     /**
@@ -98,7 +123,9 @@ public class SitterService {
                 sitter.getExperience(),
                 sitter.getAverageRating(),
                 sitter.getRatingCount(),
-                sitter.getCompletedBookings()
+                sitter.getCompletedBookings(),
+                sitter.getHourlyRate(),
+                sitter.getExperienceLevel()
         );
     }
 

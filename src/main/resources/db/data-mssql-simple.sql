@@ -85,17 +85,17 @@ VALUES ('20000000-0000-0000-0000-000000000003', 0, 'OPEN', 'HIGH');
 -- 插入 Sitter (保母詳細資料)
 -- ============================================
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', N'張保母', N'5年寵物照護經驗,擅長照顧大型犬', 4.5, 4, 4);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', N'張保母', N'5年寵物照護經驗,擅長照顧大型犬', 4.5, 4, 4, 220.00, 'SENIOR');
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', N'李保母', N'3年貓咪專業照護,有獸醫助理背景', 4.7, 3, 3);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES ('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', N'李保母', N'3年貓咪專業照護,有獸醫助理背景', 4.7, 3, 3, 250.00, 'SENIOR');
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000006', N'王保母', N'2年小型寵物照護經驗', 3.5, 2, 2);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES ('30000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000006', N'王保母', N'2年小型寵物照護經驗', 3.5, 2, 2, 180.00, 'STANDARD');
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES ('30000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000007', N'陳保母', N'7年全方位寵物照護,可處理特殊需求寵物', 4.7, 3, 3);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES ('30000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000007', N'陳保母', N'7年全方位寵物照護,可處理特殊需求寵物', 4.7, 3, 3, 350.00, 'EXPERT');
 
 -- ============================================
 -- 插入 sitter_availability
@@ -132,40 +132,40 @@ VALUES ('60000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-0000000
 -- 插入 booking
 -- ============================================
 
--- 張保母的預約
+-- 張保母的預約 (使用動態日期：當前日期前7天內)
 INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
-VALUES ('40000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '2025-01-05 09:00:00', '2025-01-05 18:00:00', 'COMPLETED', N'請幫忙遛狗兩次', 800.00, '2025-01-04 10:00:00', '2025-01-05 19:00:00', 0);
+VALUES ('40000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', DATEADD(HOUR, 9, DATEADD(DAY, -7, CAST(GETDATE() AS DATE))), DATEADD(HOUR, 18, DATEADD(DAY, -7, CAST(GETDATE() AS DATE))), 'COMPLETED', N'請幫忙遛狗兩次', 1540.00, DATEADD(DAY, -8, GETDATE()), DATEADD(HOUR, 19, DATEADD(DAY, -7, CAST(GETDATE() AS DATE))), 0);
 
 INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
-VALUES ('40000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '2025-01-08 10:00:00', '2025-01-08 17:00:00', 'COMPLETED', N'皮皮需要多運動', 700.00, '2025-01-07 14:00:00', '2025-01-08 18:00:00', 0);
+VALUES ('40000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', DATEADD(HOUR, 10, DATEADD(DAY, -6, CAST(GETDATE() AS DATE))), DATEADD(HOUR, 17, DATEADD(DAY, -6, CAST(GETDATE() AS DATE))), 'COMPLETED', N'皮皮需要多運動', 1400.00, DATEADD(DAY, -7, GETDATE()), DATEADD(HOUR, 18, DATEADD(DAY, -6, CAST(GETDATE() AS DATE))), 0);
 
 INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
-VALUES ('40000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '2025-01-12 09:00:00', '2025-01-12 18:00:00', 'COMPLETED', NULL, 800.00, '2025-01-11 08:00:00', '2025-01-12 19:00:00', 0);
+VALUES ('40000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', DATEADD(HOUR, 9, DATEADD(DAY, -5, CAST(GETDATE() AS DATE))), DATEADD(HOUR, 18, DATEADD(DAY, -5, CAST(GETDATE() AS DATE))), 'COMPLETED', NULL, 1540.00, DATEADD(DAY, -6, GETDATE()), DATEADD(HOUR, 19, DATEADD(DAY, -5, CAST(GETDATE() AS DATE))), 0);
 
--- 李保母的預約
+-- 李保母的預約 (使用動態日期：當前日期前7天內)
 INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
-VALUES ('40000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '2025-01-06 10:00:00', '2025-01-06 18:00:00', 'COMPLETED', N'喵喵對海鮮過敏請注意', 750.00, '2025-01-05 15:00:00', '2025-01-06 19:00:00', 0);
+VALUES ('40000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', DATEADD(HOUR, 10, DATEADD(DAY, -4, CAST(GETDATE() AS DATE))), DATEADD(HOUR, 18, DATEADD(DAY, -4, CAST(GETDATE() AS DATE))), 'COMPLETED', N'喵喵對海鮮過敏請注意', 1800.00, DATEADD(DAY, -5, GETDATE()), DATEADD(HOUR, 19, DATEADD(DAY, -4, CAST(GETDATE() AS DATE))), 0);
 
 INSERT INTO booking (id, pet_id, sitter_id, user_id, start_time, end_time, status, notes, total_price, created_at, updated_at, version)
-VALUES ('40000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', '2025-01-10 09:00:00', '2025-01-10 17:00:00', 'COMPLETED', N'需要定期梳毛', 700.00, '2025-01-09 12:00:00', '2025-01-10 18:00:00', 0);
+VALUES ('40000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', DATEADD(HOUR, 9, DATEADD(DAY, -3, CAST(GETDATE() AS DATE))), DATEADD(HOUR, 17, DATEADD(DAY, -3, CAST(GETDATE() AS DATE))), 'COMPLETED', N'需要定期梳毛', 1800.00, DATEADD(DAY, -4, GETDATE()), DATEADD(HOUR, 18, DATEADD(DAY, -3, CAST(GETDATE() AS DATE))), 0);
 
 -- ============================================
 -- 插入 sitter_rating
 -- ============================================
 
--- 張保母的評價
+-- 張保母的評價 (預約完成後一天)
 INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
-VALUES ('70000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, N'張保母非常專業！阿福被照顧得很好', N'謝謝您的肯定！', 0, '2025-01-06 10:30:00', '2025-01-06 10:30:00');
+VALUES ('70000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, N'張保母非常專業！阿福被照顧得很好', N'謝謝您的肯定！', 0, DATEADD(DAY, -6, GETDATE()), DATEADD(DAY, -6, GETDATE()));
 
 INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
-VALUES ('70000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 4, 4, 5, 4, N'皮皮玩得很開心', N'感謝您的建議！', 0, '2025-01-09 14:00:00', '2025-01-09 14:00:00');
+VALUES ('70000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 4, 4, 5, 4, N'皮皮玩得很開心', N'感謝您的建議！', 0, DATEADD(DAY, -5, GETDATE()), DATEADD(DAY, -5, GETDATE()));
 
 INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
-VALUES ('70000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, N'服務一如既往的好', NULL, 0, '2025-01-13 09:00:00', '2025-01-13 09:00:00');
+VALUES ('70000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, N'服務一如既往的好', NULL, 0, DATEADD(DAY, -4, GETDATE()), DATEADD(DAY, -4, GETDATE()));
 
 -- 李保母的評價
 INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
-VALUES ('70000000-0000-0000-0000-000000000004', '40000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, N'李保母對貓咪超級有愛！', N'謝謝您！', 0, '2025-01-07 19:00:00', '2025-01-07 19:00:00');
+VALUES ('70000000-0000-0000-0000-000000000004', '40000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 5, 5, 5, 5, N'李保母對貓咪超級有愛！', N'謝謝您！', 0, DATEADD(DAY, -3, GETDATE()), DATEADD(DAY, -3, GETDATE()));
 
 INSERT INTO sitter_rating (id, booking_id, sitter_id, user_id, overall_rating, professionalism_rating, communication_rating, punctuality_rating, comment, sitter_reply, is_anonymous, created_at, updated_at)
-VALUES ('70000000-0000-0000-0000-000000000005', '40000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 5, 5, 4, 5, N'咪咪被梳得很漂亮', NULL, 0, '2025-01-11 18:30:00', '2025-01-11 18:30:00');
+VALUES ('70000000-0000-0000-0000-000000000005', '40000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 5, 5, 4, 5, N'咪咪被梳得很漂亮', NULL, 0, DATEADD(DAY, -2, GETDATE()), DATEADD(DAY, -2, GETDATE()));

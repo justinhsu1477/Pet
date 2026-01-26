@@ -12,7 +12,10 @@ interface DogApi {
     suspend fun getDogById(@Path("id") id: String): ApiResponse<DogRequest>
 
     @POST("api/dogs")
-    suspend fun createDog(@Body dog: DogRequest): ApiResponse<DogRequest>
+    suspend fun createDog(
+        @Body dog: DogRequest,
+        @Query("userId") userId: String
+    ): ApiResponse<DogRequest>
 
     @PUT("api/dogs/{id}")
     suspend fun updateDog(@Path("id") id: String, @Body dog: DogRequest): ApiResponse<DogRequest>

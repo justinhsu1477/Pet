@@ -209,7 +209,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Owner Info Section -->
+            <!-- Owner Info Section - Hidden (登入用戶即為飼主) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -217,7 +217,8 @@
                 android:text="@string/section_owner_info"
                 android:textColor="@color/pet_orange"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -225,7 +226,8 @@
                 android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="2dp">
+                app:cardElevation="2dp"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"

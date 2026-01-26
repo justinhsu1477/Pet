@@ -75,17 +75,17 @@ SET @sitter2_id = RANDOM_UUID();
 SET @sitter3_id = RANDOM_UUID();
 SET @sitter4_id = RANDOM_UUID();
 
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter1_id, '張保母', '0911-111-222', 'zhang@example.com', '5年寵物照護經驗，擅長照顧大型犬');
+INSERT INTO sitter (id, name, phone, email, experience, hourly_rate, experience_level)
+VALUES (@sitter1_id, '張保母', '0911-111-222', 'zhang@example.com', '5年寵物照護經驗，擅長照顧大型犬', 220.00, 'SENIOR');
 
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter2_id, '李保母', '0922-222-333', 'lee@example.com', '3年貓咪專業照護，有獸醫助理背景');
+INSERT INTO sitter (id, name, phone, email, experience, hourly_rate, experience_level)
+VALUES (@sitter2_id, '李保母', '0922-222-333', 'lee@example.com', '3年貓咪專業照護，有獸醫助理背景', 250.00, 'SENIOR');
 
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter3_id, '王保母', '0933-333-444', 'wang@example.com', '2年小型寵物照護經驗');
+INSERT INTO sitter (id, name, phone, email, experience, hourly_rate, experience_level)
+VALUES (@sitter3_id, '王保母', '0933-333-444', 'wang@example.com', '2年小型寵物照護經驗', 180.00, 'STANDARD');
 
-INSERT INTO sitter (id, name, phone, email, experience)
-VALUES (@sitter4_id, '陳保母', '0944-444-555', 'chen@example.com', '7年全方位寵物照護，可處理特殊需求寵物');
+INSERT INTO sitter (id, name, phone, email, experience, hourly_rate, experience_level)
+VALUES (@sitter4_id, '陳保母', '0944-444-555', 'chen@example.com', '7年全方位寵物照護，可處理特殊需求寵物', 350.00, 'EXPERT');
 
 -- ============================================
 -- 插入保母可用時段 (SitterAvailability)

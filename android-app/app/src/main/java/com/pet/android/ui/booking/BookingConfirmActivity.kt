@@ -13,6 +13,7 @@ import com.pet.android.data.model.Pet
 import com.pet.android.data.preferences.UserPreferencesManager
 import com.pet.android.databinding.ActivityBookingConfirmBinding
 import com.pet.android.ui.base.BaseActivity
+import com.pet.android.util.PricingUtils
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.lifecycle.lifecycleScope
@@ -86,6 +87,24 @@ class BookingConfirmActivity : BaseActivity<ActivityBookingConfirmBinding>() {
             else -> getString(R.string.booking_full_day)
         }
         binding.tvDuration.text = durationText
+
+        // Price info
+        val hourlyRate = sitter.hourlyRate ?: 200.0
+        val experienceLevel = sitter.experienceLevel
+        val totalPrice = PricingUtils.calculatePrice(hourlyRate, durationHours, experienceLevel)
+
+        binding.tvHourlyRate.text = "時薪: ${PricingUtils.formatPrice(hourlyRate)}"
+        binding.tvExperienceLevel.text = PricingUtils.getExperienceLevelName(experienceLevel)
+
+        val discountDesc = PricingUtils.getDiscountDescription(durationHours, experienceLevel)
+        if (discountDesc.isNotEmpty()) {
+            binding.tvDiscount.text = discountDesc
+            binding.tvDiscount.visibility = View.VISIBLE
+        } else {
+            binding.tvDiscount.visibility = View.GONE
+        }
+
+        binding.tvTotalPrice.text = PricingUtils.formatPrice(totalPrice)
     }
 
     private fun setupSubmitButton() {

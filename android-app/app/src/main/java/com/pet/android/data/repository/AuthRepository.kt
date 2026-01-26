@@ -41,7 +41,7 @@ class AuthRepository @Inject constructor(
             try {
                 Log.d(TAG, "Attempting login for username: $username")
 
-                // Check if account has changed and clear data if necessary
+                // 檢查帳號是否更換，如有需要則清除舊資料
                 val savedUsername = userPreferencesManager.username.first()
                 if (savedUsername != null && savedUsername != username) {
                     Log.d(TAG, "Account changed from $savedUsername to $username, clearing old data")
@@ -56,17 +56,17 @@ class AuthRepository @Inject constructor(
                     val loginData = response.data
                     Log.d(TAG, "Login successful - userId: ${loginData.userId}, roleId: ${loginData.roleId}, username: ${loginData.username}, role: ${loginData.role}")
 
-                    // Get the appropriate ID based on role
+                    // 根據角色獲取適當的 ID
                     val effectiveId = loginData.id
                     Log.d(TAG, "Effective ID for ${loginData.role}: $effectiveId")
 
-                    // Check if id is null and warn
+                    // 檢查 ID 是否為 null 並警告
                     if (effectiveId == null) {
                         Log.w(TAG, "WARNING: Could not determine user ID! Using username as fallback")
                     }
 
-                    // Save login data to DataStore
-                    // Use id if available, otherwise fallback to username
+                    // 保存登入資料到 DataStore
+                    // 優先使用 ID，如果沒有則使用 username 作為備案
                     val userIdToSave = effectiveId ?: loginData.username
                     Log.d(TAG, "Saving userId: $userIdToSave")
 
@@ -99,7 +99,7 @@ class AuthRepository @Inject constructor(
             try {
                 Log.d(TAG, "Attempting JWT login for username: $username")
 
-                // Check if account has changed and clear data if necessary
+                // 檢查帳號是否更換，如有需要則清除舊資料
                 val savedUsername = userPreferencesManager.username.first()
                 if (savedUsername != null && savedUsername != username) {
                     Log.d(TAG, "Account changed from $savedUsername to $username, clearing old data")
@@ -117,18 +117,18 @@ class AuthRepository @Inject constructor(
                 if (response.success && response.data != null) {
                     val jwtData = response.data
 
-                    // 保存 Tokens (refreshToken 可能為 null，因為 Web 端使用 Cookie)
+                    // 保存 Token（refreshToken 可能為 null，因為 Web 端使用 Cookie）
                     val refreshToken = jwtData.refreshToken
                     if (refreshToken != null) {
                         tokenManager.saveTokens(jwtData.accessToken, refreshToken)
                         Log.d(TAG, "JWT tokens saved successfully")
                     } else {
-                        // 如果沒有 refreshToken (Web 端用 Cookie)，只保存 accessToken
+                        // 如果沒有 refreshToken（Web 端使用 Cookie），只保存 accessToken
                         tokenManager.saveAccessToken(jwtData.accessToken)
                         Log.d(TAG, "Access token saved successfully (no refresh token in response)")
                     }
 
-                    // 保存用戶信息到 UserPreferences
+                    // 保存用戶資訊到 UserPreferences
                     if (jwtData.username != null && jwtData.role != null) {
                         val effectiveId = jwtData.effectiveId ?: jwtData.username
                         Log.d(TAG, "Saving user info - userId: ${jwtData.userId}, roleId: ${jwtData.roleId}, username: ${jwtData.username}, role: ${jwtData.role}")
@@ -175,10 +175,10 @@ class AuthRepository @Inject constructor(
                 if (response.success && response.data != null) {
                     val jwtData = response.data
 
-                    // 保存新的 Tokens
+                    // 保存新的 Token
                     // 注意：後端可能只返回新的 accessToken，refreshToken 沿用舊的
                     if (jwtData.refreshToken != null) {
-                        // 如果有新的 refreshToken，兩個都更新
+                        // 如果有新的 refreshToken，兩個 Token 都更新
                         tokenManager.saveTokens(jwtData.accessToken, jwtData.refreshToken)
                         Log.d(TAG, "Tokens refreshed and saved successfully (both tokens)")
                     } else {
@@ -208,19 +208,19 @@ class AuthRepository @Inject constructor(
             try {
                 val refreshToken = tokenManager.getRefreshToken()
 
-                // 即使沒有 refresh token 也繼續清除本地數據
+                // 即使沒有 refresh token 也繼續清除本地資料
                 if (!refreshToken.isNullOrEmpty()) {
                     try {
                         Log.d(TAG, "Attempting to logout on server")
                         val response = authApi.logout(RefreshTokenRequest(refreshToken))
                         Log.d(TAG, "Logout API response - success: ${response.success}")
                     } catch (e: Exception) {
-                        // 即使後端登出失敗，也繼續清除本地數據
+                        // 即使後端登出失敗，也繼續清除本地資料
                         Log.e(TAG, "Server logout failed, but will clear local data anyway", e)
                     }
                 }
 
-                // 清除本地 Tokens 和用戶數據
+                // 清除本地 Token 和用戶資料
                 tokenManager.clearTokens()
                 userPreferencesManager.clearLoginData()
 
@@ -228,7 +228,7 @@ class AuthRepository @Inject constructor(
                 Resource.Success(Unit)
             } catch (e: Exception) {
                 Log.e(TAG, "Logout error: ${e.message}", e)
-                // 即使出錯，也清除本地數據
+                // 即使出錯，也清除本地資料
                 tokenManager.clearTokens()
                 userPreferencesManager.clearLoginData()
                 Resource.Error(e.message ?: "登出錯誤")
@@ -241,6 +241,39 @@ class AuthRepository @Inject constructor(
      */
     fun isLoggedIn(): Boolean {
         return tokenManager.hasValidTokens()
+    }
+
+    /**
+     * 在自動登入情境，嘗試從 Access Token 補齊使用者資料到 DataStore
+     * 僅當 DataStore 尚未有 userId/role 時執行
+     */
+    suspend fun hydrateUserFromTokenIfNeeded() {
+        withContext(Dispatchers.IO) {
+            try {
+                val existingUserId = userPreferencesManager.userId.first()
+                val existingRole = userPreferencesManager.userRole.first()
+                if (!existingUserId.isNullOrBlank() && !existingRole.isNullOrBlank()) {
+                    // 已有資料，不需要補
+                    return@withContext
+                }
+
+                val userIdFromToken = tokenManager.getUserIdFromToken()
+                val roleFromToken = tokenManager.getUserRoleFromToken()
+                if (!userIdFromToken.isNullOrBlank() && !roleFromToken.isNullOrBlank()) {
+                    val savedUsername = userPreferencesManager.username.first() ?: ""
+                    userPreferencesManager.saveLoginData(
+                        username = savedUsername,
+                        role = roleFromToken,
+                        userId = userIdFromToken
+                    )
+                    Log.d(TAG, "Hydrated user from token: role=$roleFromToken, userId=$userIdFromToken")
+                } else {
+                    Log.w(TAG, "Unable to hydrate user from token: missing claims (userId/role)")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "hydrateUserFromTokenIfNeeded error: ${e.message}", e)
+            }
+        }
     }
 
     /**

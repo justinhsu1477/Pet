@@ -24,12 +24,13 @@ public interface SitterAvailabilityRepository extends JpaRepository<SitterAvaila
      */
     @Query("SELECT sa FROM SitterAvailability sa " +
            "WHERE sa.dayOfWeek = :dayOfWeek " +
-           "AND sa.isActive = true " +
+           "AND sa.isActive = :isActive " +
            "AND sa.startTime <= :time " +
            "AND sa.endTime >= :time")
     List<SitterAvailability> findAvailableSitters(
             @Param("dayOfWeek") DayOfWeek dayOfWeek,
-            @Param("time") LocalTime time);
+            @Param("time") LocalTime time,
+            @Param("isActive") Boolean isActive);
 
     /**
      * 查詢特定地區的可用保母
@@ -44,18 +45,21 @@ public interface SitterAvailabilityRepository extends JpaRepository<SitterAvaila
            "AND sa.dayOfWeek = :dayOfWeek " +
            "AND sa.startTime <= :startTime " +
            "AND sa.endTime >= :endTime " +
-           "AND sa.isActive = true")
+           "AND sa.isActive = :isActive")
     boolean isSitterAvailable(
             @Param("sitterId") UUID sitterId,
             @Param("dayOfWeek") DayOfWeek dayOfWeek,
             @Param("startTime") LocalTime startTime,
-            @Param("endTime") LocalTime endTime);
+            @Param("endTime") LocalTime endTime,
+            @Param("isActive") Boolean isActive);
 
     /**
      * 查詢特定星期可用的保母（不重複）
      */
     @Query("SELECT DISTINCT sa.sitter FROM SitterAvailability sa " +
            "WHERE sa.dayOfWeek = :dayOfWeek " +
-           "AND sa.isActive = true")
-    List<com.pet.domain.Sitter> findAvailableSittersByDayOfWeek(@Param("dayOfWeek") DayOfWeek dayOfWeek);
+           "AND sa.isActive = :isActive")
+    List<com.pet.domain.Sitter> findAvailableSittersByDayOfWeek(
+            @Param("dayOfWeek") DayOfWeek dayOfWeek,
+            @Param("isActive") Boolean isActive);
 }

@@ -27,10 +27,10 @@ class DogRepository @Inject constructor(
         }
     }
 
-    suspend fun createDog(dog: DogRequest): Resource<DogRequest> {
+    suspend fun createDog(dog: DogRequest, userId: String): Resource<DogRequest> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = dogApi.createDog(dog)
+                val response = dogApi.createDog(dog, userId)
                 if (response.success && response.data != null) {
                     Resource.Success(response.data)
                 } else {

@@ -12,6 +12,8 @@ import com.pet.android.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -57,7 +59,16 @@ class BookingHomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val dateStr = date.format(DateTimeFormatter.ISO_DATE)
-                val response = bookingRepository.getAvailableSitters(dateStr)
+
+                // 計算開始和結束時間（與 BookingConfirmActivity 保持一致）
+                val startTime = LocalDateTime.of(date, LocalTime.of(9, 0))
+                val endTime = startTime.plusHours(selectedDuration.hours.toLong())
+
+                val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                val startTimeStr = startTime.format(formatter)
+                val endTimeStr = endTime.format(formatter)
+
+                val response = bookingRepository.getAvailableSitters(dateStr, startTimeStr, endTimeStr)
                 val sitters = response.data ?: emptyList()
                 _sittersState.value = Resource.Success(sitters)
             } catch (e: Exception) {

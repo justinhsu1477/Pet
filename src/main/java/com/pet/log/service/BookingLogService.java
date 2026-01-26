@@ -31,13 +31,12 @@ public class BookingLogService {
      * 每次同步都會建立新的 Log 記錄（保留歷史）
      */
     @Transactional("logTransactionManager")
-    public BookingLog syncBookingToLog(Booking booking) {
+    public void syncBookingToLog(Booking booking) {
         try {
             BookingLog log = convertToBookingLog(booking);
             BookingLog saved = bookingLogRepository.save(log);
             logger.info("Successfully synced booking {} to log DB, log id: {}",
                     booking.getId(), saved.getId());
-            return saved;
         } catch (Exception e) {
             logger.error("Failed to sync booking {} to log DB: {}",
                     booking.getId(), e.getMessage(), e);

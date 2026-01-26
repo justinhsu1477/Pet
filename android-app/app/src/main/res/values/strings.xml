@@ -187,4 +187,16 @@
     <string name="rating_count_format">(%d)</string>
     <string name="experience_format">%s 經驗</string>
     <string name="completed_bookings_format">已完成 %d 單</string>
+
+    <!-- 登出功能 -->
+    <string name="logout">登出</string>
+    <string name="my_pets">我的寵物</string>
+
+    <!-- 用戶寵物管理 -->
+    <string name="user_pet_list_title">我的寵物</string>
+    <string name="user_no_pets">您還沒有寵物</string>
+    <string name="user_add_pet_hint">點擊右下角按鈕新增寵物</string>
+    <string name="pet_deleted">寵物已刪除</string>
+    <string name="confirm_delete_pet">確定要刪除這隻寵物嗎？</string>
+    <string name="delete_pet_title">刪除寵物</string>
 </resources>

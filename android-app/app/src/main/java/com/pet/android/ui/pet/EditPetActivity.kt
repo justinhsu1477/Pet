@@ -18,6 +18,7 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
 
     private var petId: String = ""
     private var petType: String = ""
+    private var isTypeVerified: Boolean = false
 
     override fun getViewBinding() = ActivityEditPetBinding.inflate(layoutInflater)
 
@@ -34,15 +35,11 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
         }
 
         setupToolbarNavigation(binding.toolbar)
-        binding.toolbar.title = if (petType.equals("DOG", ignoreCase = true)) {
-            getString(R.string.edit_dog_title)
-        } else {
-            getString(R.string.edit_cat_title)
-        }
-        setupUI()
         setupObservers()
         setupSubmitButton()
-        loadPetData()
+
+        // 首先驗證並獲取正確的寵物類型
+        viewModel.loadPetType(petId)
     }
 
     private fun setupUI() {
@@ -61,6 +58,11 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
     }
 
     private fun loadPetData() {
+        // 確保類型已經驗證過
+        if (!isTypeVerified) {
+            return
+        }
+
         if (petType.equals("DOG", ignoreCase = true)) {
             viewModel.loadDog(petId)
         } else {
@@ -69,6 +71,34 @@ class EditPetActivity : BaseActivity<ActivityEditPetBinding>() {
     }
 
     private fun setupObservers() {
+        // 首先觀察寵物類型
+        viewModel.petTypeState.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> showLoading(true)
+                is Resource.Success -> {
+                    // 獲取到正確的類型後，更新 UI 並加載詳細數據
+                    petType = resource.data
+                    isTypeVerified = true
+
+                    // 更新標題和 UI
+                    binding.toolbar.title = if (petType.equals("DOG", ignoreCase = true)) {
+                        getString(R.string.edit_dog_title)
+                    } else {
+                        getString(R.string.edit_cat_title)
+                    }
+                    setupUI()
+
+                    // 加載詳細數據
+                    loadPetData()
+                }
+                is Resource.Error -> {
+                    showLoading(false)
+                    Toast.makeText(this, resource.message, Toast.LENGTH_LONG).show()
+                    finish()
+                }
+            }
+        }
+
         viewModel.dogState.observe(this) { resource ->
             when (resource) {
                 is Resource.Loading -> showLoading(true)

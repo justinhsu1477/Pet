@@ -87,6 +87,13 @@ class LoginViewModel @Inject constructor(
         return authRepository.isLoggedIn()
     }
 
+    /**
+     * 自動登入時，若缺少 userId/role，嘗試從 Access Token 補齊
+     */
+    suspend fun hydrateUserFromTokenIfNeeded() {
+        authRepository.hydrateUserFromTokenIfNeeded()
+    }
+
     suspend fun getUserRole(): String {
         return userPreferencesManager.userRole.first() ?: "還未有權限"
     }

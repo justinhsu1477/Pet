@@ -52,4 +52,17 @@ public class Sitter {
      */
     @Column(name = "completed_bookings")
     private Integer completedBookings = 0;
+
+    /**
+     * 時薪（新台幣）
+     */
+    @Column(name = "hourly_rate")
+    private Double hourlyRate = 200.0;
+
+    /**
+     * 經驗等級
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "experience_level")
+    private ExperienceLevel experienceLevel = ExperienceLevel.STANDARD;
 }

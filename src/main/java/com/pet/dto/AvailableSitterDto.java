@@ -1,5 +1,6 @@
 package com.pet.dto;
 
+import com.pet.domain.ExperienceLevel;
 import java.util.UUID;
 
 /**
@@ -11,6 +12,8 @@ public record AvailableSitterDto(
         String experience,
         Double averageRating,
         Integer ratingCount,
-        Integer completedBookings
+        Integer completedBookings,
+        Double hourlyRate,
+        ExperienceLevel experienceLevel
 ) {
 }

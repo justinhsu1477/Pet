@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.pet.android.R
 import com.pet.android.data.model.AvailableSitterResponse
 import com.pet.android.databinding.ItemAvailableSitterBinding
+import com.pet.android.util.PricingUtils
 
 class AvailableSitterAdapter(
     private val onViewRatings: (AvailableSitterResponse) -> Unit,
@@ -51,6 +52,11 @@ class AvailableSitterAdapter(
 
             // Experience
             binding.tvExperience.text = sitter.experience ?: ""
+
+            // Price info
+            val hourlyRate = sitter.hourlyRate ?: 200.0
+            binding.tvHourlyRate.text = "${PricingUtils.formatPrice(hourlyRate)} /小時"
+            binding.tvExperienceLevel.text = PricingUtils.getExperienceLevelName(sitter.experienceLevel)
 
             // Buttons
             binding.btnViewRatings.setOnClickListener { onViewRatings(sitter) }

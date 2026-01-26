@@ -107,24 +107,6 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
             binding.tilName.error = null
         }
 
-        // Validate owner name (required)
-        val ownerName = binding.etOwnerName.text.toString().trim()
-        if (ownerName.isEmpty()) {
-            binding.tilOwnerName.error = getString(R.string.error_owner_name_required)
-            isValid = false
-        } else {
-            binding.tilOwnerName.error = null
-        }
-
-        // Validate owner phone (required)
-        val ownerPhone = binding.etOwnerPhone.text.toString().trim()
-        if (ownerPhone.isEmpty()) {
-            binding.tilOwnerPhone.error = getString(R.string.error_owner_phone_required)
-            isValid = false
-        } else {
-            binding.tilOwnerPhone.error = null
-        }
-
         return isValid
     }
 
@@ -132,8 +114,6 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
         val name = binding.etName.text.toString().trim()
         val age = binding.etAge.text.toString().toIntOrNull()
         val breed = binding.etBreed.text.toString().trim().takeIf { it.isNotEmpty() }
-        val ownerName = binding.etOwnerName.text.toString().trim()
-        val ownerPhone = binding.etOwnerPhone.text.toString().trim()
         val vaccineStatus = binding.etVaccineStatus.text.toString().trim().takeIf { it.isNotEmpty() }
         val specialNeeds = binding.etSpecialNeeds.text.toString().trim().takeIf { it.isNotEmpty() }
         val isNeutered = binding.switchNeutered.isChecked
@@ -146,12 +126,12 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
 
         if (species == Species.DOG) {
             submitDog(
-                name, age, breed, gender, ownerName, ownerPhone,
+                name, age, breed, gender,
                 specialNeeds, isNeutered, vaccineStatus
             )
         } else {
             submitCat(
-                name, age, breed, gender, ownerName, ownerPhone,
+                name, age, breed, gender,
                 specialNeeds, isNeutered, vaccineStatus
             )
         }
@@ -162,8 +142,6 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
         age: Int?,
         breed: String?,
         gender: Gender?,
-        ownerName: String,
-        ownerPhone: String,
         specialNeeds: String?,
         isNeutered: Boolean?,
         vaccineStatus: String?
@@ -195,8 +173,6 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
             age = age,
             breed = breed,
             gender = gender,
-            ownerName = ownerName,
-            ownerPhone = ownerPhone,
             specialNeeds = specialNeeds,
             isNeutered = isNeutered,
             vaccineStatus = vaccineStatus,
@@ -215,8 +191,6 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
         age: Int?,
         breed: String?,
         gender: Gender?,
-        ownerName: String,
-        ownerPhone: String,
         specialNeeds: String?,
         isNeutered: Boolean?,
         vaccineStatus: String?
@@ -243,8 +217,6 @@ class CreatePetFormActivity : BaseActivity<ActivityCreatePetFormBinding>() {
             age = age,
             breed = breed,
             gender = gender,
-            ownerName = ownerName,
-            ownerPhone = ownerPhone,
             specialNeeds = specialNeeds,
             isNeutered = isNeutered,
             vaccineStatus = vaccineStatus,

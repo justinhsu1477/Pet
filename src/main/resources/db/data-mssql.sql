@@ -108,17 +108,17 @@ DECLARE @sitter2_id UNIQUEIDENTIFIER = NEWID();
 DECLARE @sitter3_id UNIQUEIDENTIFIER = NEWID();
 DECLARE @sitter4_id UNIQUEIDENTIFIER = NEWID();
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES (@sitter1_id, @sitter01_id, N'張保母', N'5年寵物照護經驗，擅長照顧大型犬', 4.8, 15, 12);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES (@sitter1_id, @sitter01_id, N'張保母', N'5年寵物照護經驗，擅長照顧大型犬', 4.8, 15, 12, 220.00, 'SENIOR');
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES (@sitter2_id, @sitter02_id, N'李保母', N'3年貓咪專業照護，有獸醫助理背景', 4.9, 20, 18);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES (@sitter2_id, @sitter02_id, N'李保母', N'3年貓咪專業照護，有獸醫助理背景', 4.9, 20, 18, 250.00, 'SENIOR');
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES (@sitter3_id, @sitter03_id, N'王保母', N'2年小型寵物照護經驗', 4.5, 8, 6);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES (@sitter3_id, @sitter03_id, N'王保母', N'2年小型寵物照護經驗', 4.5, 8, 6, 180.00, 'STANDARD');
 
-INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings)
-VALUES (@sitter4_id, @sitter04_id, N'陳保母', N'7年全方位寵物照護，可處理特殊需求寵物', 5.0, 25, 22);
+INSERT INTO sitter (id, user_id, name, experience, average_rating, rating_count, completed_bookings, hourly_rate, experience_level)
+VALUES (@sitter4_id, @sitter04_id, N'陳保母', N'7年全方位寵物照護，可處理特殊需求寵物', 5.0, 25, 22, 350.00, 'EXPERT');
 
 -- Insert SitterRecord test data
 INSERT INTO sitter_record (id, pet_id, sitter_id, record_time, activity, fed, walked, mood_status, notes, photos)

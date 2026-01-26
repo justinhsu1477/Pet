@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pet.android.data.api.PetApi
 import com.pet.android.data.model.*
 import com.pet.android.data.repository.CatRepository
 import com.pet.android.data.repository.DogRepository
@@ -15,21 +16,53 @@ import javax.inject.Inject
 @HiltViewModel
 class EditPetViewModel @Inject constructor(
     private val dogRepository: DogRepository,
-    private val catRepository: CatRepository
+    private val catRepository: CatRepository,
+    private val petApi: PetApi
 ) : ViewModel() {
 
+    // 寵物類型狀態
+    private val _petTypeState = MutableLiveData<Resource<String>>()
+    val petTypeState: LiveData<Resource<String>> = _petTypeState
+
+    // 狗狗資料狀態
     private val _dogState = MutableLiveData<Resource<DogRequest>>()
     val dogState: LiveData<Resource<DogRequest>> = _dogState
 
+    // 貓咪資料狀態
     private val _catState = MutableLiveData<Resource<CatRequest>>()
     val catState: LiveData<Resource<CatRequest>> = _catState
 
+    // 更新狗狗狀態
     private val _updateDogState = MutableLiveData<Resource<DogRequest>>()
     val updateDogState: LiveData<Resource<DogRequest>> = _updateDogState
 
+    // 更新貓咪狀態
     private val _updateCatState = MutableLiveData<Resource<CatRequest>>()
     val updateCatState: LiveData<Resource<CatRequest>> = _updateCatState
 
+    /**
+     * 載入寵物類型
+     * 使用通用 PetApi 獲取正確的寵物類型，避免使用錯誤的 API 導致 404
+     */
+    fun loadPetType(id: String) {
+        viewModelScope.launch {
+            _petTypeState.value = Resource.Loading
+            try {
+                val response = petApi.getPetById(id)
+                if (response.success && response.data != null) {
+                    _petTypeState.value = Resource.Success(response.data.type)
+                } else {
+                    _petTypeState.value = Resource.Error(response.message ?: "獲取寵物類型失敗")
+                }
+            } catch (e: Exception) {
+                _petTypeState.value = Resource.Error(e.message ?: "網路錯誤")
+            }
+        }
+    }
+
+    /**
+     * 載入狗狗詳細資料
+     */
     fun loadDog(id: String) {
         viewModelScope.launch {
             _dogState.value = Resource.Loading
@@ -37,6 +70,9 @@ class EditPetViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 載入貓咪詳細資料
+     */
     fun loadCat(id: String) {
         viewModelScope.launch {
             _catState.value = Resource.Loading
@@ -44,6 +80,9 @@ class EditPetViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 更新狗狗資料
+     */
     fun updateDog(
         id: String,
         name: String,
@@ -84,6 +123,9 @@ class EditPetViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 更新貓咪資料
+     */
     fun updateCat(
         id: String,
         name: String,

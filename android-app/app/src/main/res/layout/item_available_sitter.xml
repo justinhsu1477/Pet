@@ -126,6 +126,42 @@
             android:textSize="14sp"
             tools:text="5 years experience caring for pets, specializing in large dogs" />
 
+        <!-- Price Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvExperienceLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/pet_orange"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                tools:text="資深保母" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvHourlyRate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="NT$ 250 /小時" />
+
+        </LinearLayout>
+
         <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"

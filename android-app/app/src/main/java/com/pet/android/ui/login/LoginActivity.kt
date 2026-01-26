@@ -52,7 +52,15 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
         if (viewModel.isLoggedIn()) {
             Log.d(TAG, "Valid token found, auto-login")
             Toast.makeText(this, "自動登入中...", Toast.LENGTH_SHORT).show()
-            navigateToHome()
+            // 在跳轉前，先從 Token 補齊使用者資料（userId / role），避免首頁取不到 userId
+            lifecycleScope.launch {
+                try {
+                    viewModel.hydrateUserFromTokenIfNeeded()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to hydrate user from token: ${e.message}", e)
+                }
+                navigateToHome()
+            }
         } else {
             Log.d(TAG, "No valid token, showing login screen")
         }
