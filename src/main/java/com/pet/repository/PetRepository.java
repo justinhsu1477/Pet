@@ -17,4 +17,10 @@ public interface PetRepository extends JpaRepository<Pet, UUID> {
 
     @Query("SELECT p FROM Pet p JOIN FETCH p.owner WHERE p.owner.id = :userId ORDER BY p.name ASC")
     List<Pet> findByOwnerIdOrderByNameAsc(@Param("userId") UUID userId);
+
+    /**
+     * 取得所有寵物
+     */
+    @Query("SELECT p FROM Pet p JOIN FETCH p.owner ORDER BY p.name ASC")
+    List<Pet> findAllWithOwner();
 }

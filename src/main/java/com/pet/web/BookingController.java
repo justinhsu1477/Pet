@@ -26,6 +26,16 @@ public class BookingController {
     }
 
     /**
+     * 取得所有預約（管理員用）
+     * GET /api/bookings
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<BookingDto>>> getAllBookings() {
+        List<BookingDto> bookings = bookingService.getAllBookings();
+        return ResponseEntity.ok(ApiResponse.success(bookings));
+    }
+
+    /**
      * 建立預約
      * POST /api/bookings?userId={userId}
      */

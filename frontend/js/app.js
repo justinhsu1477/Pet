@@ -11,14 +11,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const userData = JSON.parse(user);
-    if (userData.role !== 'ADMIN') {
-        window.location.href = 'index.html';
-        return;
-    }
+    // Allow both ADMIN and regular users (CUSTOMER)
+    // if (userData.role !== 'ADMIN') {
+    //     window.location.href = 'index.html';
+    //     return;
+    // }
 
     // Set user info in sidebar
     document.getElementById('userName').textContent = userData.roleName || userData.username;
     document.getElementById('userAvatar').textContent = (userData.roleName || userData.username).charAt(0).toUpperCase();
+
+    // Store current user data in App
+    App.currentUser = userData;
 
     // Initialize app
     App.init();
@@ -70,6 +74,12 @@ const App = {
                 break;
             case 'sitters':
                 this.loadSitters();
+                break;
+            case 'pets':
+                this.loadPets();
+                break;
+            case 'bookings':
+                this.loadBookings();
                 break;
         }
     },
@@ -421,5 +431,390 @@ const App = {
             'REJECTED': 'badge-error'
         };
         return map[status] || '';
+    },
+
+    // ===== Pets Management =====
+    allPets: [],
+    currentPetFilter: 'all',
+
+    async loadPets() {
+        const tbody = document.getElementById('pets-table');
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">載入中...</td></tr>';
+
+        try {
+            const res = await API.pets.getAll();
+            this.allPets = res.data || [];
+
+            // Update stats
+            const dogs = this.allPets.filter(p => p.petType === 'DOG').length;
+            const cats = this.allPets.filter(p => p.petType === 'CAT').length;
+            document.getElementById('stat-dogs').textContent = dogs;
+            document.getElementById('stat-cats').textContent = cats;
+
+            this.displayPets(this.allPets);
+        } catch (error) {
+            console.error('Pets load error:', error);
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">載入失敗</td></tr>';
+        }
+    },
+
+    displayPets(pets) {
+        const tbody = document.getElementById('pets-table');
+
+        if (!pets.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暫無寵物資料</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = pets.map(pet => `
+            <tr>
+                <td>
+                    <div class="flex items-center gap-1">
+                        <div class="avatar avatar-sm">${pet.petType === 'DOG' ? '🐕' : '🐈'}</div>
+                        <span>${pet.name || '未知'}</span>
+                    </div>
+                </td>
+                <td>${pet.petType === 'DOG' ? '狗狗' : '貓咪'}</td>
+                <td>${pet.breed || '-'}</td>
+                <td>${pet.age || '-'} 歲</td>
+                <td>${pet.ownerName || '-'}</td>
+                <td>
+                    <button class="btn btn-ghost" onclick="App.editPet('${pet.id}')">編輯</button>
+                    <button class="btn btn-ghost" style="color: var(--color-error);" onclick="App.confirmDeletePet('${pet.id}', '${pet.name}')">刪除</button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    filterPets(filter) {
+        this.currentPetFilter = filter;
+
+        // Update button states
+        document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-ghost');
+        });
+        document.getElementById(`filter-${filter}`).classList.remove('btn-ghost');
+        document.getElementById(`filter-${filter}`).classList.add('btn-secondary');
+
+        // Filter pets
+        if (filter === 'all') {
+            this.displayPets(this.allPets);
+        } else {
+            const filtered = this.allPets.filter(p => p.petType === filter);
+            this.displayPets(filtered);
+        }
+    },
+
+    async openAddPetModal() {
+        document.getElementById('pet-modal-title').textContent = '新增寵物';
+        document.getElementById('pet-form').reset();
+        document.getElementById('pet-id').value = '';
+        document.getElementById('pet-user-id').value = '';
+
+        // Show select for new pet, hide readonly display
+        const ownerSelect = document.getElementById('pet-owner');
+        const ownerDisplay = document.getElementById('pet-owner-display');
+        ownerSelect.style.display = 'block';
+        ownerSelect.required = true;
+        ownerDisplay.style.display = 'none';
+
+        this.updatePetTypeFields();
+        await this.loadOwnerOptions();
+        this.showModal('pet-modal');
+    },
+
+    async loadOwnerOptions() {
+        try {
+            const res = await API.users.getAll();
+            const customers = res.data || [];
+            const selectEl = document.getElementById('pet-owner');
+            selectEl.innerHTML = '<option value="">請選擇飼主</option>' +
+                customers.map(c => `<option value="${c.userId}">${c.name} (@${c.username})</option>`).join('');
+        } catch (error) {
+            console.error('Failed to load owners:', error);
+        }
+    },
+
+    async editPet(petId) {
+        const pet = this.allPets.find(p => p.id === petId);
+        if (!pet) return;
+
+        document.getElementById('pet-modal-title').textContent = '編輯寵物';
+        document.getElementById('pet-id').value = pet.id;
+        document.getElementById('pet-user-id').value = pet.userId;
+
+        // For editing: hide select, show readonly display with owner name
+        const ownerSelect = document.getElementById('pet-owner');
+        const ownerDisplay = document.getElementById('pet-owner-display');
+        ownerSelect.style.display = 'none';
+        ownerSelect.required = false;
+        ownerDisplay.style.display = 'block';
+        ownerDisplay.value = pet.ownerName || '未知飼主';
+
+        document.getElementById('pet-type').value = pet.petType;
+        document.getElementById('pet-name').value = pet.name || '';
+        document.getElementById('pet-breed').value = pet.breed || '';
+        document.getElementById('pet-age').value = pet.age || '';
+        document.getElementById('pet-gender').value = pet.gender || '';
+        document.getElementById('pet-special-needs').value = pet.specialNeeds || '';
+        document.getElementById('pet-vaccine').value = pet.vaccineStatus || '';
+        document.getElementById('pet-neutered').checked = pet.isNeutered || false;
+
+        this.updatePetTypeFields();
+
+        // Load type-specific data
+        try {
+            if (pet.petType === 'DOG') {
+                const res = await API.dogs.getById(petId);
+                const dog = res.data;
+                document.getElementById('dog-size').value = dog.size || 'MEDIUM';
+                document.getElementById('dog-training').value = dog.trainingLevel || 'BASIC';
+                document.getElementById('dog-walk-freq').value = dog.walkFrequencyPerDay || 1;
+                document.getElementById('dog-walk-required').checked = dog.isWalkRequired || false;
+                document.getElementById('dog-friendly-dogs').checked = dog.isFriendlyWithDogs || false;
+                document.getElementById('dog-friendly-children').checked = dog.isFriendlyWithChildren || false;
+            } else if (pet.petType === 'CAT') {
+                const res = await API.cats.getById(petId);
+                const cat = res.data;
+                document.getElementById('cat-litter-box').value = cat.litterBoxType || 'OPEN';
+                document.getElementById('cat-scratching').value = cat.scratchingHabit || 'MODERATE';
+                document.getElementById('cat-indoor').checked = cat.isIndoor || false;
+            }
+        } catch (error) {
+            console.error('Failed to load pet details:', error);
+        }
+
+        this.showModal('pet-modal');
+    },
+
+    updatePetTypeFields() {
+        const petType = document.getElementById('pet-type').value;
+        document.getElementById('dog-fields').style.display = petType === 'DOG' ? 'block' : 'none';
+        document.getElementById('cat-fields').style.display = petType === 'CAT' ? 'block' : 'none';
+    },
+
+    async savePet(event) {
+        event.preventDefault();
+
+        const petId = document.getElementById('pet-id').value;
+        const petType = document.getElementById('pet-type').value;
+        const isEdit = !!petId;
+
+        // For edit mode, use the hidden field value since select is disabled
+        const userId = isEdit
+            ? document.getElementById('pet-user-id').value
+            : document.getElementById('pet-owner').value;
+
+        if (!userId && !isEdit) {
+            alert('請選擇飼主');
+            return;
+        }
+
+        const baseData = {
+            name: document.getElementById('pet-name').value,
+            breed: document.getElementById('pet-breed').value,
+            age: parseInt(document.getElementById('pet-age').value) || null,
+            gender: document.getElementById('pet-gender').value || null,
+            specialNeeds: document.getElementById('pet-special-needs').value,
+            vaccineStatus: document.getElementById('pet-vaccine').value,
+            isNeutered: document.getElementById('pet-neutered').checked
+        };
+
+        let petData = {};
+        let apiMethod = null;
+
+        if (petType === 'DOG') {
+            petData = {
+                ...baseData,
+                size: document.getElementById('dog-size').value,
+                trainingLevel: document.getElementById('dog-training').value,
+                walkFrequencyPerDay: parseInt(document.getElementById('dog-walk-freq').value) || 0,
+                isWalkRequired: document.getElementById('dog-walk-required').checked,
+                isFriendlyWithDogs: document.getElementById('dog-friendly-dogs').checked,
+                isFriendlyWithPeople: true,
+                isFriendlyWithChildren: document.getElementById('dog-friendly-children').checked
+            };
+            apiMethod = isEdit
+                ? (id, data) => API.dogs.update(id, data)
+                : (data, uid) => API.dogs.create(data, uid);
+        } else if (petType === 'CAT') {
+            petData = {
+                ...baseData,
+                litterBoxType: document.getElementById('cat-litter-box').value,
+                scratchingHabit: document.getElementById('cat-scratching').value,
+                isIndoor: document.getElementById('cat-indoor').checked
+            };
+            apiMethod = isEdit
+                ? (id, data) => API.cats.update(id, data)
+                : (data, uid) => API.cats.create(data, uid);
+        }
+
+        try {
+            if (isEdit) {
+                await apiMethod(petId, petData);
+                alert('寵物資料已更新');
+            } else {
+                await apiMethod(petData, userId);
+                alert('寵物已新增');
+            }
+
+            this.hideModal('pet-modal');
+            this.loadPets();
+        } catch (error) {
+            console.error('Save pet error:', error);
+            alert('儲存失敗：' + (error.message || '未知錯誤'));
+        }
+    },
+
+    async confirmDeletePet(petId, petName) {
+        if (!confirm(`確定要刪除 ${petName} 嗎？此操作無法復原。`)) return;
+
+        try {
+            await API.pets.delete(petId);
+            alert('寵物已刪除');
+            this.loadPets();
+        } catch (error) {
+            console.error('Delete pet error:', error);
+            alert('刪除失敗');
+        }
+    },
+
+    // ===== Bookings Management =====
+    allBookings: [],
+    currentBookingFilter: 'all',
+
+    async loadBookings() {
+        const tbody = document.getElementById('bookings-table');
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">載入中...</td></tr>';
+
+        try {
+            const res = await API.bookings.getAll();
+            this.allBookings = res.data || [];
+
+            // Update stats
+            const pending = this.allBookings.filter(b => b.status === 'PENDING').length;
+            const confirmed = this.allBookings.filter(b => b.status === 'CONFIRMED').length;
+            const completed = this.allBookings.filter(b => b.status === 'COMPLETED').length;
+
+            document.getElementById('stat-pending').textContent = pending;
+            document.getElementById('stat-confirmed').textContent = confirmed;
+            document.getElementById('stat-completed').textContent = completed;
+
+            this.displayBookings(this.allBookings);
+        } catch (error) {
+            console.error('Bookings load error:', error);
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">載入失敗</td></tr>';
+        }
+    },
+
+    displayBookings(bookings) {
+        const tbody = document.getElementById('bookings-table');
+
+        if (!bookings.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暫無預約資料</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = bookings.map(booking => `
+            <tr>
+                <td style="font-family: monospace; font-size: 0.85rem;">#${booking.id.substring(0, 8)}</td>
+                <td>${booking.petName || '-'}</td>
+                <td>${booking.username || '-'}</td>
+                <td>${booking.sitterName || '-'}</td>
+                <td>${this.formatDateTime(booking.startTime)}</td>
+                <td>NT$ ${booking.totalPrice || 0}</td>
+                <td><span class="badge ${this.getStatusBadgeClass(booking.status)}">${this.getStatusText(booking.status)}</span></td>
+                <td>
+                    <button class="btn btn-ghost" onclick="App.viewBookingDetail('${booking.id}')">詳情</button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    filterBookings(filter) {
+        this.currentBookingFilter = filter;
+
+        // Update button states
+        document.querySelectorAll('[id^="booking-filter-"]').forEach(btn => {
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-ghost');
+        });
+        document.getElementById(`booking-filter-${filter}`).classList.remove('btn-ghost');
+        document.getElementById(`booking-filter-${filter}`).classList.add('btn-secondary');
+
+        // Filter bookings
+        if (filter === 'all') {
+            this.displayBookings(this.allBookings);
+        } else if (filter === 'CANCELLED') {
+            const filtered = this.allBookings.filter(b => b.status === 'CANCELLED' || b.status === 'REJECTED');
+            this.displayBookings(filtered);
+        } else {
+            const filtered = this.allBookings.filter(b => b.status === filter);
+            this.displayBookings(filtered);
+        }
+    },
+
+    async viewBookingDetail(bookingId) {
+        const booking = this.allBookings.find(b => b.id === bookingId);
+        if (!booking) return;
+
+        const contentEl = document.getElementById('booking-detail-content');
+        contentEl.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    <h4 style="margin-bottom: 0.5rem; color: var(--color-primary);">訂單資訊</h4>
+                    <p><strong>訂單編號：</strong>${booking.id}</p>
+                    <p><strong>狀態：</strong><span class="badge ${this.getStatusBadgeClass(booking.status)}">${this.getStatusText(booking.status)}</span></p>
+                    <p><strong>建立時間：</strong>${this.formatDateTime(booking.createdAt)}</p>
+                    ${booking.updatedAt !== booking.createdAt ? `<p><strong>更新時間：</strong>${this.formatDateTime(booking.updatedAt)}</p>` : ''}
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 0.5rem; color: var(--color-primary);">服務資訊</h4>
+                    <p><strong>寵物：</strong>${booking.petName || '-'}</p>
+                    <p><strong>飼主：</strong>${booking.username || '-'}</p>
+                    <p><strong>保母：</strong>${booking.sitterName || '-'}</p>
+                    <p><strong>費用：</strong>NT$ ${booking.totalPrice || 0}</p>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--color-primary);">服務時間</h4>
+                <p><strong>開始：</strong>${this.formatDateTime(booking.startTime)}</p>
+                <p><strong>結束：</strong>${this.formatDateTime(booking.endTime)}</p>
+            </div>
+
+            ${booking.notes ? `
+                <div style="padding: 1rem; background: var(--color-accent); border-radius: var(--radius-md); margin-bottom: 1rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--color-primary);">飼主備註</h4>
+                    <p>${booking.notes}</p>
+                </div>
+            ` : ''}
+
+            ${booking.sitterResponse ? `
+                <div style="padding: 1rem; background: var(--color-accent); border-radius: var(--radius-md);">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--color-primary);">保母回覆</h4>
+                    <p>${booking.sitterResponse}</p>
+                </div>
+            ` : ''}
+        `;
+
+        this.showModal('booking-detail-modal');
+    },
+
+    formatDateTime(dateTimeStr) {
+        if (!dateTimeStr) return '-';
+        try {
+            const date = new Date(dateTimeStr);
+            return date.toLocaleString('zh-TW', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch {
+            return dateTimeStr;
+        }
     }
 };

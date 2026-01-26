@@ -2,6 +2,8 @@ package com.pet.android.ui.pet
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,14 +15,19 @@ import com.pet.android.databinding.ActivityPetListBinding
 import com.pet.android.ui.base.BaseActivity
 import com.pet.android.ui.create.CreatePetActivity
 import com.pet.android.ui.sitter.SitterListActivity
+import com.pet.android.util.LogoutHelper
 import com.pet.android.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class PetListActivity : BaseActivity<ActivityPetListBinding>() {
 
     private val viewModel: PetViewModel by viewModels()
     private lateinit var petAdapter: PetAdapter
+
+    @Inject
+    lateinit var logoutHelper: LogoutHelper
 
     private val createPetLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -149,5 +156,20 @@ class PetListActivity : BaseActivity<ActivityPetListBinding>() {
 
     override fun onBackButtonPressed() {
         finishAffinity()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_logout, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                logoutHelper.performLogout(this)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

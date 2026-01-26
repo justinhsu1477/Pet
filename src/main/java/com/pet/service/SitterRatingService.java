@@ -109,7 +109,7 @@ public class SitterRatingService {
      */
     @Transactional(readOnly = true)
     public Page<SitterRatingDto> getSitterRatings(UUID sitterId, Pageable pageable) {
-        return ratingRepository.findBySitterIdOrderByCreatedAtDesc(sitterId, pageable)
+        return ratingRepository.findBySitter_IdOrderByCreatedAtDesc(sitterId, pageable)
                 .map(this::convertToDto);
     }
 
@@ -145,7 +145,7 @@ public class SitterRatingService {
             }
         }
 
-        long totalRatings = ratingRepository.countBySitterId(sitterId);
+        long totalRatings = ratingRepository.countBySitter_Id(sitterId);
 
         // 對可能為 null 的欄位給預設值
         Double averageRating = sitter.getAverageRating() != null
@@ -208,7 +208,7 @@ public class SitterRatingService {
      */
     private void updateSitterAverageRating(UUID sitterId) {
         Double weightedAvg = ratingRepository.calculateWeightedAverageRating(sitterId);
-        long count = ratingRepository.countBySitterId(sitterId);
+        long count = ratingRepository.countBySitter_Id(sitterId);
 
         Sitter sitter = sitterRepository.findById(sitterId)
                 .orElseThrow(() -> new ResourceNotFoundException("保母", "id", sitterId));

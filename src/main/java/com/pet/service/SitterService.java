@@ -29,7 +29,7 @@ public class SitterService {
     }
 
     public List<SitterDto> getAllSitters() {
-        return sitterRepository.findAll().stream()
+        return sitterRepository.findAllWithUser().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -82,11 +82,11 @@ public class SitterService {
     }
 
     /**
-     * 取得所有保母（含評分資訊）
+     * 取得所有保母（含評分資訊，使用 FETCH JOIN 避免 N+1 問題）
      */
     @Transactional(readOnly = true)
     public List<AvailableSitterDto> getAllSittersWithRating() {
-        return sitterRepository.findAll().stream()
+        return sitterRepository.findAllWithUser().stream()
                 .map(this::convertToAvailableDto)
                 .collect(Collectors.toList());
     }

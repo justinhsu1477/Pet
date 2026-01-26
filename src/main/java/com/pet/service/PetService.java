@@ -28,10 +28,10 @@ public class PetService {
     }
 
     /**
-     * 取得所有寵物（包含貓和狗）
+     * 取得所有寵物
      */
     public List<PetDto> getAllPets() {
-        return petRepository.findAll().stream()
+        return petRepository.findAllWithOwner().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -102,7 +102,9 @@ public class PetService {
                 pet.getIsNeutered(),
                 pet.getVaccineStatus(),
                 petType,
-                pet.getPetTypeName()
+                pet.getPetTypeName(),
+                pet.getOwner() != null ? pet.getOwner().getId() : null,
+                pet.getOwner() != null ? pet.getOwner().getUsername() : null
         );
     }
 }

@@ -34,8 +34,10 @@ public class CatController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CatDto>> createCat(@Valid @RequestBody CatDto catDto) {
-        CatDto createdCat = catService.create(catDto);
+    public ResponseEntity<ApiResponse<CatDto>> createCat(
+            @Valid @RequestBody CatDto catDto,
+            @RequestParam UUID userId) {
+        CatDto createdCat = catService.create(catDto, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("貓咪創建成功", createdCat));
     }

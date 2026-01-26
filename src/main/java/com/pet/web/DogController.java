@@ -34,8 +34,10 @@ public class DogController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<DogDto>> createDog(@Valid @RequestBody DogDto dogDto) {
-        DogDto createdDog = dogService.create(dogDto);
+    public ResponseEntity<ApiResponse<DogDto>> createDog(
+            @Valid @RequestBody DogDto dogDto,
+            @RequestParam UUID userId) {
+        DogDto createdDog = dogService.create(dogDto, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("狗狗創建成功", createdDog));
     }

@@ -121,6 +121,58 @@ const API = {
 
         async getById(id) {
             return API.request(`/pets/${id}`);
+        },
+
+        async delete(id) {
+            return API.request(`/pets/${id}`, {
+                method: 'DELETE'
+            });
+        }
+    },
+
+    /**
+     * Dog APIs
+     */
+    dogs: {
+        async getById(id) {
+            return API.request(`/dogs/${id}`);
+        },
+
+        async create(data, userId) {
+            return API.request(`/dogs?userId=${userId}`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        },
+
+        async update(id, data) {
+            return API.request(`/dogs/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+        }
+    },
+
+    /**
+     * Cat APIs
+     */
+    cats: {
+        async getById(id) {
+            return API.request(`/cats/${id}`);
+        },
+
+        async create(data, userId) {
+            return API.request(`/cats?userId=${userId}`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        },
+
+        async update(id, data) {
+            return API.request(`/cats/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
         }
     },
 
@@ -128,6 +180,10 @@ const API = {
      * Booking APIs
      */
     bookings: {
+        async getAll() {
+            return API.request('/bookings');
+        },
+
         async getByUser(userId) {
             return API.request(`/bookings/user/${userId}`);
         },

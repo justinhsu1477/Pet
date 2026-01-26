@@ -163,6 +163,17 @@ public class BookingService {
     }
 
     /**
+     * 取得所有預約（管理員用，使用 FETCH JOIN 避免 N+1 問題）
+     */
+    @Transactional(readOnly = true)
+    public List<BookingDto> getAllBookings() {
+        return bookingRepository.findAllWithRelations()
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 取得使用者的所有預約
      */
     @Transactional(readOnly = true)

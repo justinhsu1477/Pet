@@ -11,8 +11,6 @@ import com.pet.util.DateTimeUtils.getRecentDates
 import com.pet.util.DateTimeUtils.getStartOfCurrentMonth
 import com.pet.util.DateTimeUtils.getStartOfCurrentWeek
 import org.springframework.stereotype.Service
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.*
 
 /**
@@ -125,7 +123,7 @@ class BookingStatisticsService(
      */
     fun getRatingStats(sitterId: UUID, limit: Int = 5): RatingStats {
         val averageRating = sitterRatingRepository.calculateAverageRating(sitterId) ?: 0.0
-        val totalRatings = sitterRatingRepository.countBySitterId(sitterId)
+        val totalRatings = sitterRatingRepository.countBySitter_Id(sitterId)
 
         // 星級分佈
         val starCounts = sitterRatingRepository.countRatingsByStars(sitterId)

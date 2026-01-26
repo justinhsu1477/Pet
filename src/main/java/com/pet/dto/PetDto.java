@@ -32,6 +32,12 @@ public record PetDto(
         String petType,
 
         // 寵物類型名稱 (貓/狗)
-        String petTypeName
+        String petTypeName,
+
+        // 飼主 ID
+        UUID userId,
+
+        // 飼主名稱
+        String ownerName
 ) {
 }

@@ -1,9 +1,11 @@
 package com.pet.service;
 
 import com.pet.domain.Cat;
+import com.pet.domain.Users;
 import com.pet.dto.CatDto;
 import com.pet.exception.ResourceNotFoundException;
 import com.pet.repository.CatRepository;
+import com.pet.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +18,11 @@ import java.util.stream.Collectors;
 public class CatService implements PetServiceInterface<CatDto> {
 
     private final CatRepository catRepository;
+    private final UserRepository userRepository;
 
-    public CatService(CatRepository catRepository) {
+    public CatService(CatRepository catRepository, UserRepository userRepository) {
         this.catRepository = catRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -38,6 +42,19 @@ public class CatService implements PetServiceInterface<CatDto> {
     @Override
     public CatDto create(CatDto dto) {
         Cat cat = convertToEntity(dto);
+        Cat savedCat = catRepository.save(cat);
+        return convertToDto(savedCat);
+    }
+
+    /**
+     * 建立貓咪（指定飼主）
+     */
+    public CatDto create(CatDto dto, UUID userId) {
+        Users owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("使用者", "id", userId));
+
+        Cat cat = convertToEntity(dto);
+        cat.setOwner(owner);
         Cat savedCat = catRepository.save(cat);
         return convertToDto(savedCat);
     }

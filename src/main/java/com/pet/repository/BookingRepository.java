@@ -25,9 +25,15 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     Optional<Booking> findByIdWithLock(@Param("id") UUID id);
 
     /**
-     * 查詢使用者的所有預約
+     * 查詢使用者的所有預約（使用 JOIN FETCH 預加載關聯實體）
      */
-    List<Booking> findByUserIdOrderByCreatedAtDesc(UUID userId);
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
+           "WHERE b.user.id = :userId " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId);
 
     /**
      * 查詢保母的所有預約（使用 JOIN FETCH 預加載關聯實體）
@@ -52,9 +58,15 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     List<Booking> findBySitterIdAndStatus(@Param("sitterId") UUID sitterId, @Param("status") BookingStatus status);
 
     /**
-     * 查詢寵物的預約歷史
+     * 查詢寵物的預約歷史（使用 JOIN FETCH 預加載關聯實體）
      */
-    List<Booking> findByPetIdOrderByCreatedAtDesc(UUID petId);
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
+           "WHERE b.pet.id = :petId " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findByPetIdOrderByCreatedAtDesc(@Param("petId") UUID petId);
 
     /**
      * 檢查時段是否有衝突（防止雙重預約）
@@ -91,14 +103,23 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     long countCompletedBookings(@Param("sitterId") UUID sitterId);
 
     /**
-     * 查詢指定狀態的預約
-     */
-    List<Booking> findByStatusOrderByCreatedAtDesc(BookingStatus status);
-
-    /**
-     * 查詢即將開始的預約（用於發送提醒）
+     * 查詢指定狀態的預約（使用 JOIN FETCH 預加載關聯實體）
      */
     @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
+           "WHERE b.status = :status " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findByStatusOrderByCreatedAtDesc(@Param("status") BookingStatus status);
+
+    /**
+     * 查詢即將開始的預約（用於發送提醒，使用 JOIN FETCH 預加載關聯實體）
+     */
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
            "WHERE b.status = 'CONFIRMED' " +
            "AND b.startTime BETWEEN :now AND :endTime")
     List<Booking> findUpcomingBookings(
@@ -155,4 +176,14 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     List<Booking> findCompletedBookingsByDate(
             @Param("sitterId") UUID sitterId,
             @Param("date") java.time.LocalDate date);
+
+    /**
+     * 取得所有預約（管理員用，使用 JOIN FETCH 預加載關聯實體）
+     */
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findAllWithRelations();
 }

@@ -30,6 +30,14 @@
                     <span class="nav-item-icon">🧑‍⚕️</span>
                     <span>保母管理</span>
                 </a>
+                <a href="#" class="nav-item" data-page="pets">
+                    <span class="nav-item-icon">🐾</span>
+                    <span>寵物管理</span>
+                </a>
+                <a href="#" class="nav-item" data-page="bookings">
+                    <span class="nav-item-icon">📅</span>
+                    <span>預約管理</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -184,6 +192,315 @@
                             <button class="btn btn-ghost modal-close">&times;</button>
                         </div>
                         <div id="sitter-detail-content">
+                            <p class="text-muted">載入中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pets Page -->
+            <div id="page-pets" class="page" style="display: none;">
+                <div class="page-header flex justify-between items-center">
+                    <div>
+                        <h1 class="page-title">寵物管理</h1>
+                        <p class="page-subtitle">管理系統中的所有寵物</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="App.openAddPetModal()">
+                        ➕ 新增寵物
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon">🐕</div>
+                        <div class="stat-info">
+                            <h3>狗狗</h3>
+                            <div class="stat-value" id="stat-dogs">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🐈</div>
+                        <div class="stat-info">
+                            <h3>貓咪</h3>
+                            <div class="stat-value" id="stat-cats">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" id="filter-all" onclick="App.filterPets('all')">
+                        🐾 全部
+                    </button>
+                    <button class="btn btn-ghost" id="filter-dog" onclick="App.filterPets('DOG')">
+                        🐕 狗狗
+                    </button>
+                    <button class="btn btn-ghost" id="filter-cat" onclick="App.filterPets('CAT')">
+                        🐈 貓咪
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="table-container" style="box-shadow: none;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>寵物</th>
+                                    <th>類型</th>
+                                    <th>品種</th>
+                                    <th>年齡</th>
+                                    <th>飼主</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pets-table">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">載入中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pet Modal -->
+                <div id="pet-modal" class="modal" style="display: none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width: 700px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title" id="pet-modal-title">新增寵物</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <form id="pet-form" onsubmit="App.savePet(event)">
+                            <input type="hidden" id="pet-id">
+                            <input type="hidden" id="pet-user-id">
+
+                            <div style="margin-bottom: 1rem;">
+                                <label class="form-label">飼主 *</label>
+                                <!-- For adding new pet: show select -->
+                                <select class="form-input" id="pet-owner" required style="display: none;">
+                                    <option value="">請選擇飼主</option>
+                                </select>
+                                <!-- For editing pet: show readonly text field -->
+                                <input type="text" class="form-input" id="pet-owner-display" readonly style="display: none; background-color: #f5f5f5; cursor: not-allowed;">
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label class="form-label">寵物類型 *</label>
+                                    <select class="form-input" id="pet-type" required onchange="App.updatePetTypeFields()">
+                                        <option value="">請選擇</option>
+                                        <option value="DOG">🐕 狗狗</option>
+                                        <option value="CAT">🐈 貓咪</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">名字 *</label>
+                                    <input type="text" class="form-input" id="pet-name" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label class="form-label">品種</label>
+                                    <input type="text" class="form-input" id="pet-breed">
+                                </div>
+                                <div>
+                                    <label class="form-label">年齡</label>
+                                    <input type="number" class="form-input" id="pet-age" min="0" max="30">
+                                </div>
+                                <div>
+                                    <label class="form-label">性別</label>
+                                    <select class="form-input" id="pet-gender">
+                                        <option value="">請選擇</option>
+                                        <option value="MALE">公</option>
+                                        <option value="FEMALE">母</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 1rem;">
+                                <label class="form-label">特殊需求</label>
+                                <textarea class="form-input" id="pet-special-needs" rows="3"></textarea>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label class="form-label">疫苗狀態</label>
+                                    <input type="text" class="form-input" id="pet-vaccine">
+                                </div>
+                                <div style="display: flex; align-items: center; padding-top: 1.8rem;">
+                                    <input type="checkbox" id="pet-neutered" style="margin-right: 0.5rem;">
+                                    <label for="pet-neutered">已結紮</label>
+                                </div>
+                            </div>
+
+                            <!-- Dog Fields -->
+                            <div id="dog-fields" style="display: none;">
+                                <h4 style="margin-bottom: 0.75rem; color: var(--color-primary);">狗狗專屬資訊</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label class="form-label">體型</label>
+                                        <select class="form-input" id="dog-size">
+                                            <option value="SMALL">小型</option>
+                                            <option value="MEDIUM">中型</option>
+                                            <option value="LARGE">大型</option>
+                                            <option value="GIANT">巨型</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">訓練程度</label>
+                                        <select class="form-input" id="dog-training">
+                                            <option value="NONE">未訓練</option>
+                                            <option value="BASIC">基礎</option>
+                                            <option value="INTERMEDIATE">中級</option>
+                                            <option value="ADVANCED">進階</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    <label class="form-label">每日散步次數</label>
+                                    <input type="number" class="form-input" id="dog-walk-freq" min="0" max="10" value="1">
+                                </div>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                    <label style="display: flex; align-items: center;">
+                                        <input type="checkbox" id="dog-walk-required" style="margin-right: 0.5rem;">
+                                        需要遛狗
+                                    </label>
+                                    <label style="display: flex; align-items: center;">
+                                        <input type="checkbox" id="dog-friendly-dogs" style="margin-right: 0.5rem;">
+                                        對狗友善
+                                    </label>
+                                    <label style="display: flex; align-items: center;">
+                                        <input type="checkbox" id="dog-friendly-children" style="margin-right: 0.5rem;">
+                                        對小孩友善
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Cat Fields -->
+                            <div id="cat-fields" style="display: none;">
+                                <h4 style="margin-bottom: 0.75rem; color: var(--color-primary);">貓咪專屬資訊</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label class="form-label">貓砂盆類型</label>
+                                        <select class="form-input" id="cat-litter-box">
+                                            <option value="OPEN">開放式</option>
+                                            <option value="COVERED">封閉式</option>
+                                            <option value="AUTOMATIC">自動式</option>
+                                            <option value="TOP_ENTRY">上開式</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">抓撓習慣</label>
+                                        <select class="form-input" id="cat-scratching">
+                                            <option value="LOW">很少</option>
+                                            <option value="MODERATE">適中</option>
+                                            <option value="HIGH">頻繁</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: flex; align-items: center;">
+                                        <input type="checkbox" id="cat-indoor" style="margin-right: 0.5rem;">
+                                        室內貓
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end;">
+                                <button type="button" class="btn btn-ghost modal-close">取消</button>
+                                <button type="submit" class="btn btn-primary">儲存</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Page -->
+            <div id="page-bookings" class="page" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">預約管理</h1>
+                    <p class="page-subtitle">管理系統中的所有預約訂單</p>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info">
+                            <h3>待確認</h3>
+                            <div class="stat-value" id="stat-pending">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <h3>已確認</h3>
+                            <div class="stat-value" id="stat-confirmed">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎉</div>
+                        <div class="stat-info">
+                            <h3>已完成</h3>
+                            <div class="stat-value" id="stat-completed">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" id="booking-filter-all" onclick="App.filterBookings('all')">
+                        📋 全部
+                    </button>
+                    <button class="btn btn-ghost" id="booking-filter-pending" onclick="App.filterBookings('PENDING')">
+                        ⏳ 待確認
+                    </button>
+                    <button class="btn btn-ghost" id="booking-filter-confirmed" onclick="App.filterBookings('CONFIRMED')">
+                        ✅ 已確認
+                    </button>
+                    <button class="btn btn-ghost" id="booking-filter-completed" onclick="App.filterBookings('COMPLETED')">
+                        🎉 已完成
+                    </button>
+                    <button class="btn btn-ghost" id="booking-filter-cancelled" onclick="App.filterBookings('CANCELLED')">
+                        ❌ 已取消
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="table-container" style="box-shadow: none;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>訂單編號</th>
+                                    <th>寵物</th>
+                                    <th>飼主</th>
+                                    <th>保母</th>
+                                    <th>服務時間</th>
+                                    <th>費用</th>
+                                    <th>狀態</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-table">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">載入中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Booking Detail Modal -->
+                <div id="booking-detail-modal" class="modal" style="display: none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width: 800px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title">預約詳情</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <div id="booking-detail-content">
                             <p class="text-muted">載入中...</p>
                         </div>
                     </div>

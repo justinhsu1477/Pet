@@ -1,9 +1,11 @@
 package com.pet.service;
 
 import com.pet.domain.Dog;
+import com.pet.domain.Users;
 import com.pet.dto.DogDto;
 import com.pet.exception.ResourceNotFoundException;
 import com.pet.repository.DogRepository;
+import com.pet.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +18,11 @@ import java.util.stream.Collectors;
 public class DogService implements PetServiceInterface<DogDto> {
 
     private final DogRepository dogRepository;
+    private final UserRepository userRepository;
 
-    public DogService(DogRepository dogRepository) {
+    public DogService(DogRepository dogRepository, UserRepository userRepository) {
         this.dogRepository = dogRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -38,6 +42,19 @@ public class DogService implements PetServiceInterface<DogDto> {
     @Override
     public DogDto create(DogDto dto) {
         Dog dog = convertToEntity(dto);
+        Dog savedDog = dogRepository.save(dog);
+        return convertToDto(savedDog);
+    }
+
+    /**
+     * 建立狗狗（指定飼主）
+     */
+    public DogDto create(DogDto dto, UUID userId) {
+        Users owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("使用者", "id", userId));
+
+        Dog dog = convertToEntity(dto);
+        dog.setOwner(owner);
         Dog savedDog = dogRepository.save(dog);
         return convertToDto(savedDog);
     }

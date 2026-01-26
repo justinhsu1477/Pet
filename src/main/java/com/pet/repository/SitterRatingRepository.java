@@ -28,12 +28,17 @@ public interface SitterRatingRepository extends JpaRepository<SitterRating, UUID
     /**
      * 查詢保母的所有評價（分頁）
      */
-    Page<SitterRating> findBySitterIdOrderByCreatedAtDesc(UUID sitterId, Pageable pageable);
+    Page<SitterRating> findBySitter_IdOrderByCreatedAtDesc(UUID sitterId, Pageable pageable);
 
     /**
-     * 查詢保母的所有評價（不分頁）
+     * 查詢保母的所有評價（不分頁，使用 JOIN FETCH 預加載關聯實體）
      */
-    List<SitterRating> findBySitterIdOrderByCreatedAtDesc(UUID sitterId);
+    @Query("SELECT r FROM SitterRating r " +
+           "JOIN FETCH r.sitter " +
+           "JOIN FETCH r.user " +
+           "WHERE r.sitter.id = :sitterId " +
+           "ORDER BY r.createdAt DESC")
+    List<SitterRating> findBySitterIdOrderByCreatedAtDesc(@Param("sitterId") UUID sitterId);
 
     /**
      * 計算保母的平均評分
@@ -55,7 +60,7 @@ public interface SitterRatingRepository extends JpaRepository<SitterRating, UUID
     /**
      * 統計保母的評價數量
      */
-    long countBySitterId(UUID sitterId);
+    long countBySitter_Id(UUID sitterId);
 
     /**
      * 統計各星級的評價數量
@@ -77,7 +82,12 @@ public interface SitterRatingRepository extends JpaRepository<SitterRating, UUID
     Object[] calculateDetailedAverages(@Param("sitterId") UUID sitterId);
 
     /**
-     * 查詢使用者給出的所有評價
+     * 查詢使用者給出的所有評價（使用 JOIN FETCH 預加載關聯實體）
      */
-    List<SitterRating> findByUserIdOrderByCreatedAtDesc(UUID userId);
+    @Query("SELECT r FROM SitterRating r " +
+           "JOIN FETCH r.sitter " +
+           "JOIN FETCH r.user " +
+           "WHERE r.user.id = :userId " +
+           "ORDER BY r.createdAt DESC")
+    List<SitterRating> findByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId);
 }
