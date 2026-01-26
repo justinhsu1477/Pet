@@ -1,4 +1,6 @@
 spring:
+  jackson:
+    time-zone: Asia/Taipei
   datasource:
     primary:
       url: ${MSSQL_JDBC_URL:jdbc:sqlserver://localhost:1433;databaseName=petdb;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true;characterEncoding=UTF-8}

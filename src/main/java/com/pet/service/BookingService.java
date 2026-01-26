@@ -105,7 +105,7 @@ public class BookingService {
     }
 
     /**
-     * 更新預約狀態
+     * 更新預約狀態（使用樂觀鎖）
      */
     public BookingDto updateBookingStatus(UUID bookingId, BookingStatusUpdateDto updateDto) {
         try {
@@ -157,6 +157,63 @@ public class BookingService {
             throw new BusinessException(ErrorCode.BOOKING_ALREADY_PROCESSED,
                     "預約狀態已被其他操作更新，請重新整理後再試");
         }
+    }
+
+    /**
+     * 更新預約狀態（使用悲觀鎖）
+     * 使用場景：
+     * 1. 高併發環境下的訂單確認
+     * 2. 需要強一致性保證的業務場景
+     * 3. 預期衝突率較高的情況
+     * 與樂觀鎖的差異：
+     * - 樂觀鎖：假設衝突不常發生，在 commit 時才檢查版本號，發生衝突時拋出異常
+     * - 悲觀鎖：假設衝突經常發生，在讀取時就加鎖，阻止其他交易同時讀取
+     */
+    public BookingDto updateBookingStatusWithPessimisticLock(UUID bookingId, BookingStatusUpdateDto updateDto) {
+        // 使用悲觀寫鎖查詢，其他交易必須等待此鎖釋放
+        Booking booking = bookingRepository.findByIdWithLock(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("預約", "id", bookingId));
+
+        logger.info("已使用悲觀鎖鎖定預約 {}", bookingId);
+
+        // 驗證狀態轉換是否合法
+        if (!booking.canTransitionTo(updateDto.targetStatus())) {
+            throw new BusinessException(ErrorCode.BOOKING_INVALID_STATUS_TRANSITION,
+                    String.format("無法從 %s 轉換到 %s", booking.getStatus(), updateDto.targetStatus()));
+        }
+
+        // 如果是確認預約，再次檢查是否有衝突（防止併發確認）
+        if (updateDto.targetStatus() == BookingStatus.CONFIRMED) {
+            if (bookingRepository.countConflictingBookingsExcluding(
+                    booking.getSitter().getId(),
+                    booking.getStartTime(),
+                    booking.getEndTime(),
+                    bookingId) > 0) {
+                throw new BusinessException(ErrorCode.BOOKING_CONFLICT);
+            }
+        }
+
+        // 更新狀態
+        booking.setStatus(updateDto.targetStatus());
+        if (updateDto.reason() != null) {
+            booking.setSitterResponse(updateDto.reason());
+        }
+
+        // 如果完成訂單，更新保母統計
+        if (updateDto.targetStatus() == BookingStatus.COMPLETED) {
+            Sitter sitter = booking.getSitter();
+            sitter.setCompletedBookings(sitter.getCompletedBookings() + 1);
+            sitterRepository.save(sitter);
+        }
+
+        Booking updated = bookingRepository.save(booking);
+
+        // 註冊 afterCommit callback，在主交易 commit 後才同步到 Log DB
+        registerAfterCommitSync(updated);
+
+        logger.info("悲觀鎖：預約 {} 狀態已更新為 {}", bookingId, updateDto.targetStatus());
+
+        return convertToDto(updated);
     }
 
     /**

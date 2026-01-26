@@ -59,7 +59,7 @@ public class BookingController {
     }
 
     /**
-     * 更新預約狀態（通用）
+     * 更新預約狀態（使用樂觀鎖）
      * PUT /api/bookings/{id}/status
      */
     @PutMapping("/{id}/status")
@@ -67,7 +67,25 @@ public class BookingController {
             @PathVariable UUID id,
             @Valid @RequestBody BookingStatusUpdateDto updateDto) {
         BookingDto updated = bookingService.updateBookingStatus(id, updateDto);
-        return ResponseEntity.ok(ApiResponse.success("預約狀態已更新", updated));
+        return ResponseEntity.ok(ApiResponse.success("預約狀態已更新（樂觀鎖）", updated));
+    }
+
+    /**
+     * 更新預約狀態（使用悲觀鎖）
+     * PUT /api/bookings/{id}/status/pessimistic
+     * 使用場景：
+     * - 高併發環境下的訂單確認
+     * - 需要強一致性保證的業務場景
+     * 與樂觀鎖的差異：
+     * - 樂觀鎖 (/api/bookings/{id}/status): 適合低衝突場景，失敗時需要重試
+     * - 悲觀鎖 (/api/bookings/{id}/status/pessimistic): 適合高衝突場景，直接阻塞等待
+     */
+    @PutMapping("/{id}/status/pessimistic")
+    public ResponseEntity<ApiResponse<BookingDto>> updateBookingStatusWithPessimisticLock(
+            @PathVariable UUID id,
+            @Valid @RequestBody BookingStatusUpdateDto updateDto) {
+        BookingDto updated = bookingService.updateBookingStatusWithPessimisticLock(id, updateDto);
+        return ResponseEntity.ok(ApiResponse.success("預約狀態已更新（悲觀鎖）", updated));
     }
 
     /**

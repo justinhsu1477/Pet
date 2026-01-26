@@ -132,7 +132,7 @@ class CatServiceTest {
         @DisplayName("應該成功更新貓咪")
         void shouldUpdateCat() {
             // given
-            given(catRepository.existsById(testId)).willReturn(true);
+            given(catRepository.findById(testId)).willReturn(Optional.of(testCat));
             given(catRepository.save(any(Cat.class))).willReturn(testCat);
 
             // when
@@ -148,7 +148,7 @@ class CatServiceTest {
         void shouldThrowExceptionWhenUpdatingNonExistentCat() {
             // given
             UUID unknownId = UUID.randomUUID();
-            given(catRepository.existsById(unknownId)).willReturn(false);
+            given(catRepository.findById(unknownId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> catService.update(unknownId, testCatDto))

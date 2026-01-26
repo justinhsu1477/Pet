@@ -12,6 +12,7 @@ services:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=${MSSQL_SA_PASSWORD:-Passw0rd}
       - MSSQL_PID=Express
+      - TZ=Asia/Taipei
     ports:
       - "1433:1433"
     volumes:
@@ -36,6 +37,8 @@ services:
     container_name: pet-backend-qas
     environment:
       - SPRING_PROFILES_ACTIVE=qas
+      - TZ=Asia/Taipei
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Taipei
       - MSSQL_JDBC_URL=${MSSQL_JDBC_URL:-jdbc:sqlserver://mssql:1433;databaseName=petdb;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true;characterEncoding=UTF-8}
       - MSSQL_LOG_JDBC_URL=${MSSQL_LOG_JDBC_URL:-jdbc:sqlserver://mssql:1433;databaseName=petdb_log;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true;characterEncoding=UTF-8}
       - MSSQL_USERNAME=${MSSQL_USERNAME:-sa}

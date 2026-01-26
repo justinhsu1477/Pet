@@ -136,7 +136,7 @@ class DogServiceTest {
         @DisplayName("應該成功更新狗狗")
         void shouldUpdateDog() {
             // given
-            given(dogRepository.existsById(testId)).willReturn(true);
+            given(dogRepository.findById(testId)).willReturn(Optional.of(testDog));
             given(dogRepository.save(any(Dog.class))).willReturn(testDog);
 
             // when
@@ -152,7 +152,7 @@ class DogServiceTest {
         void shouldThrowExceptionWhenUpdatingNonExistentDog() {
             // given
             UUID unknownId = UUID.randomUUID();
-            given(dogRepository.existsById(unknownId)).willReturn(false);
+            given(dogRepository.findById(unknownId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> dogService.update(unknownId, testDogDto))
