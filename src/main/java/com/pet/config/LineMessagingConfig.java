@@ -28,7 +28,4 @@ public class LineMessagingConfig {
             && demoUserId != null && !demoUserId.isEmpty();
     }
 
-    public boolean hasBaseUrl() {
-        return baseUrl != null && !baseUrl.isEmpty();
-    }
 }

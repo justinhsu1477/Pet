@@ -69,6 +69,9 @@ public class LineOAuth2Service {
      * 驗證 state 參數（防 CSRF）
      */
     public boolean validateState(String state) {
+        if (state == null) {
+            return false;
+        }
         Long timestamp = stateStore.remove(state);
         if (timestamp == null) {
             return false;
