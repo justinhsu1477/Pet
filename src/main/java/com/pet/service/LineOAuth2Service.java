@@ -120,12 +120,16 @@ public class LineOAuth2Service {
         }
 
         JsonNode json = objectMapper.readTree(response.body());
-        return new LineUserProfile(
+        LineUserProfile profile = new LineUserProfile(
                 json.get("userId").asText(),
                 json.has("displayName") ? json.get("displayName").asText() : null,
                 json.has("pictureUrl") ? json.get("pictureUrl").asText() : null,
-                null
+                json.has("email") ? json.get("email").asText() : null
         );
+
+        log.info("[LINE Profile] 成功取得用戶資料: userId={}, displayName={}", profile.userId(), profile.displayName());
+        return profile;
+
     }
 
     /**
