@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import com.pet.security.JwtProperties;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -94,7 +93,7 @@ public class AuthController {
 
         RefreshTokenRequest refreshRequest = new RefreshTokenRequest();
         refreshRequest.setRefreshToken(refreshToken);
-        
+
         JwtAuthenticationResponse authResponse = authenticationService.refreshToken(refreshRequest);
         issueTokens(authResponse, response, request);
 
@@ -120,7 +119,7 @@ public class AuthController {
         }
 
         authenticationService.logout(refreshToken);
-        
+
         // 清除 Cookie
         clearRefreshTokenCookie(response);
 
