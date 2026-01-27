@@ -6,11 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if already logged in
     const user = sessionStorage.getItem(CONFIG.STORAGE_KEYS.USER);
     if (user) {
-        const userData = JSON.parse(user);
-        if (userData.role === 'ADMIN') {
-            window.location.href = 'dashboard.html';
-            return;
-        }
+        window.location.href = 'dashboard.html';
+        return;
     }
 
     // Get form elements
@@ -44,13 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.success && response.data) {
                 const jwtData = response.data;
-
-                // Check if user is admin
-                if (jwtData.role !== 'ADMIN') {
-                    showError('此帳號不是管理員，無法登入');
-                    setLoading(false);
-                    return;
-                }
 
                 // Store access token
                 sessionStorage.setItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN, jwtData.accessToken);

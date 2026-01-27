@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Store current user data in App
     App.currentUser = userData;
 
+    // Apply role-based navigation visibility
+    App.applyRoleVisibility(userData.role);
+
     // Initialize app
     App.init();
 });
@@ -36,6 +39,30 @@ const App = {
         this.setupLogout();
         this.setupModals();
         this.loadDashboard();
+    },
+
+    /**
+     * Role-based navigation visibility
+     * ADMIN: all pages
+     * CUSTOMER: dashboard, pets, bookings
+     * SITTER: dashboard, bookings
+     */
+    applyRoleVisibility(role) {
+        const navRules = {
+            'ADMIN': ['dashboard', 'users', 'sitters', 'pets', 'bookings'],
+            'CUSTOMER': ['dashboard', 'pets', 'bookings'],
+            'SITTER': ['dashboard', 'bookings']
+        };
+        const allowedPages = navRules[role] || ['dashboard'];
+
+        document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+            const page = item.dataset.page;
+            item.style.display = allowedPages.includes(page) ? '' : 'none';
+        });
+
+        // Update page title based on role
+        const titles = { 'ADMIN': '管理後台', 'CUSTOMER': '飼主中心', 'SITTER': '保母中心' };
+        document.title = 'Pet Care - ' + (titles[role] || '系統');
     },
 
     // ===== Navigation =====
