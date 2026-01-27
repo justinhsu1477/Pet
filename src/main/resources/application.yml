@@ -28,3 +28,12 @@ jwt:
   refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
   # Token 發行者
   issuer: ${JWT_ISSUER:pet-care-system}
+
+# LINE Messaging API Configuration
+line:
+  messaging:
+    channel-token: ${LINE_CHANNEL_TOKEN:}
+    channel-secret: ${LINE_CHANNEL_SECRET:}
+    # Demo mode: all notifications go to this user (for interview demo)
+    demo-user-id: ${LINE_DEMO_USER_ID:}
+    enabled: true

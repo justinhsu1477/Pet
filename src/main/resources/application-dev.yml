@@ -33,3 +33,12 @@ spring:
 
 cors:
   allowed-origins: http://localhost,http://localhost:80,http://localhost:3000
+
+# LINE Messaging API Configuration (DEV)
+# 環境變數來源：IDE Run Configuration 或 .env 檔案
+line:
+  messaging:
+    channel-token: ${LINE_CHANNEL_TOKEN:}
+    channel-secret: ${LINE_CHANNEL_SECRET:}
+    demo-user-id: ${LINE_DEMO_USER_ID:}
+    enabled: true

@@ -35,3 +35,12 @@ spring:
 # CORS 設定 - 允許前端跨來源存取
 cors:
   allowed-origins: http://localhost,http://localhost:80,http://localhost:3000
+
+# LINE Messaging API Configuration (QAS)
+# 環境變數來源：Docker Compose --env-file 或 IDE Run Configuration
+line:
+  messaging:
+    channel-token: ${LINE_CHANNEL_TOKEN:}
+    channel-secret: ${LINE_CHANNEL_SECRET:}
+    demo-user-id: ${LINE_DEMO_USER_ID:}
+    enabled: true

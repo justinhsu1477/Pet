@@ -16,10 +16,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
@@ -54,6 +56,9 @@ class BookingServiceTest {
 
     @Mock
     private BookingLogService bookingLogService;
+
+    @Mock
+    private LineMessagingService lineMessagingService;
 
     @InjectMocks
     private BookingService bookingService;
@@ -138,8 +143,8 @@ class BookingServiceTest {
             try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
                 // given
                 txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
-                // 注意：新的 createBooking 流程是先用悲觀鎖取得保母，再取得寵物和用戶
-                given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
+                // 注意：新流程使用樂觀鎖（findById），不再使用悲觀鎖（findByIdWithLock）
+                given(sitterRepository.findById(testSitterId)).willReturn(Optional.of(testSitter));
                 given(bookingRepository.countConflictingBookings(any(), any(), any())).willReturn(0L);
                 given(petRepository.findById(testPetId)).willReturn(Optional.of(testPet));
                 given(userRepository.findById(testUserId)).willReturn(Optional.of(testUser));
@@ -154,6 +159,9 @@ class BookingServiceTest {
                 assertThat(result.sitterName()).isEqualTo("王保母");
                 assertThat(result.status()).isEqualTo(BookingStatus.PENDING);
                 verify(bookingRepository).save(any(Booking.class));
+                // 確認使用的是 findById 而非 findByIdWithLock
+                verify(sitterRepository).findById(testSitterId);
+                verify(sitterRepository, never()).findByIdWithLock(any());
             }
         }
 
@@ -161,8 +169,8 @@ class BookingServiceTest {
         @DisplayName("當寵物不存在時應該拋出例外")
         void shouldThrowExceptionWhenPetNotFound() {
             // given
-            // 新流程：先取得保母（悲觀鎖），檢查時段衝突，再取得寵物
-            given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
+            // 新流程：先取得保母（樂觀鎖），檢查時段衝突，再取得寵物
+            given(sitterRepository.findById(testSitterId)).willReturn(Optional.of(testSitter));
             given(bookingRepository.countConflictingBookings(any(), any(), any())).willReturn(0L);
             given(petRepository.findById(testPetId)).willReturn(Optional.empty());
 
@@ -176,8 +184,8 @@ class BookingServiceTest {
         @DisplayName("當保母不存在時應該拋出例外")
         void shouldThrowExceptionWhenSitterNotFound() {
             // given
-            // 新流程：先用悲觀鎖取得保母，若不存在直接拋例外
-            given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.empty());
+            // 新流程：使用樂觀鎖取得保母，若不存在直接拋例外
+            given(sitterRepository.findById(testSitterId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> bookingService.createBooking(testBookingDto, testUserId))
@@ -189,8 +197,8 @@ class BookingServiceTest {
         @DisplayName("當時間衝突時應該拋出例外")
         void shouldThrowExceptionWhenTimeConflict() {
             // given
-            // 新流程：先用悲觀鎖取得保母，再檢查時段衝突
-            given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
+            // 新流程：使用樂觀鎖取得保母，再檢查時段衝突
+            given(sitterRepository.findById(testSitterId)).willReturn(Optional.of(testSitter));
             given(bookingRepository.countConflictingBookings(any(), any(), any())).willReturn(1L);
 
             // when & then
@@ -248,8 +256,7 @@ class BookingServiceTest {
                 // given
                 txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
                 given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
-                // 確認預約時會用悲觀鎖鎖定保母以防止時段衝突
-                given(sitterRepository.findByIdWithLock(testSitterId)).willReturn(Optional.of(testSitter));
+                // 新流程：確認預約時不再使用悲觀鎖，改用樂觀鎖 + countConflictingBookingsExcluding
                 given(bookingRepository.countConflictingBookingsExcluding(any(), any(), any(), any())).willReturn(0L);
 
                 Booking confirmedBooking = new Booking();
@@ -275,6 +282,8 @@ class BookingServiceTest {
                 // then
                 assertThat(result.status()).isEqualTo(BookingStatus.CONFIRMED);
                 verify(bookingRepository).save(any(Booking.class));
+                // 確認不再使用悲觀鎖
+                verify(sitterRepository, never()).findByIdWithLock(any());
             }
         }
 
@@ -477,6 +486,351 @@ class BookingServiceTest {
                 assertThat(result.status()).isEqualTo(BookingStatus.REJECTED);
                 assertThat(result.sitterResponse()).isEqualTo("時間不合");
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("時段衝突檢查測試（樂觀鎖版本）")
+    class ConflictCheckingTests {
+
+        @Test
+        @DisplayName("createBooking 應該檢查時段衝突並拋出例外")
+        void createBookingShouldCheckConflictAndThrow() {
+            // given
+            // 樂觀鎖版本：使用 findById 而非 findByIdWithLock
+            given(sitterRepository.findById(testSitterId)).willReturn(Optional.of(testSitter));
+            given(bookingRepository.countConflictingBookings(
+                    eq(testSitterId), any(), any())).willReturn(1L);
+
+            // when & then
+            assertThatThrownBy(() -> bookingService.createBooking(testBookingDto, testUserId))
+                    .isInstanceOf(BusinessException.class);
+
+            // 確認使用樂觀鎖版本
+            verify(sitterRepository).findById(testSitterId);
+            verify(sitterRepository, never()).findByIdWithLock(any());
+            // 確認未嘗試儲存預約（因為衝突）
+            verify(bookingRepository, never()).save(any(Booking.class));
+        }
+
+        @Test
+        @DisplayName("createBooking 無衝突時應該成功建立預約")
+        void createBookingShouldSucceedWhenNoConflict() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                given(sitterRepository.findById(testSitterId)).willReturn(Optional.of(testSitter));
+                given(bookingRepository.countConflictingBookings(any(), any(), any())).willReturn(0L);
+                given(petRepository.findById(testPetId)).willReturn(Optional.of(testPet));
+                given(userRepository.findById(testUserId)).willReturn(Optional.of(testUser));
+                given(bookingRepository.save(any(Booking.class))).willReturn(testBooking);
+
+                // when
+                BookingDto result = bookingService.createBooking(testBookingDto, testUserId);
+
+                // then
+                assertThat(result).isNotNull();
+                verify(bookingRepository).countConflictingBookings(any(), any(), any());
+                verify(bookingRepository).save(any(Booking.class));
+            }
+        }
+
+        @Test
+        @DisplayName("updateBookingStatus CONFIRMED 應該檢查時段衝突")
+        void updateStatusToConfirmedShouldCheckConflict() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+                // 無衝突
+                given(bookingRepository.countConflictingBookingsExcluding(
+                        eq(testSitterId), any(), any(), eq(testBookingId))).willReturn(0L);
+
+                Booking confirmedBooking = new Booking();
+                confirmedBooking.setId(testBookingId);
+                confirmedBooking.setPet(testPet);
+                confirmedBooking.setSitter(testSitter);
+                confirmedBooking.setUser(testUser);
+                confirmedBooking.setStartTime(testBooking.getStartTime());
+                confirmedBooking.setEndTime(testBooking.getEndTime());
+                confirmedBooking.setStatus(BookingStatus.CONFIRMED);
+                confirmedBooking.setTotalPrice(400.0);
+
+                given(bookingRepository.save(any(Booking.class))).willReturn(confirmedBooking);
+
+                BookingStatusUpdateDto updateDto = new BookingStatusUpdateDto(
+                        BookingStatus.CONFIRMED, "確認");
+
+                // when
+                BookingDto result = bookingService.updateBookingStatus(testBookingId, updateDto);
+
+                // then
+                assertThat(result.status()).isEqualTo(BookingStatus.CONFIRMED);
+                // 確認有呼叫衝突檢查
+                verify(bookingRepository).countConflictingBookingsExcluding(
+                        eq(testSitterId), any(), any(), eq(testBookingId));
+                // 確認不使用悲觀鎖
+                verify(sitterRepository, never()).findByIdWithLock(any());
+            }
+        }
+
+        @Test
+        @DisplayName("updateBookingStatus CONFIRMED 有衝突時應該拋出例外")
+        void updateStatusToConfirmedShouldThrowWhenConflict() {
+            // given
+            given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+            // 有衝突：已有其他確認的預約
+            given(bookingRepository.countConflictingBookingsExcluding(
+                    eq(testSitterId), any(), any(), eq(testBookingId))).willReturn(1L);
+
+            BookingStatusUpdateDto updateDto = new BookingStatusUpdateDto(
+                    BookingStatus.CONFIRMED, "確認");
+
+            // when & then
+            assertThatThrownBy(() -> bookingService.updateBookingStatus(testBookingId, updateDto))
+                    .isInstanceOf(BusinessException.class);
+
+            // 確認未嘗試儲存（因為衝突）
+            verify(bookingRepository, never()).save(any(Booking.class));
+        }
+
+        @Test
+        @DisplayName("updateBookingStatus 非 CONFIRMED 狀態不應檢查時段衝突")
+        void updateStatusToNonConfirmedShouldNotCheckConflict() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+
+                Booking cancelledBooking = new Booking();
+                cancelledBooking.setId(testBookingId);
+                cancelledBooking.setPet(testPet);
+                cancelledBooking.setSitter(testSitter);
+                cancelledBooking.setUser(testUser);
+                cancelledBooking.setStartTime(testBooking.getStartTime());
+                cancelledBooking.setEndTime(testBooking.getEndTime());
+                cancelledBooking.setStatus(BookingStatus.CANCELLED);
+                cancelledBooking.setTotalPrice(400.0);
+
+                given(bookingRepository.save(any(Booking.class))).willReturn(cancelledBooking);
+
+                BookingStatusUpdateDto updateDto = new BookingStatusUpdateDto(
+                        BookingStatus.CANCELLED, "取消原因");
+
+                // when
+                BookingDto result = bookingService.updateBookingStatus(testBookingId, updateDto);
+
+                // then
+                assertThat(result.status()).isEqualTo(BookingStatus.CANCELLED);
+                // 確認沒有呼叫衝突檢查（只有 CONFIRMED 需要）
+                verify(bookingRepository, never()).countConflictingBookingsExcluding(any(), any(), any(), any());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("LINE 通知測試")
+    class LineNotificationTests {
+
+        @Test
+        @DisplayName("確認預約時應該註冊 LINE 通知 callback")
+        void shouldRegisterLineNotificationOnConfirm() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                ArgumentCaptor<TransactionSynchronization> syncCaptor =
+                        ArgumentCaptor.forClass(TransactionSynchronization.class);
+
+                given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+                given(bookingRepository.countConflictingBookingsExcluding(any(), any(), any(), any())).willReturn(0L);
+
+                Booking confirmedBooking = new Booking();
+                confirmedBooking.setId(testBookingId);
+                confirmedBooking.setPet(testPet);
+                confirmedBooking.setSitter(testSitter);
+                confirmedBooking.setUser(testUser);
+                confirmedBooking.setStartTime(testBooking.getStartTime());
+                confirmedBooking.setEndTime(testBooking.getEndTime());
+                confirmedBooking.setStatus(BookingStatus.CONFIRMED);
+                confirmedBooking.setTotalPrice(400.0);
+
+                given(bookingRepository.save(any(Booking.class))).willReturn(confirmedBooking);
+
+                BookingStatusUpdateDto updateDto = new BookingStatusUpdateDto(
+                        BookingStatus.CONFIRMED, "確認");
+
+                // when
+                bookingService.updateBookingStatus(testBookingId, updateDto);
+
+                // then
+                // 確認有註冊 TransactionSynchronization（應該有兩個：log sync 和 LINE 通知）
+                txManager.verify(() ->
+                        TransactionSynchronizationManager.registerSynchronization(syncCaptor.capture()),
+                        times(2));
+            }
+        }
+
+        @Test
+        @DisplayName("取消預約時應該註冊 LINE 通知 callback")
+        void shouldRegisterLineNotificationOnCancel() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                ArgumentCaptor<TransactionSynchronization> syncCaptor =
+                        ArgumentCaptor.forClass(TransactionSynchronization.class);
+
+                given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+
+                Booking cancelledBooking = new Booking();
+                cancelledBooking.setId(testBookingId);
+                cancelledBooking.setPet(testPet);
+                cancelledBooking.setSitter(testSitter);
+                cancelledBooking.setUser(testUser);
+                cancelledBooking.setStartTime(testBooking.getStartTime());
+                cancelledBooking.setEndTime(testBooking.getEndTime());
+                cancelledBooking.setStatus(BookingStatus.CANCELLED);
+                cancelledBooking.setTotalPrice(400.0);
+
+                given(bookingRepository.save(any(Booking.class))).willReturn(cancelledBooking);
+
+                // when
+                bookingService.cancelBooking(testBookingId, "臨時有事");
+
+                // then
+                // 確認有註冊 TransactionSynchronization
+                txManager.verify(() ->
+                        TransactionSynchronizationManager.registerSynchronization(syncCaptor.capture()),
+                        times(2));
+            }
+        }
+
+        @Test
+        @DisplayName("完成預約時應該註冊 LINE 通知 callback")
+        void shouldRegisterLineNotificationOnComplete() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                ArgumentCaptor<TransactionSynchronization> syncCaptor =
+                        ArgumentCaptor.forClass(TransactionSynchronization.class);
+
+                testBooking.setStatus(BookingStatus.CONFIRMED); // 需要先是 CONFIRMED 才能 COMPLETE
+                given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+
+                Booking completedBooking = new Booking();
+                completedBooking.setId(testBookingId);
+                completedBooking.setPet(testPet);
+                completedBooking.setSitter(testSitter);
+                completedBooking.setUser(testUser);
+                completedBooking.setStartTime(testBooking.getStartTime());
+                completedBooking.setEndTime(testBooking.getEndTime());
+                completedBooking.setStatus(BookingStatus.COMPLETED);
+                completedBooking.setTotalPrice(400.0);
+
+                given(bookingRepository.save(any(Booking.class))).willReturn(completedBooking);
+
+                // when
+                bookingService.completeBooking(testBookingId);
+
+                // then
+                // 確認有註冊 TransactionSynchronization
+                txManager.verify(() ->
+                        TransactionSynchronizationManager.registerSynchronization(syncCaptor.capture()),
+                        times(2));
+            }
+        }
+
+        @Test
+        @DisplayName("拒絕預約時應該註冊 LINE 通知 callback")
+        void shouldRegisterLineNotificationOnReject() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                ArgumentCaptor<TransactionSynchronization> syncCaptor =
+                        ArgumentCaptor.forClass(TransactionSynchronization.class);
+
+                given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+
+                Booking rejectedBooking = new Booking();
+                rejectedBooking.setId(testBookingId);
+                rejectedBooking.setPet(testPet);
+                rejectedBooking.setSitter(testSitter);
+                rejectedBooking.setUser(testUser);
+                rejectedBooking.setStartTime(testBooking.getStartTime());
+                rejectedBooking.setEndTime(testBooking.getEndTime());
+                rejectedBooking.setStatus(BookingStatus.REJECTED);
+                rejectedBooking.setTotalPrice(400.0);
+
+                given(bookingRepository.save(any(Booking.class))).willReturn(rejectedBooking);
+
+                // when
+                bookingService.rejectBooking(testBookingId, "時間不合");
+
+                // then
+                // 確認有註冊 TransactionSynchronization
+                txManager.verify(() ->
+                        TransactionSynchronizationManager.registerSynchronization(syncCaptor.capture()),
+                        times(2));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("悲觀鎖版本測試（MSSQL 相容）")
+    class PessimisticLockVersionTests {
+
+        @Test
+        @DisplayName("updateBookingStatusWithPessimisticLock 應該使用 findById 而非 findByIdWithLock")
+        void pessimisticLockVersionShouldUseFindById() {
+            try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
+                // given
+                txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
+                // MSSQL 相容：改用 findById
+                given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+                given(bookingRepository.countConflictingBookingsExcluding(any(), any(), any(), any())).willReturn(0L);
+
+                Booking confirmedBooking = new Booking();
+                confirmedBooking.setId(testBookingId);
+                confirmedBooking.setPet(testPet);
+                confirmedBooking.setSitter(testSitter);
+                confirmedBooking.setUser(testUser);
+                confirmedBooking.setStartTime(testBooking.getStartTime());
+                confirmedBooking.setEndTime(testBooking.getEndTime());
+                confirmedBooking.setStatus(BookingStatus.CONFIRMED);
+                confirmedBooking.setTotalPrice(400.0);
+
+                given(bookingRepository.save(any(Booking.class))).willReturn(confirmedBooking);
+
+                BookingStatusUpdateDto updateDto = new BookingStatusUpdateDto(
+                        BookingStatus.CONFIRMED, "確認");
+
+                // when
+                BookingDto result = bookingService.updateBookingStatusWithPessimisticLock(testBookingId, updateDto);
+
+                // then
+                assertThat(result.status()).isEqualTo(BookingStatus.CONFIRMED);
+                // 確認使用 findById 而非 findByIdWithLock（MSSQL 相容）
+                verify(bookingRepository).findById(testBookingId);
+                verify(bookingRepository, never()).findByIdWithLock(any());
+                verify(sitterRepository, never()).findByIdWithLock(any());
+            }
+        }
+
+        @Test
+        @DisplayName("updateBookingStatusWithPessimisticLock 有衝突時應該拋出例外")
+        void pessimisticLockVersionShouldThrowOnConflict() {
+            // given
+            given(bookingRepository.findById(testBookingId)).willReturn(Optional.of(testBooking));
+            given(bookingRepository.countConflictingBookingsExcluding(any(), any(), any(), any())).willReturn(1L);
+
+            BookingStatusUpdateDto updateDto = new BookingStatusUpdateDto(
+                    BookingStatus.CONFIRMED, "確認");
+
+            // when & then
+            assertThatThrownBy(() ->
+                    bookingService.updateBookingStatusWithPessimisticLock(testBookingId, updateDto))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(bookingRepository, never()).save(any(Booking.class));
         }
     }
 }

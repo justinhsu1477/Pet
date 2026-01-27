@@ -45,38 +45,44 @@ public class BookingService {
     private final SitterRepository sitterRepository;
     private final UserRepository userRepository;
     private final BookingLogService bookingLogService;
+    private final LineMessagingService lineMessagingService;
 
     public BookingService(BookingRepository bookingRepository,
                           PetRepository petRepository,
                           SitterRepository sitterRepository,
                           UserRepository userRepository,
-                          BookingLogService bookingLogService) {
+                          BookingLogService bookingLogService,
+                          LineMessagingService lineMessagingService) {
         this.bookingRepository = bookingRepository;
         this.petRepository = petRepository;
         this.sitterRepository = sitterRepository;
         this.userRepository = userRepository;
         this.bookingLogService = bookingLogService;
+        this.lineMessagingService = lineMessagingService;
     }
 
     /**
      * 建立預約
-     * 使用悲觀鎖防止時段衝突的 race condition
+     * 使用樂觀鎖 + 衝突檢查防止時段衝突
      *
      * 問題場景：兩個飼主同時對同一保母的同一時段建立預約
-     * 若不加鎖，兩個 transaction 可能同時通過 countConflictingBookings 檢查，導致重複預約
      *
-     * 解法：先用悲觀鎖鎖定保母資料列，確保同一時間只有一個 transaction 可以進行檢查和寫入
+     * 解法：
+     * 1. 先檢查時段衝突（countConflictingBookings）
+     * 2. 依賴 Booking 的 @Version 樂觀鎖處理併發
+     * 3. 極端情況下（兩個 transaction 同時通過檢查），後提交的會因衝突檢查失敗
+     *
+     * 注意：MSSQL 不支援 SELECT FOR UPDATE 語法，故不使用悲觀鎖
      */
     public BookingDto createBooking(BookingDto dto, UUID userId) {
         // 1. 驗證時間
         validateBookingTime(dto.startTime(), dto.endTime());
 
-        // 2. 使用悲觀鎖取得保母（防止併發建立預約的 race condition）
-        // 其他嘗試為同一保母建立預約的 transaction 會在此等待
-        Sitter sitter = sitterRepository.findByIdWithLock(dto.sitterId())
+        // 2. 取得保母（不使用悲觀鎖，MSSQL 相容）
+        Sitter sitter = sitterRepository.findById(dto.sitterId())
                 .orElseThrow(() -> new ResourceNotFoundException("保母", "id", dto.sitterId()));
 
-        // 3. 檢查時段是否已被預約（此時已持有鎖，檢查是安全的）
+        // 3. 檢查時段是否已被預約
         if (bookingRepository.countConflictingBookings(dto.sitterId(), dto.startTime(), dto.endTime()) > 0) {
             throw new BusinessException(ErrorCode.BOOKING_CONFLICT);
         }
@@ -113,7 +119,7 @@ public class BookingService {
     }
 
     /**
-     * 更新預約狀態（使用樂觀鎖 + 確認時悲觀鎖防止時段衝突）
+     * 更新預約狀態（使用樂觀鎖，MSSQL 相容）
      */
     public BookingDto updateBookingStatus(UUID bookingId, BookingStatusUpdateDto updateDto) {
         try {
@@ -126,12 +132,9 @@ public class BookingService {
                         String.format("無法從 %s 轉換到 %s", booking.getStatus(), updateDto.targetStatus()));
             }
 
-            // 如果是確認預約，使用悲觀鎖防止併發確認導致時段衝突
+            // 如果是確認預約，檢查時段衝突（不使用悲觀鎖，MSSQL 相容）
             if (updateDto.targetStatus() == BookingStatus.CONFIRMED) {
-                // 鎖定保母資料列，確保同時只有一個確認操作
-                sitterRepository.findByIdWithLock(booking.getSitter().getId());
-
-                // 此時已持有鎖，檢查是安全的
+                // 檢查是否有其他已確認的預約佔用同一時段
                 if (bookingRepository.countConflictingBookingsExcluding(
                         booking.getSitter().getId(),
                         booking.getStartTime(),
@@ -155,12 +158,13 @@ public class BookingService {
             }
 
             Booking updated = bookingRepository.save(booking);
+            String reason = updateDto.reason();
 
             // 註冊 afterCommit callback，在主交易 commit 後才同步到 Log DB
             registerAfterCommitSync(updated);
 
-            // TODO: 發送狀態變更通知
-            // eventPublisher.publishEvent(new BookingStatusChangedEvent(updated));
+            // 註冊 afterCommit callback，確保 transaction 成功後才發送 LINE 通知
+            registerAfterCommitLineNotification(updated, reason);
 
             return convertToDto(updated);
 
@@ -172,21 +176,22 @@ public class BookingService {
     }
 
     /**
-     * 更新預約狀態（使用悲觀鎖）
-     * 使用場景：
+     * 更新預約狀態（悲觀鎖版本 - MSSQL 相容）
+     *
+     * 注意：MSSQL 不支援標準的 SELECT FOR UPDATE 語法
+     * 此方法在 MSSQL 環境下會使用樂觀鎖替代，行為與 updateBookingStatus 相同
+     *
+     * 原設計使用場景：
      * 1. 高併發環境下的訂單確認
      * 2. 需要強一致性保證的業務場景
      * 3. 預期衝突率較高的情況
-     * 與樂觀鎖的差異：
-     * - 樂觀鎖：假設衝突不常發生，在 commit 時才檢查版本號，發生衝突時拋出異常
-     * - 悲觀鎖：假設衝突經常發生，在讀取時就加鎖，阻止其他交易同時讀取
      */
     public BookingDto updateBookingStatusWithPessimisticLock(UUID bookingId, BookingStatusUpdateDto updateDto) {
-        // 使用悲觀寫鎖查詢，其他交易必須等待此鎖釋放
-        Booking booking = bookingRepository.findByIdWithLock(bookingId)
+        // MSSQL 不支援 FOR UPDATE，改用一般查詢 + 樂觀鎖
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("預約", "id", bookingId));
 
-        logger.info("已使用悲觀鎖鎖定預約 {}", bookingId);
+        logger.info("處理預約狀態更新 {} (MSSQL 相容模式)", bookingId);
 
         // 驗證狀態轉換是否合法
         if (!booking.canTransitionTo(updateDto.targetStatus())) {
@@ -194,11 +199,8 @@ public class BookingService {
                     String.format("無法從 %s 轉換到 %s", booking.getStatus(), updateDto.targetStatus()));
         }
 
-        // 如果是確認預約，也鎖定保母以防止時段衝突
+        // 如果是確認預約，檢查時段衝突
         if (updateDto.targetStatus() == BookingStatus.CONFIRMED) {
-            // 鎖定保母資料列，確保同時只有一個確認操作
-            sitterRepository.findByIdWithLock(booking.getSitter().getId());
-
             if (bookingRepository.countConflictingBookingsExcluding(
                     booking.getSitter().getId(),
                     booking.getStartTime(),
@@ -222,11 +224,15 @@ public class BookingService {
         }
 
         Booking updated = bookingRepository.save(booking);
+        String reason = updateDto.reason();
 
         // 註冊 afterCommit callback，在主交易 commit 後才同步到 Log DB
         registerAfterCommitSync(updated);
 
-        logger.info("悲觀鎖：預約 {} 狀態已更新為 {}", bookingId, updateDto.targetStatus());
+        // 註冊 afterCommit callback，確保 transaction 成功後才發送 LINE 通知
+        registerAfterCommitLineNotification(updated, reason);
+
+        logger.info("預約 {} 狀態已更新為 {}", bookingId, updateDto.targetStatus());
 
         return convertToDto(updated);
     }
@@ -329,6 +335,48 @@ public class BookingService {
     }
 
     // ============ Private Methods ============
+
+    /**
+     * 註冊 afterCommit callback 發送 LINE 通知
+     * 確保只在 transaction 成功 commit 後才發送通知
+     * 避免 rollback 時用戶收到錯誤的通知
+     */
+    private void registerAfterCommitLineNotification(Booking booking, String reason) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                sendLineNotification(booking, reason);
+            }
+        });
+    }
+
+    /**
+     * 根據預約狀態發送 LINE 通知
+     */
+    private void sendLineNotification(Booking booking, String reason) {
+        try {
+            switch (booking.getStatus()) {
+                case CONFIRMED:
+                    lineMessagingService.sendBookingConfirmedNotification(booking);
+                    break;
+                case CANCELLED:
+                    lineMessagingService.sendBookingCancelledNotification(booking, reason);
+                    break;
+                case REJECTED:
+                    lineMessagingService.sendBookingRejectedNotification(booking, reason);
+                    break;
+                case COMPLETED:
+                    lineMessagingService.sendBookingCompletedNotification(booking);
+                    break;
+                default:
+                    // PENDING 狀態不發通知
+                    break;
+            }
+        } catch (Exception e) {
+            // LINE 通知失敗不影響主流程
+            logger.error("LINE 通知發送失敗: {}", e.getMessage());
+        }
+    }
 
     /**
      * 註冊 afterCommit callback

@@ -65,6 +65,9 @@ class BookingOptimisticLockTest {
     @Mock
     private BookingLogService bookingLogService;
 
+    @Mock
+    private LineMessagingService lineMessagingService;
+
     @InjectMocks
     private BookingService bookingService;
 
@@ -304,14 +307,14 @@ class BookingOptimisticLockTest {
         }
 
         @Test
-        @DisplayName("悲觀鎖：使用 findByIdWithLock 時不會發生版本衝突")
-        void pessimisticLockShouldNotHaveVersionConflict() {
+        @DisplayName("MSSQL 相容模式：updateBookingStatusWithPessimisticLock 使用 findById 而非 findByIdWithLock")
+        void pessimisticLockVersionShouldUseFindByIdForMssqlCompatibility() {
             try (MockedStatic<TransactionSynchronizationManager> txManager = mockStatic(TransactionSynchronizationManager.class)) {
                 // given
                 txManager.when(TransactionSynchronizationManager::isSynchronizationActive).thenReturn(true);
 
-                // 悲觀鎖查詢
-                given(bookingRepository.findByIdWithLock(bookingId)).willReturn(Optional.of(booking));
+                // MSSQL 相容：改用 findById（因為 MSSQL 不支援 SELECT FOR UPDATE）
+                given(bookingRepository.findById(bookingId)).willReturn(Optional.of(booking));
                 given(bookingRepository.countConflictingBookingsExcluding(any(), any(), any(), any())).willReturn(0L);
 
                 Booking confirmedBooking = new Booking();
@@ -324,7 +327,6 @@ class BookingOptimisticLockTest {
                 confirmedBooking.setStatus(BookingStatus.CONFIRMED);
                 confirmedBooking.setTotalPrice(400.0);
 
-                // 悲觀鎖情況下，save 不會因為版本衝突而失敗
                 given(bookingRepository.save(any(Booking.class))).willReturn(confirmedBooking);
 
                 BookingStatusUpdateDto updateDto = new BookingStatusUpdateDto(
@@ -332,15 +334,15 @@ class BookingOptimisticLockTest {
                         "確認"
                 );
 
-                // when - 使用悲觀鎖更新
+                // when - MSSQL 相容模式下使用樂觀鎖
                 BookingDto result = bookingService.updateBookingStatusWithPessimisticLock(bookingId, updateDto);
 
-                // then - 悲觀鎖應該成功更新
+                // then - 應該成功更新
                 assertThat(result.status()).isEqualTo(BookingStatus.CONFIRMED);
 
-                // 驗證使用了悲觀鎖查詢
-                verify(bookingRepository).findByIdWithLock(bookingId);
-                verify(bookingRepository, never()).findById(bookingId);
+                // 驗證使用 findById（MSSQL 相容），不再使用 findByIdWithLock
+                verify(bookingRepository).findById(bookingId);
+                verify(bookingRepository, never()).findByIdWithLock(any());
             }
         }
     }
