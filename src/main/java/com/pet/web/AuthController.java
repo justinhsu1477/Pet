@@ -64,14 +64,7 @@ public class AuthController {
         log.info("JWT login attempt for user: {}", loginRequest.username());
 
         JwtAuthenticationResponse authResponse = authenticationService.login(loginRequest, request);
-        
-        // 將 Refresh Token 寫入 HttpOnly Cookie
-        setRefreshTokenCookie(response, authResponse.getRefreshToken());
-        
-        // 安全起見，Web 端不應從 body 獲取 refreshToken
-        if (request.getHeader("X-Device-Type") != null && request.getHeader("X-Device-Type").equalsIgnoreCase("WEB")) {
-            authResponse.setRefreshToken(null);
-        }
+        issueTokens(authResponse, response, request);
 
         return ResponseEntity.ok(ApiResponse.success(authResponse));
     }
@@ -103,14 +96,7 @@ public class AuthController {
         refreshRequest.setRefreshToken(refreshToken);
         
         JwtAuthenticationResponse authResponse = authenticationService.refreshToken(refreshRequest);
-        
-        // 更新 Cookie
-        setRefreshTokenCookie(response, authResponse.getRefreshToken());
-
-        // 安全起見，Web 端不應從 body 獲取 refreshToken
-        if (request.getHeader("X-Device-Type") != null && request.getHeader("X-Device-Type").equalsIgnoreCase("WEB")) {
-            authResponse.setRefreshToken(null);
-        }
+        issueTokens(authResponse, response, request);
 
         return ResponseEntity.ok(ApiResponse.success(authResponse));
     }
@@ -142,8 +128,30 @@ public class AuthController {
     }
 
     /**
+     * 統一的 Token 發放方法
+     * 不管登入來源（帳密、LINE、未來的 Google），都在這裡：
+     * 1. 設置 Refresh Token Cookie
+     * 2. Web 端隱藏 body 中的 refreshToken
+     */
+    private JwtAuthenticationResponse issueTokens(
+            JwtAuthenticationResponse authResponse,
+            HttpServletResponse httpResponse,
+            HttpServletRequest httpRequest) {
+        setRefreshTokenCookie(httpResponse, authResponse.getRefreshToken());
+
+        // Web 端不應從 body 獲取 refreshToken（已存在 HttpOnly Cookie）
+        if (httpRequest != null) {
+            String deviceType = httpRequest.getHeader("X-Device-Type");
+            if (deviceType != null && deviceType.equalsIgnoreCase("WEB")) {
+                authResponse.setRefreshToken(null);
+            }
+        }
+        return authResponse;
+    }
+
+    /**
      * 設置 Refresh Token Cookie
-     * 使用 HttpOnly 防止 XSS 攻擊，適合面試展示
+     * 使用 HttpOnly 防止 XSS 攻擊
      */
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -234,7 +242,7 @@ public class AuthController {
             if (existingUser.isPresent()) {
                 JwtAuthenticationResponse authResponse =
                         lineOAuth2Service.loginExistingUser(existingUser.get());
-                setRefreshTokenCookie(httpResponse, authResponse.getRefreshToken());
+                issueTokens(authResponse, httpResponse, null);
                 return redirectTo(frontendUrl + "?token=" + authResponse.getAccessToken());
             } else {
                 String regToken =
@@ -264,7 +272,7 @@ public class AuthController {
         String role = body.get("role");
         Users user = lineOAuth2Service.completeRegistration(token, role);
         JwtAuthenticationResponse authResponse = lineOAuth2Service.loginExistingUser(user);
-        setRefreshTokenCookie(httpResponse, authResponse.getRefreshToken());
+        issueTokens(authResponse, httpResponse, null);
         return ResponseEntity.ok(ApiResponse.success(authResponse));
     }
 
