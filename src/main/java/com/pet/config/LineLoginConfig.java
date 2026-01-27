@@ -13,6 +13,7 @@ public class LineLoginConfig {
     private String channelId;
     private String channelSecret;
     private String callbackUrl;
+    private String frontendCallbackUrl;
 
     public boolean isConfigured() {
         return channelId != null && !channelId.isEmpty()

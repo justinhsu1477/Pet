@@ -1,9 +1,11 @@
 package com.pet.controller;
 
+import com.pet.config.LineLoginConfig;
 import com.pet.domain.UserRole;
 import com.pet.domain.Users;
 import com.pet.dto.JwtAuthenticationResponse;
 import com.pet.dto.LineUserProfile;
+import com.pet.dto.response.ApiResponse;
 import com.pet.security.JwtProperties;
 import com.pet.service.AuthenticationService;
 import com.pet.service.LineOAuth2Service;
@@ -16,11 +18,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,14 +37,25 @@ class AuthControllerLineOAuthTest {
     @Mock
     private LineOAuth2Service lineOAuth2Service;
 
+    @Mock
+    private LineLoginConfig lineLoginConfig;
+
     @InjectMocks
     private AuthController authController;
+
+    private static final String FRONTEND_URL = "http://localhost:3000/line-callback.html";
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(lineLoginConfig.getFrontendCallbackUrl()).thenReturn(FRONTEND_URL);
+    }
 
     // ==================== lineOAuthLogin ====================
 
     @Test
     void shouldRedirectToLineAuthorizationUrl() {
-        when(lineOAuth2Service.buildAuthorizationUrl()).thenReturn("https://access.line.me/oauth2/v2.1/authorize?test=1");
+        when(lineOAuth2Service.buildAuthorizationUrl())
+                .thenReturn("https://access.line.me/oauth2/v2.1/authorize?test=1");
 
         ResponseEntity<Void> response = authController.lineOAuthLogin();
 
@@ -54,33 +67,36 @@ class AuthControllerLineOAuthTest {
     // ==================== lineOAuthCallback ====================
 
     @Test
-    void shouldReturnErrorPageWhenErrorParam() {
-        ResponseEntity<String> response = authController.lineOAuthCallback(null, null, "access_denied");
+    void shouldRedirectWithErrorWhenErrorParam() {
+        ResponseEntity<Void> response = authController.lineOAuthCallback(null, null, "access_denied");
 
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("您已取消 LINE 授權"));
+        assertEquals(302, response.getStatusCode().value());
+        String location = response.getHeaders().getFirst("Location");
+        assertTrue(location.startsWith(FRONTEND_URL + "?error="));
     }
 
     @Test
-    void shouldReturnErrorPageWhenInvalidState() {
+    void shouldRedirectWithErrorWhenInvalidState() {
         when(lineOAuth2Service.validateState("bad-state")).thenReturn(false);
 
-        ResponseEntity<String> response = authController.lineOAuthCallback("code123", "bad-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "bad-state", null);
 
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("授權已過期"));
+        assertEquals(302, response.getStatusCode().value());
+        String location = response.getHeaders().getFirst("Location");
+        assertTrue(location.contains("error="));
     }
 
     @Test
-    void shouldReturnErrorPageWhenNullState() {
-        ResponseEntity<String> response = authController.lineOAuthCallback("code123", null, null);
+    void shouldRedirectWithErrorWhenNullState() {
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", null, null);
 
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("授權已過期"));
+        assertEquals(302, response.getStatusCode().value());
+        String location = response.getHeaders().getFirst("Location");
+        assertTrue(location.contains("error="));
     }
 
     @Test
-    void shouldReturnLoginSuccessPageForExistingUser() throws Exception {
+    void shouldRedirectWithTokenForExistingUser() throws Exception {
         when(lineOAuth2Service.validateState("valid-state")).thenReturn(true);
         when(lineOAuth2Service.exchangeCodeForAccessToken("code123")).thenReturn("access-token");
 
@@ -96,16 +112,16 @@ class AuthControllerLineOAuthTest {
                 .build();
         when(lineOAuth2Service.loginExistingUser(existingUser)).thenReturn(authResponse);
 
-        ResponseEntity<String> response = authController.lineOAuthCallback("code123", "valid-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null);
 
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("LINE 登入成功"));
-        assertTrue(response.getBody().contains("testuser"));
-        assertTrue(response.getBody().contains("jwt-token"));
+        assertEquals(302, response.getStatusCode().value());
+        String location = response.getHeaders().getFirst("Location");
+        assertTrue(location.contains("token=jwt-token"));
+        assertFalse(location.contains("registration_token"));
     }
 
     @Test
-    void shouldReturnRoleSelectionPageForNewUser() throws Exception {
+    void shouldRedirectWithRegistrationTokenForNewUser() throws Exception {
         when(lineOAuth2Service.validateState("valid-state")).thenReturn(true);
         when(lineOAuth2Service.exchangeCodeForAccessToken("code123")).thenReturn("access-token");
 
@@ -114,30 +130,31 @@ class AuthControllerLineOAuthTest {
         when(lineOAuth2Service.findExistingUser("U999")).thenReturn(Optional.empty());
         when(lineOAuth2Service.generatePendingRegistrationToken(profile)).thenReturn("reg-token");
 
-        ResponseEntity<String> response = authController.lineOAuthCallback("code123", "valid-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null);
 
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("選擇角色"));
-        assertTrue(response.getBody().contains("NewUser"));
-        assertTrue(response.getBody().contains("reg-token"));
+        assertEquals(302, response.getStatusCode().value());
+        String location = response.getHeaders().getFirst("Location");
+        assertTrue(location.contains("registration_token=reg-token"));
+        assertTrue(location.contains("display_name=NewUser"));
     }
 
     @Test
-    void shouldReturnErrorPageOnException() throws Exception {
+    void shouldRedirectWithErrorOnException() throws Exception {
         when(lineOAuth2Service.validateState("valid-state")).thenReturn(true);
         when(lineOAuth2Service.exchangeCodeForAccessToken("code123"))
                 .thenThrow(new RuntimeException("Token exchange failed"));
 
-        ResponseEntity<String> response = authController.lineOAuthCallback("code123", "valid-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null);
 
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("Token exchange failed"));
+        assertEquals(302, response.getStatusCode().value());
+        String location = response.getHeaders().getFirst("Location");
+        assertTrue(location.contains("error="));
     }
 
     // ==================== lineOAuthCompleteRegistration ====================
 
     @Test
-    void shouldCompleteRegistrationAsCustomer() {
+    void shouldCompleteRegistrationAndReturnJson() {
         Users newUser = createTestUser();
         when(lineOAuth2Service.completeRegistration("reg-token", "CUSTOMER")).thenReturn(newUser);
 
@@ -147,12 +164,12 @@ class AuthControllerLineOAuthTest {
                 .build();
         when(lineOAuth2Service.loginExistingUser(newUser)).thenReturn(authResponse);
 
-        ResponseEntity<String> response = authController.lineOAuthCompleteRegistration("reg-token", "CUSTOMER");
+        Map<String, String> body = Map.of("token", "reg-token", "role", "CUSTOMER");
+        ResponseEntity<ApiResponse<JwtAuthenticationResponse>> response =
+                authController.lineOAuthCompleteRegistration(body);
 
         assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("註冊並登入成功"));
-        assertTrue(response.getBody().contains("飼主"));
-        assertTrue(response.getBody().contains("new-jwt"));
+        assertEquals("new-jwt", response.getBody().data().getAccessToken());
     }
 
     @Test
@@ -161,26 +178,17 @@ class AuthControllerLineOAuthTest {
         when(lineOAuth2Service.completeRegistration("reg-token", "SITTER")).thenReturn(newUser);
 
         JwtAuthenticationResponse authResponse = JwtAuthenticationResponse.builder()
-                .accessToken("new-jwt")
+                .accessToken("sitter-jwt")
                 .username("testuser")
                 .build();
         when(lineOAuth2Service.loginExistingUser(newUser)).thenReturn(authResponse);
 
-        ResponseEntity<String> response = authController.lineOAuthCompleteRegistration("reg-token", "SITTER");
+        Map<String, String> body = Map.of("token", "reg-token", "role", "SITTER");
+        ResponseEntity<ApiResponse<JwtAuthenticationResponse>> response =
+                authController.lineOAuthCompleteRegistration(body);
 
         assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("保母"));
-    }
-
-    @Test
-    void shouldReturnErrorPageOnRegistrationFailure() {
-        when(lineOAuth2Service.completeRegistration("bad-token", "CUSTOMER"))
-                .thenThrow(new RuntimeException("無效的註冊 Token"));
-
-        ResponseEntity<String> response = authController.lineOAuthCompleteRegistration("bad-token", "CUSTOMER");
-
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody().contains("無效的註冊 Token"));
+        assertEquals("sitter-jwt", response.getBody().data().getAccessToken());
     }
 
     // ==================== helper ====================
