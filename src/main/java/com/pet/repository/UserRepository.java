@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<Users, UUID> {
     Optional<Users> findByUsername(String username);
 
+    Optional<Users> findByLineUserId(String lineUserId);
+
     @org.springframework.data.jpa.repository.Query("SELECT u FROM Users u LEFT JOIN FETCH u.customer WHERE u.role = :role")
     java.util.List<Users> findByRole(@org.springframework.data.repository.query.Param("role") com.pet.domain.UserRole role);
 }

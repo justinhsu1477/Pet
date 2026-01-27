@@ -23,6 +23,9 @@ public class Users {
     private String email;
     private String phone;
 
+    @Column(name = "line_user_id", unique = true)
+    private String lineUserId;
+
     /**
      * 用戶角色
      */
@@ -92,4 +95,11 @@ public class Users {
         return sitter;
     }
 
+    public String getLineUserId() {
+        return lineUserId;
+    }
+
+    public void setLineUserId(String lineUserId) {
+        this.lineUserId = lineUserId;
+    }
 }

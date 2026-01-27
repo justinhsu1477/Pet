@@ -22,7 +22,8 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100),
     phone VARCHAR(20),
-    role VARCHAR(20)
+    role VARCHAR(20),
+    line_user_id VARCHAR(100) UNIQUE
 );
 
 -- RefreshToken table (JWT 認證用)

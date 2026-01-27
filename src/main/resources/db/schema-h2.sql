@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100),
     phone VARCHAR(20),
-    role VARCHAR(20)
+    role VARCHAR(20),
+    line_user_id VARCHAR(100) UNIQUE
 );
 
 -- RefreshToken 表 (JWT 認證用)

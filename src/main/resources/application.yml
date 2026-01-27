@@ -36,4 +36,9 @@ line:
     channel-secret: ${LINE_CHANNEL_SECRET:}
     # Demo mode: all notifications go to this user (for interview demo)
     demo-user-id: ${LINE_DEMO_USER_ID:}
+    base-url: ${LINE_BASE_URL:}
     enabled: true
+  login:
+    channel-id: ${LINE_LOGIN_CHANNEL_ID:}
+    channel-secret: ${LINE_LOGIN_CHANNEL_SECRET:}
+    callback-url: ${LINE_LOGIN_CALLBACK_URL:${LINE_BASE_URL:http://localhost:8080}/api/auth/oauth2/callback/line}

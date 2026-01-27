@@ -9,7 +9,9 @@ import com.pet.dto.RefreshTokenRequest;
 import com.pet.dto.response.ApiResponse;
 import com.pet.exception.AuthenticationException;
 import com.pet.exception.ErrorCode;
+import com.pet.dto.LineUserProfile;
 import com.pet.service.AuthenticationService;
+import com.pet.service.LineOAuth2Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.pet.security.JwtProperties;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +39,7 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final JwtProperties jwtProperties;
+    private final LineOAuth2Service lineOAuth2Service;
 
     /**
      * JWT 登入端點
@@ -180,6 +184,190 @@ public class AuthController {
         authenticationService.logoutAllDevices(userId);
 
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // ==================== LINE OAuth 2.0 登入 ====================
+
+    /**
+     * LINE OAuth 登入入口
+     * 重導向到 LINE 授權頁面
+     */
+    @GetMapping("/oauth2/line")
+    public ResponseEntity<Void> lineOAuthLogin() {
+        String authUrl = lineOAuth2Service.buildAuthorizationUrl();
+        return ResponseEntity.status(302)
+                .header("Location", authUrl)
+                .build();
+    }
+
+    /**
+     * LINE OAuth 回調
+     * LINE 授權完成後，會帶著 code 和 state 導回這裡
+     */
+    @GetMapping(value = "/oauth2/callback/line", produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> lineOAuthCallback(
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String state,
+            @RequestParam(required = false) String error) {
+        try {
+            if (error != null) {
+                return ResponseEntity.ok(errorPage("您已取消 LINE 授權"));
+            }
+
+            if (state == null || !lineOAuth2Service.validateState(state)) {
+                return ResponseEntity.ok(errorPage("授權已過期，請重新登入"));
+            }
+
+            String accessToken = lineOAuth2Service.exchangeCodeForAccessToken(code);
+            LineUserProfile profile = lineOAuth2Service.getUserProfile(accessToken);
+            var existingUser = lineOAuth2Service.findExistingUser(profile.userId());
+
+            if (existingUser.isPresent()) {
+                JwtAuthenticationResponse authResponse = lineOAuth2Service.loginExistingUser(existingUser.get());
+                String html = """
+                    <!DOCTYPE html>
+                    <html lang="zh-TW">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>登入成功</title>
+                        <style>
+                            body { font-family: -apple-system, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+                            .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+                            h2 { color: #06C755; }
+                            .token-info { background: #f0f0f0; border-radius: 8px; padding: 15px; margin-top: 15px; word-break: break-all; font-size: 12px; text-align: left; }
+                            .token-label { font-weight: bold; color: #333; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="card">
+                            <h2>LINE 登入成功！</h2>
+                            <p>歡迎回來，<strong>%s</strong></p>
+                            <div class="token-info">
+                                <p class="token-label">Access Token:</p>
+                                <p id="token">%s</p>
+                            </div>
+                            <p style="color:#999; font-size:13px; margin-top:15px;">請將此 Token 複製到 App 中使用</p>
+                        </div>
+                    </body>
+                    </html>
+                    """.formatted(authResponse.getUsername(), authResponse.getAccessToken());
+                return ResponseEntity.ok(html);
+            } else {
+                String registrationToken = lineOAuth2Service.generatePendingRegistrationToken(profile);
+                String displayName = profile.displayName() != null ? profile.displayName() : "LINE 用戶";
+                String html = """
+                    <!DOCTYPE html>
+                    <html lang="zh-TW">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>選擇角色</title>
+                        <style>
+                            body { font-family: -apple-system, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+                            .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+                            h2 { color: #06C755; }
+                            .role-btn { display: block; width: 100%%; padding: 18px; margin-top: 15px; border: 2px solid #ddd; border-radius: 12px; background: white; font-size: 18px; cursor: pointer; transition: all 0.2s; }
+                            .role-btn:hover { border-color: #06C755; background: #f0fff5; }
+                            .subtitle { color: #666; margin-bottom: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="card">
+                            <h2>歡迎，%s！</h2>
+                            <p class="subtitle">請選擇您的角色</p>
+                            <form method="POST" action="/api/auth/oauth2/line/complete-registration">
+                                <input type="hidden" name="token" value="%s">
+                                <button type="submit" name="role" value="CUSTOMER" class="role-btn">
+                                    我是飼主（找保母）
+                                </button>
+                                <button type="submit" name="role" value="SITTER" class="role-btn">
+                                    我是保母（接案）
+                                </button>
+                            </form>
+                        </div>
+                    </body>
+                    </html>
+                    """.formatted(displayName, registrationToken);
+                return ResponseEntity.ok(html);
+            }
+        } catch (Exception e) {
+            log.error("LINE OAuth 回調失敗", e);
+            return ResponseEntity.ok(errorPage("LINE 登入失敗：" + e.getMessage()));
+        }
+    }
+
+    /**
+     * LINE OAuth 完成註冊（角色選擇後）
+     */
+    @PostMapping(value = "/oauth2/line/complete-registration", produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> lineOAuthCompleteRegistration(
+            @RequestParam String token,
+            @RequestParam String role) {
+        try {
+            Users user = lineOAuth2Service.completeRegistration(token, role);
+            JwtAuthenticationResponse authResponse = lineOAuth2Service.loginExistingUser(user);
+            String html = """
+                <!DOCTYPE html>
+                <html lang="zh-TW">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>註冊成功</title>
+                    <style>
+                        body { font-family: -apple-system, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+                        .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+                        h2 { color: #06C755; }
+                        .token-info { background: #f0f0f0; border-radius: 8px; padding: 15px; margin-top: 15px; word-break: break-all; font-size: 12px; text-align: left; }
+                        .token-label { font-weight: bold; color: #333; }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <h2>註冊並登入成功！</h2>
+                        <p>帳號：<strong>%s</strong></p>
+                        <p>角色：<strong>%s</strong></p>
+                        <div class="token-info">
+                            <p class="token-label">Access Token:</p>
+                            <p>%s</p>
+                        </div>
+                        <p style="color:#999; font-size:13px; margin-top:15px;">請將此 Token 複製到 App 中使用</p>
+                    </div>
+                </body>
+                </html>
+                """.formatted(
+                    authResponse.getUsername(),
+                    "SITTER".equalsIgnoreCase(role) ? "保母" : "飼主",
+                    authResponse.getAccessToken());
+            return ResponseEntity.ok(html);
+        } catch (Exception e) {
+            log.error("LINE OAuth 註冊失敗", e);
+            return ResponseEntity.ok(errorPage(e.getMessage()));
+        }
+    }
+
+    private String errorPage(String message) {
+        return """
+            <!DOCTYPE html>
+            <html lang="zh-TW">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>錯誤</title>
+                <style>
+                    body { font-family: -apple-system, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+                    .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+                    h2 { color: #e74c3c; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <h2>操作失敗</h2>
+                    <p>%s</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(message);
     }
 
     // ==================== 舊版登入 (向後兼容) ====================
