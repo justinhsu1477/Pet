@@ -193,6 +193,7 @@
                 const response = await fetch(`${CONFIG.API_BASE_URL}/auth/oauth2/line/complete-registration`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({
                         token: currentRegistrationToken,
                         role: role

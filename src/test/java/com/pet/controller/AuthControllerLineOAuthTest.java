@@ -18,6 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +44,9 @@ class AuthControllerLineOAuthTest {
 
     @InjectMocks
     private AuthController authController;
+
+    @Mock
+    private HttpServletResponse httpServletResponse;
 
     private static final String FRONTEND_URL = "http://localhost:3000/line-callback.html";
 
@@ -68,7 +73,7 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithErrorWhenErrorParam() {
-        ResponseEntity<Void> response = authController.lineOAuthCallback(null, null, "access_denied");
+        ResponseEntity<Void> response = authController.lineOAuthCallback(null, null, "access_denied", httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -79,7 +84,7 @@ class AuthControllerLineOAuthTest {
     void shouldRedirectWithErrorWhenInvalidState() {
         when(lineOAuth2Service.validateState("bad-state")).thenReturn(false);
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "bad-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "bad-state", null, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -88,7 +93,7 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithErrorWhenNullState() {
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", null, null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", null, null, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -112,7 +117,7 @@ class AuthControllerLineOAuthTest {
                 .build();
         when(lineOAuth2Service.loginExistingUser(existingUser)).thenReturn(authResponse);
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -130,7 +135,7 @@ class AuthControllerLineOAuthTest {
         when(lineOAuth2Service.findExistingUser("U999")).thenReturn(Optional.empty());
         when(lineOAuth2Service.generatePendingRegistrationToken(profile)).thenReturn("reg-token");
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -144,7 +149,7 @@ class AuthControllerLineOAuthTest {
         when(lineOAuth2Service.exchangeCodeForAccessToken("code123"))
                 .thenThrow(new RuntimeException("Token exchange failed"));
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -166,7 +171,7 @@ class AuthControllerLineOAuthTest {
 
         Map<String, String> body = Map.of("token", "reg-token", "role", "CUSTOMER");
         ResponseEntity<ApiResponse<JwtAuthenticationResponse>> response =
-                authController.lineOAuthCompleteRegistration(body);
+                authController.lineOAuthCompleteRegistration(body, httpServletResponse);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("new-jwt", response.getBody().data().getAccessToken());
@@ -185,7 +190,7 @@ class AuthControllerLineOAuthTest {
 
         Map<String, String> body = Map.of("token", "reg-token", "role", "SITTER");
         ResponseEntity<ApiResponse<JwtAuthenticationResponse>> response =
-                authController.lineOAuthCompleteRegistration(body);
+                authController.lineOAuthCompleteRegistration(body, httpServletResponse);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("sitter-jwt", response.getBody().data().getAccessToken());

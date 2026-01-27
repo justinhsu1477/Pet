@@ -214,7 +214,8 @@ public class AuthController {
     public ResponseEntity<Void> lineOAuthCallback(
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String state,
-            @RequestParam(required = false) String error) {
+            @RequestParam(required = false) String error,
+            HttpServletResponse httpResponse) {
         String frontendUrl = lineLoginConfig.getFrontendCallbackUrl();
         try {
             if (error != null) {
@@ -233,6 +234,7 @@ public class AuthController {
             if (existingUser.isPresent()) {
                 JwtAuthenticationResponse authResponse =
                         lineOAuth2Service.loginExistingUser(existingUser.get());
+                setRefreshTokenCookie(httpResponse, authResponse.getRefreshToken());
                 return redirectTo(frontendUrl + "?token=" + authResponse.getAccessToken());
             } else {
                 String regToken =
@@ -256,11 +258,13 @@ public class AuthController {
      */
     @PostMapping("/oauth2/line/complete-registration")
     public ResponseEntity<ApiResponse<JwtAuthenticationResponse>>
-            lineOAuthCompleteRegistration(@RequestBody java.util.Map<String, String> body) {
+            lineOAuthCompleteRegistration(@RequestBody java.util.Map<String, String> body,
+                                          HttpServletResponse httpResponse) {
         String token = body.get("token");
         String role = body.get("role");
         Users user = lineOAuth2Service.completeRegistration(token, role);
         JwtAuthenticationResponse authResponse = lineOAuth2Service.loginExistingUser(user);
+        setRefreshTokenCookie(httpResponse, authResponse.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.success(authResponse));
     }
 
