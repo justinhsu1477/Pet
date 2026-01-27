@@ -43,7 +43,8 @@ public class LineOAuth2Service {
     private static final String LINE_AUTH_URL = "https://access.line.me/oauth2/v2.1/authorize";
     private static final String LINE_TOKEN_URL = "https://api.line.me/oauth2/v2.1/token";
     private static final String LINE_PROFILE_URL = "https://api.line.me/v2/profile";
-    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+
+    private final HttpClient httpClient;
 
     // state -> CSRF protection (production should use Redis)
     private final Map<String, Long> stateStore = new ConcurrentHashMap<>();
@@ -91,7 +92,7 @@ public class LineOAuth2Service {
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
-        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
             log.error("LINE token exchange failed: {}", response.body());
@@ -112,7 +113,7 @@ public class LineOAuth2Service {
                 .GET()
                 .build();
 
-        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
             log.error("LINE profile fetch failed: {}", response.body());
