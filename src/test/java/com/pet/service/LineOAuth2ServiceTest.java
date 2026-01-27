@@ -171,6 +171,10 @@ class LineOAuth2ServiceTest {
         when(jsonNode.get("displayName")).thenReturn(displayNameNode);
         when(jsonNode.has("pictureUrl")).thenReturn(true);
         when(jsonNode.get("pictureUrl")).thenReturn(pictureUrlNode);
+        JsonNode emailNode = mock(JsonNode.class);
+        when(emailNode.asText()).thenReturn("test@example.com");
+        when(jsonNode.has("email")).thenReturn(true);
+        when(jsonNode.get("email")).thenReturn(emailNode);
         when(objectMapper.readTree(profileJson)).thenReturn(jsonNode);
 
         LineUserProfile profile = lineOAuth2Service.getUserProfile("access-token");
@@ -178,6 +182,7 @@ class LineOAuth2ServiceTest {
         assertEquals("U123", profile.userId());
         assertEquals("Test User", profile.displayName());
         assertEquals("http://pic.url", profile.pictureUrl());
+        assertEquals("test@example.com", profile.email());
     }
 
     @SuppressWarnings("unchecked")

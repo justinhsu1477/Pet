@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Log DataSource 配置 (PostgreSQL)
+ * Log DataSource 配置
  * 專門存放 Booking Log，用於報表/分析
  * 掃描 com.pet.log.domain 和 com.pet.log.repository
  */
