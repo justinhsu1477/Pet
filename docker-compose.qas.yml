@@ -53,6 +53,7 @@ services:
       - LINE_CHANNEL_TOKEN=${LINE_CHANNEL_TOKEN}
       - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET}
       - LINE_DEMO_USER_ID=${LINE_DEMO_USER_ID}
+      - LINE_BASE_URL=${LINE_BASE_URL}
     ports:
       - "${SERVER_PORT:-8080}:8080"
     depends_on:

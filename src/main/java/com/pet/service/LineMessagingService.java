@@ -28,20 +28,29 @@ public class LineMessagingService {
      * 發送預約確認通知
      */
     public void sendBookingConfirmedNotification(Booking booking) {
-        String message = String.format(
+        StringBuilder message = new StringBuilder();
+        message.append(String.format(
             "✅ 您的預約已確認！\n\n" +
             "🐾 寵物：%s\n" +
             "👤 保母：%s\n" +
             "📅 時間：%s ~ %s\n" +
-            "💰 費用：$%.0f\n\n" +
-            "感謝您使用寵物保母系統！",
+            "💰 費用：$%.0f\n",
             booking.getPet().getName(),
             booking.getSitter().getName(),
             booking.getStartTime().format(DATE_FORMATTER),
             booking.getEndTime().format(DATE_FORMATTER),
             booking.getTotalPrice()
-        );
-        sendNotification(message);
+        ));
+
+        // 如果有設定 baseUrl，加入行事曆連結
+        if (config.hasBaseUrl()) {
+            String calendarUrl = String.format("%s/api/bookings/%s/calendar",
+                    config.getBaseUrl(), booking.getId());
+            message.append("\n📅 加入行事曆：\n").append(calendarUrl).append("\n");
+        }
+
+        message.append("\n感謝您使用寵物保母系統！");
+        sendNotification(message.toString());
     }
 
     /**
