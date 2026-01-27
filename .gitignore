@@ -56,3 +56,10 @@ logs/
 *.bak
 *.swp
 *~.nib
+
+# Environment files (contains secrets)
+.env
+.env.dev
+.env.qas
+.env.local
+.env.*.local

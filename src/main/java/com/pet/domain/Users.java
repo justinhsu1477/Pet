@@ -34,14 +34,14 @@ public class Users {
      * 關聯到 Customer (一般用戶)
      * 當 role = CUSTOMER 時使用
      */
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Customer customer;
 
     /**
      * 關聯到 Sitter (保母)
      * 當 role = SITTER 時使用
      */
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Sitter sitter;
 
     public String getUsername() {
