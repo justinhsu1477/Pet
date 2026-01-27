@@ -41,5 +41,5 @@ line:
   login:
     channel-id: ${LINE_LOGIN_CHANNEL_ID:}
     channel-secret: ${LINE_LOGIN_CHANNEL_SECRET:}
-    callback-url: ${LINE_LOGIN_CALLBACK_URL:http://localhost:8080/api/auth/oauth2/callback/line}
-    frontend-callback-url: ${LINE_LOGIN_FRONTEND_CALLBACK_URL:http://localhost:3000/line-callback.html}
+    callback-url: ${LINE_BASE_URL:http://localhost:8080}/api/auth/oauth2/callback/line
+    frontend-callback-url: ${LINE_FRONTEND_URL:http://localhost:3000}/line-callback.html
