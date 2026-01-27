@@ -44,3 +44,5 @@ line:
     channel-secret: ${LINE_CHANNEL_SECRET:}
     demo-user-id: ${LINE_DEMO_USER_ID:}
     enabled: true
+    # 系統公開網址（用於 LINE 訊息中的行事曆連結）
+    base-url: ${LINE_BASE_URL:}

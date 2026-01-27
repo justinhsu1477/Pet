@@ -16,8 +16,19 @@ public class LineMessagingConfig {
     private String demoUserId;
     private boolean enabled = true;
 
+    private String baseUrl;
+
+    public boolean hasBaseUrl() {
+        return baseUrl != null && !baseUrl.isEmpty();
+    }
+
+
     public boolean isConfigured() {
         return channelToken != null && !channelToken.isEmpty()
             && demoUserId != null && !demoUserId.isEmpty();
+    }
+
+    public boolean hasBaseUrl() {
+        return baseUrl != null && !baseUrl.isEmpty();
     }
 }

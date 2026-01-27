@@ -42,3 +42,7 @@ line:
     channel-secret: ${LINE_CHANNEL_SECRET:}
     demo-user-id: ${LINE_DEMO_USER_ID:}
     enabled: true
+    # 系統公開網址（用於 LINE 訊息中的行事曆連結）
+    # 本機開發：http://192.168.x.x:8080（同 WiFi 下手機可存取）
+    # 使用 ngrok：https://xxx.ngrok.io
+    base-url: ${LINE_BASE_URL:}
