@@ -33,19 +33,19 @@ public class CorsConfig {
         // 設定允許的來源（從設定檔讀取）
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         configuration.setAllowedOrigins(origins);
-        
+
         // 允許的 HTTP 方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        
+
         // 允許的 Headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        
+
         // 允許帶上 Cookie/Session
         configuration.setAllowCredentials(true);
-        
+
         // 預檢請求快取時間（秒）
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
         return source;
