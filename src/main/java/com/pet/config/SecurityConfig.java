@@ -88,6 +88,9 @@ public class SecurityConfig {
                                 // 健康檢查端點（給 K8s probe / 監控系統用）
                                 .requestMatchers("/api/health/**").permitAll()
 
+                                // 行事曆頁面與下載（LINE 訊息連結，不需登入）
+                                .requestMatchers("/api/bookings/*/calendar", "/api/bookings/*/calendar/download").permitAll()
+
                                 // H2 Console（僅開發環境用）
 //                        .requestMatchers("/h2-console/**").permitAll()
 

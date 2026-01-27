@@ -27,4 +27,8 @@ public class LineMessagingConfig {
         return channelToken != null && !channelToken.isEmpty()
             && demoUserId != null && !demoUserId.isEmpty();
     }
+
+    public boolean hasBaseUrl() {
+        return baseUrl != null && !baseUrl.isEmpty();
+    }
 }

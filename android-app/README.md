@@ -52,9 +52,18 @@ app/
 
 ## 後端 API 連接設定
 
-預設 API Base URL: `http://10.0.2.2:8080/`
-- `10.0.2.2` 是 Android Emulator 訪問本機 localhost 的特殊 IP
-- 如果使用實體設備測試，請修改 `NetworkModule.kt` 中的 `BASE_URL`
+App 支援多環境切換，透過 `EnvironmentManager.kt` 管理：
+
+| 環境 | Base URL | 說明 |
+|------|----------|------|
+| 開發環境 | `http://172.20.10.2:8080/` | iPhone 熱點下電腦的固定 IP |
+| 測試環境 | `https://staging-api.petcare.com/` | Staging 伺服器 |
+| 正式環境 | `https://api.petcare.com/` | Production 伺服器 |
+
+**注意**：
+- `172.20.10.2` 是 iPhone 熱點下電腦的固定 IP
+- 若使用 Android Emulator 連接 localhost，需改為 `10.0.2.2`
+- 環境設定存在 DataStore，App 重啟後會保留
 
 ## 建置專案
 
@@ -111,6 +120,7 @@ app/
 ## 注意事項
 
 1. 確保後端 Spring Boot 服務已啟動
-2. Android Emulator 使用 `10.0.2.2` 連接本機
-3. 實體設備需要修改為電腦的實際 IP 位址
-4. 確保後端 CORS 設定允許來自 Android 的請求
+2. iPhone 熱點：電腦 IP 固定為 `172.20.10.2`
+3. Android Emulator：使用 `10.0.2.2` 連接本機 localhost
+4. 同一 WiFi：使用電腦的實際 IP 位址
+5. 確保後端 CORS 設定允許來自 Android 的請求

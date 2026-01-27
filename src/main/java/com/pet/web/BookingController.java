@@ -4,11 +4,15 @@ import com.pet.dto.BookingDto;
 import com.pet.dto.BookingStatusUpdateDto;
 import com.pet.dto.response.ApiResponse;
 import com.pet.service.BookingService;
+import com.pet.service.CalendarService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,9 +24,11 @@ import java.util.UUID;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final CalendarService calendarService;
 
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, CalendarService calendarService) {
         this.bookingService = bookingService;
+        this.calendarService = calendarService;
     }
 
     /**
@@ -56,6 +62,81 @@ public class BookingController {
     public ResponseEntity<ApiResponse<BookingDto>> getBooking(@PathVariable UUID id) {
         BookingDto booking = bookingService.getBookingById(id);
         return ResponseEntity.ok(ApiResponse.success(booking));
+    }
+
+    /**
+     * 下載預約行事曆 (.ics 檔案)
+     * GET /api/bookings/{id}/calendar
+     *
+     * 用途：
+     * - 讓用戶將預約加入 iPhone/Google/Outlook 行事曆
+     * - LINE 通知中附帶此連結
+     *
+     * 回傳：
+     * - Content-Type: text/calendar
+     * - Content-Disposition: attachment; filename="booking-{id}.ics"
+     */
+    @GetMapping("/{id}/calendar")
+    public ResponseEntity<String> calendarPage(@PathVariable UUID id) {
+        // 驗證預約存在
+        calendarService.generateBookingCalendar(id);
+
+        String downloadUrl = "/api/bookings/" + id + "/calendar/download";
+        String html = """
+                <!DOCTYPE html>
+                <html lang="zh-TW">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>加入行事曆 - 寵物保母預約</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                               background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
+                               min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+                        .card { background: white; border-radius: 20px; padding: 40px 30px;
+                                max-width: 360px; width: 90%%; text-align: center;
+                                box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+                        .icon { font-size: 64px; margin-bottom: 16px; }
+                        h1 { font-size: 20px; color: #333; margin-bottom: 8px; }
+                        p { font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.6; }
+                        .btn { display: inline-block; background: #4CAF50; color: white;
+                               padding: 14px 32px; border-radius: 12px; text-decoration: none;
+                               font-size: 16px; font-weight: 600; width: 100%%;
+                               transition: background 0.2s; }
+                        .btn:active { background: #388E3C; }
+                        .hint { font-size: 12px; color: #999; margin-top: 16px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div class="icon">📅</div>
+                        <h1>寵物保母預約</h1>
+                        <p>點擊下方按鈕將預約加入您的行事曆</p>
+                        <a class="btn" href="%s">加入行事曆</a>
+                        <p class="hint">支援 iPhone 行事曆 / Google 日曆 / Outlook</p>
+                    </div>
+                </body>
+                </html>
+                """.formatted(downloadUrl);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
+    }
+
+    @GetMapping("/{id}/calendar/download")
+    public ResponseEntity<byte[]> downloadCalendar(@PathVariable UUID id) {
+        String icsContent = calendarService.generateBookingCalendar(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/calendar; charset=utf-8"));
+        headers.setContentDispositionFormData("attachment", "booking-" + id + ".ics");
+        headers.set("Content-Description", "Pet Care Booking Calendar");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(icsContent.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
