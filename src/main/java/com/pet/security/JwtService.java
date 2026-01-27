@@ -52,6 +52,28 @@ public class JwtService {
     }
 
     /**
+     * 產生 LINE 註冊用臨時 Token
+     */
+    public String generateRegistrationToken(String lineUserId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("lineUserId", lineUserId);
+        claims.put("type", "LINE_REGISTRATION");
+        return generateToken(claims, "line-registration", 86400000L); // 24 hours
+    }
+
+    /**
+     * 從註冊 Token 中提取 LINE User ID
+     */
+    public String extractLineUserIdFromRegistrationToken(String token) {
+        Claims claims = extractClaims(token);
+        String type = (String) claims.get("type");
+        if (!"LINE_REGISTRATION".equals(type)) {
+            throw new IllegalArgumentException("不是有效的註冊 Token");
+        }
+        return (String) claims.get("lineUserId");
+    }
+
+    /**
      * 生成 Token
      */
     private String generateToken(Map<String, Object> claims, String subject, long expiration) {

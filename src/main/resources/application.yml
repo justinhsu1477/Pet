@@ -2,7 +2,7 @@ spring:
   application:
     name: petSystem
   profiles:
-    active: qas
+    active: dev
   jpa:
     defer-datasource-initialization: true
     show-sql: false
@@ -36,6 +36,9 @@ line:
     channel-secret: ${LINE_CHANNEL_SECRET:}
     # Demo mode: all notifications go to this user (for interview demo)
     demo-user-id: ${LINE_DEMO_USER_ID:}
+    base-url: ${LINE_BASE_URL:http://localhost:8080}
     enabled: true
-    # 系統公開網址（用於 LINE 訊息中的行事曆連結）
-    base-url: ${LINE_BASE_URL:}
+  login:
+    channel-id: ${LINE_LOGIN_CHANNEL_ID:}
+    channel-secret: ${LINE_LOGIN_CHANNEL_SECRET:}
+    callback-url: ${LINE_LOGIN_CALLBACK_URL:http://localhost:8080/api/auth/oauth2/callback/line}
