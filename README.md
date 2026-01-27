@@ -2,6 +2,36 @@
 
 一個完整的寵物照護預約系統,包含 Web 管理介面、Android App、後端 API 和資料庫。
 
+---
+
+## 🏗️ 系統架構圖 (System Architecture)
+
+<img src="docs/architecture/system-architecture.png" width="50%" />
+
+
+**說明：**
+- Android App（Kotlin / MVVM / Hilt）與 Web 管理後台透過 HTTP/JSON 呼叫後端 API
+- 後端使用 Spring Boot，透過 JWT Authentication Filter 進行統一認證
+- 採用 Controller / Service / Repository 分層架構
+- 主資料庫（petdb）與日誌資料庫（petdb_log）分離
+- Log DB 同步採非同步處理，避免影響主交易效能
+
+---
+
+## 🗄️ 資料庫設計 (ER Diagram)
+
+<img src="docs/architecture/er-diagram.png" width="50%" />
+
+
+**設計重點：**
+- Users 為帳號主體，依 role 區分 Customer / Sitter
+- Booking 為核心交易表，包含時間區間、狀態與價格
+- 使用 `version` 欄位支援樂觀鎖，避免重複預約
+- 寵物支援 Dog / Cat 繼承設計
+- Booking 與 Sitter 行為皆有獨立紀錄表，方便後續報表與分析
+
+---
+
 ## 快速開始 🚀
 
 ### 方式一：Docker 一鍵啟動 
