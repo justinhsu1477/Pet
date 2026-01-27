@@ -23,7 +23,9 @@ class EnvironmentManager @Inject constructor(
     }
 
     enum class Environment(val displayName: String, val baseUrl: String) {
-        DEVELOPMENT("開發環境", "http://10.0.2.2:8080/"),
+        // 172.20.10.2 = iPhone 熱點下電腦的固定 IP
+        // 10.0.2.2 = Android 模擬器存取 localhost 的特殊 IP
+        DEVELOPMENT("開發環境", "http://172.20.10.2:8080/"),
         STAGING("測試環境", "https://staging-api.petcare.com/"),
         PRODUCTION("正式環境", "https://api.petcare.com/")
     }
