@@ -9,12 +9,14 @@ import com.pet.repository.BookingRepository
 import com.pet.service.LineMessagingService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.Mockito.*
-import org.mockito.MockitoAnnotations
+import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDateTime
 import java.util.*
 
+@ExtendWith(MockitoExtension::class)
 class BookingExpirySchedulerTest {
 
     private lateinit var scheduler: BookingExpiryScheduler
@@ -27,7 +29,6 @@ class BookingExpirySchedulerTest {
 
     @BeforeEach
     fun setUp() {
-        MockitoAnnotations.openMocks(this)
         scheduler = BookingExpiryScheduler(bookingRepository, lineMessagingService)
     }
 
@@ -58,18 +59,21 @@ class BookingExpirySchedulerTest {
     @Test
     fun `should expire pending bookings older than 24 hours`() {
         val booking = createTestBooking()
-        `when`(bookingRepository.findByStatusAndCreatedAtBefore(eq(BookingStatus.PENDING), any()))
-            .thenReturn(listOf(booking))
+        doReturn(listOf(booking))
+            .`when`(bookingRepository)
+            .findByStatusAndCreatedAtBefore(any(BookingStatus::class.java), any(LocalDateTime::class.java))
 
         scheduler.expireOverdueBookings()
 
-        verify(bookingRepository).save(argThat<Booking> { it.status == BookingStatus.EXPIRED })
+        assert(booking.status == BookingStatus.EXPIRED)
+        verify(bookingRepository).save(booking)
     }
 
     @Test
     fun `should not expire recent pending bookings`() {
-        `when`(bookingRepository.findByStatusAndCreatedAtBefore(eq(BookingStatus.PENDING), any()))
-            .thenReturn(emptyList())
+        doReturn(emptyList<Booking>())
+            .`when`(bookingRepository)
+            .findByStatusAndCreatedAtBefore(any(BookingStatus::class.java), any(LocalDateTime::class.java))
 
         scheduler.expireOverdueBookings()
 
@@ -79,8 +83,9 @@ class BookingExpirySchedulerTest {
     @Test
     fun `should send LINE notification for expired bookings`() {
         val booking = createTestBooking()
-        `when`(bookingRepository.findByStatusAndCreatedAtBefore(eq(BookingStatus.PENDING), any()))
-            .thenReturn(listOf(booking))
+        doReturn(listOf(booking))
+            .`when`(bookingRepository)
+            .findByStatusAndCreatedAtBefore(any(BookingStatus::class.java), any(LocalDateTime::class.java))
 
         scheduler.expireOverdueBookings()
 
@@ -92,13 +97,13 @@ class BookingExpirySchedulerTest {
         val booking1 = createTestBooking()
         val booking2 = createTestBooking()
 
-        `when`(bookingRepository.findByStatusAndCreatedAtBefore(eq(BookingStatus.PENDING), any()))
-            .thenReturn(listOf(booking1, booking2))
+        doReturn(listOf(booking1, booking2))
+            .`when`(bookingRepository)
+            .findByStatusAndCreatedAtBefore(any(BookingStatus::class.java), any(LocalDateTime::class.java))
         `when`(bookingRepository.save(booking1)).thenThrow(RuntimeException("DB error"))
 
         scheduler.expireOverdueBookings()
 
-        // booking2 should still be processed
         verify(bookingRepository).save(booking2)
     }
 }

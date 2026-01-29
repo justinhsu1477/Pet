@@ -85,7 +85,7 @@ class BookingStatisticsServiceTest {
     fun `getRatingStats should handle empty ratings correctly`() {
         // Arrange
         `when`(sitterRatingRepository.calculateAverageRating(sitterId)).thenReturn(null)
-        `when`(sitterRatingRepository.countBySitterId(sitterId)).thenReturn(0L)
+        `when`(sitterRatingRepository.`countBySitter_Id`(sitterId)).thenReturn(0L)
         `when`(sitterRatingRepository.countRatingsByStars(sitterId)).thenReturn(emptyList())
         `when`(sitterRatingRepository.findBySitterIdOrderByCreatedAtDesc(sitterId)).thenReturn(emptyList())
 
