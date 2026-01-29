@@ -165,8 +165,9 @@
                 sessionStorage.setItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN, accessToken);
                 sessionStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(userData));
 
-                // Show success view
-                document.getElementById('successUsername').textContent = userData.username;
+                // Show success view (use LINE display name if available)
+                const displayName = params.get('display_name');
+                document.getElementById('successUsername').textContent = displayName ? decodeURIComponent(displayName) : userData.username;
                 showView('successView');
 
                 // Redirect based on role

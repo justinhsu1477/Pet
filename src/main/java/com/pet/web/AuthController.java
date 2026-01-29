@@ -241,7 +241,10 @@ public class AuthController {
                 JwtAuthenticationResponse authResponse =
                         lineOAuth2Service.loginExistingUser(existingUser.get());
                 issueTokens(authResponse, httpResponse, null);
-                return redirectTo(frontendUrl + "?token=" + authResponse.getAccessToken());
+                String dn = profile.displayName() != null
+                        ? profile.displayName() : "LINE 用戶";
+                return redirectTo(frontendUrl + "?token=" + authResponse.getAccessToken()
+                        + "&display_name=" + encode(dn));
             } else {
                 String regToken =
                         lineOAuth2Service.generatePendingRegistrationToken(profile);
