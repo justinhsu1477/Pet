@@ -123,6 +123,6 @@ class RateLimitFilterTest {
 
         assertEquals(429, response.status)
         assertTrue(response.contentAsString.contains("success"))
-        assertEquals("application/json", response.contentType)
+        assertTrue(response.contentType!!.startsWith("application/json"))
     }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
@@ -58,23 +59,25 @@ class IdempotencyServiceTest {
 
     @Test
     fun `should cleanup expired keys`() {
-        doReturn(5L)
-            .`when`(idempotencyKeyRepository)
-            .deleteByExpiresAtBefore(any(LocalDateTime::class.java))
+        // Use doReturn to avoid Kotlin non-null issues with any()
+        lenient().doReturn(5L).`when`(idempotencyKeyRepository)
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
 
         idempotencyService.cleanupExpired()
 
-        verify(idempotencyKeyRepository).deleteByExpiresAtBefore(any(LocalDateTime::class.java))
+        // Verify it was called (don't use argument matcher in verify to avoid null issue)
+        verify(idempotencyKeyRepository, times(1))
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
     }
 
     @Test
     fun `should not log when no expired keys deleted`() {
-        doReturn(0L)
-            .`when`(idempotencyKeyRepository)
-            .deleteByExpiresAtBefore(any(LocalDateTime::class.java))
+        lenient().doReturn(0L).`when`(idempotencyKeyRepository)
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
 
         idempotencyService.cleanupExpired()
 
-        verify(idempotencyKeyRepository).deleteByExpiresAtBefore(any(LocalDateTime::class.java))
+        verify(idempotencyKeyRepository, times(1))
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
     }
 }

@@ -7,6 +7,7 @@ import com.pet.domain.Sitter
 import com.pet.domain.Users
 import com.pet.repository.BookingRepository
 import com.pet.service.LineMessagingService
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -24,7 +25,7 @@ class BookingExpirySchedulerTest {
     @Mock
     private lateinit var bookingRepository: BookingRepository
 
-    @Mock
+    @Mock(mockMaker = "subclass")
     private lateinit var lineMessagingService: LineMessagingService
 
     @BeforeEach
@@ -65,7 +66,7 @@ class BookingExpirySchedulerTest {
 
         scheduler.expireOverdueBookings()
 
-        assert(booking.status == BookingStatus.EXPIRED)
+        assertEquals(BookingStatus.EXPIRED, booking.status)
         verify(bookingRepository).save(booking)
     }
 
