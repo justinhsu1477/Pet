@@ -1,6 +1,7 @@
 package com.pet.config;
 
 import com.pet.security.JwtAuthenticationFilter;
+import com.pet.security.RateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,9 @@ public class SecurityConfig {
 
     // 自訂 JWT 驗證 Filter（每次 request 進來都會先驗 JWT）
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    // API 速率限制 Filter
+    private final RateLimitFilter rateLimitFilter;
 
     // 載入使用者資料（從 DB 撈帳號、角色、狀態）
     private final UserDetailsService userDetailsService;
@@ -108,6 +112,8 @@ public class SecurityConfig {
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
+                // Rate Limit Filter 放在 JWT 之後，可以取得已認證的用戶身份
+                .addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)
 
                 // 關閉 frameOptions（主要給 H2 Console 用，避免被 iframe 擋住）
                 .headers(headers ->

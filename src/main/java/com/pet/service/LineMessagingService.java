@@ -25,6 +25,18 @@ public class LineMessagingService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
+     * 取得預約飼主的 LINE userId，若無則回退到 demo user
+     */
+    private String resolveRecipient(Booking booking) {
+        if (booking.getUser() != null && booking.getUser().getLineUserId() != null
+                && !booking.getUser().getLineUserId().isBlank()) {
+            return booking.getUser().getLineUserId();
+        }
+        log.info("飼主無 LINE userId，使用 demo user 發送通知");
+        return config.getDemoUserId();
+    }
+
+    /**
      * 發送預約確認通知
      */
     public void sendBookingConfirmedNotification(Booking booking) {
@@ -50,7 +62,7 @@ public class LineMessagingService {
         }
 
         message.append("\n感謝您使用寵物保母系統！");
-        sendNotification(message.toString());
+        sendNotification(resolveRecipient(booking), message.toString());
     }
 
     /**
@@ -69,7 +81,7 @@ public class LineMessagingService {
             booking.getStartTime().format(DATE_FORMATTER),
             booking.getEndTime().format(DATE_FORMATTER)
         );
-        sendNotification(message);
+        sendNotification(resolveRecipient(booking), message);
     }
 
     /**
@@ -88,7 +100,7 @@ public class LineMessagingService {
             booking.getStartTime().format(DATE_FORMATTER),
             booking.getEndTime().format(DATE_FORMATTER)
         );
-        sendNotification(message);
+        sendNotification(resolveRecipient(booking), message);
     }
 
     /**
@@ -108,13 +120,33 @@ public class LineMessagingService {
             booking.getEndTime().format(DATE_FORMATTER),
             booking.getTotalPrice()
         );
-        sendNotification(message);
+        sendNotification(resolveRecipient(booking), message);
     }
 
     /**
-     * 發送通知到 LINE（Demo 模式：都發到設定的 user）
+     * 發送預約過期通知
      */
-    private void sendNotification(String message) {
+    public void sendBookingExpiredNotification(Booking booking) {
+        String message = String.format(
+            "⏰ 您的預約已過期\n\n" +
+            "🐾 寵物：%s\n" +
+            "👤 保母：%s\n" +
+            "📅 申請時間：%s ~ %s\n\n" +
+            "由於保母超過24小時未回應，此預約已自動過期。\n" +
+            "建議您選擇其他保母或重新預約。",
+            booking.getPet().getName(),
+            booking.getSitter().getName(),
+            booking.getStartTime().format(DATE_FORMATTER),
+            booking.getEndTime().format(DATE_FORMATTER)
+        );
+        sendNotification(resolveRecipient(booking), message);
+    }
+
+    /**
+     * 發送通知到 LINE
+     * 優先發給飼主的 LINE userId，若無則回退到 demo user
+     */
+    private void sendNotification(String recipientId, String message) {
         if (!config.isEnabled()) {
             log.info("LINE 通知已停用，跳過發送");
             return;
@@ -131,7 +163,7 @@ public class LineMessagingService {
             headers.setBearerAuth(config.getChannelToken());
 
             Map<String, Object> body = new HashMap<>();
-            body.put("to", config.getDemoUserId());
+            body.put("to", recipientId);
             body.put("messages", List.of(Map.of("type", "text", "text", message)));
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);

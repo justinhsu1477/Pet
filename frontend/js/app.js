@@ -203,7 +203,7 @@ const App = {
     // ===== Users =====
     async loadUsers() {
         const tbody = document.getElementById('users-table');
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">載入中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted"></td></tr>';
 
         try {
             const res = await API.users.getAll();
@@ -247,7 +247,7 @@ const App = {
         const contentEl = document.getElementById('user-detail-content');
         const nameEl = document.getElementById('user-detail-name');
 
-        contentEl.innerHTML = '<p class="text-muted">載入中...</p>';
+        contentEl.innerHTML = '<p class="text-muted"></p>';
         this.showModal('user-detail-modal');
 
         try {
@@ -322,7 +322,7 @@ const App = {
     // ===== Sitters =====
     async loadSitters() {
         const tbody = document.getElementById('sitters-table');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">載入中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted"></td></tr>';
 
         try {
             const res = await API.sitters.getAllWithRating();
@@ -366,7 +366,7 @@ const App = {
         const contentEl = document.getElementById('sitter-detail-content');
         const nameEl = document.getElementById('sitter-detail-name');
 
-        contentEl.innerHTML = '<p class="text-muted">載入中...</p>';
+        contentEl.innerHTML = '<p class="text-muted"></p>';
         this.showModal('sitter-detail-modal');
 
         try {
@@ -466,7 +466,7 @@ const App = {
 
     async loadPets() {
         const tbody = document.getElementById('pets-table');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">載入中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted"></td></tr>';
 
         try {
             let res;
@@ -750,7 +750,7 @@ const App = {
 
     async loadBookings() {
         const tbody = document.getElementById('bookings-table');
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">載入中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted"></td></tr>';
 
         try {
             const res = await API.bookings.getAll();

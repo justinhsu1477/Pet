@@ -172,7 +172,7 @@ public class LineOAuth2Service {
      * 完成 OAuth 註冊（選角色後建帳號）
      */
     @Transactional
-    public Users completeRegistration(String registrationToken, String role) {
+    public Users completeRegistration(String registrationToken, String role, String displayName) {
         String lineUserId = jwtService.extractLineUserIdFromRegistrationToken(registrationToken);
 
         if (userRepository.findByLineUserId(lineUserId).isPresent()) {
@@ -191,15 +191,17 @@ public class LineOAuth2Service {
         user.setLineUserId(lineUserId);
         Users savedUser = userRepository.save(user);
 
+        String entityName = (displayName != null && !displayName.isBlank()) ? displayName : username;
+
         if (userRole == UserRole.SITTER) {
             Sitter sitter = new Sitter();
             sitter.setUser(savedUser);
-            sitter.setName(username);
+            sitter.setName(entityName);
             sitterRepository.save(sitter);
         } else {
             Customer customer = new Customer();
             customer.setUser(savedUser);
-            customer.setName(username);
+            customer.setName(entityName);
             customerRepository.save(customer);
         }
 

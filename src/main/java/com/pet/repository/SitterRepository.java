@@ -30,6 +30,8 @@ public interface SitterRepository extends JpaRepository<Sitter, UUID> {
      * 注意：MSSQL 使用 WITH (UPDLOCK, ROWLOCK) 而非 FOR UPDATE
      * 透過 QueryHint 設定 UPGRADE_SKIPLOCKED 讓 Hibernate 使用正確的 MSSQL 語法
      */
+    Optional<Sitter> findByUserId(UUID userId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")})
     @Query("SELECT s FROM Sitter s WHERE s.id = :id")

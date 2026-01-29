@@ -121,14 +121,21 @@ open frontend/index.html
 ``
 ```
 
-**方式 B: 使用 Nginx (正式環境)**
+**方式 B: 使用 Docker 啟動前端 (Nginx)**
 
 ```bash
-# 使用 Docker 啟動 Frontend
-docker-compose -f docker-compose.qas.yml up -d frontend
+# 建立前端 Docker Image
+cd frontend
+docker build -t pet-frontend .
 
-# 訪問 http://localhost (QAS) 或 http://localhost:3000 (DEV)
+# 啟動前端容器（後端在 IDE 本機執行時，需加 --add-host 讓 Nginx 反向代理指向本機）
+docker run -p 3000:80 --add-host=backend:host-gateway pet-frontend
+
+# 訪問 http://localhost:3000
+# Nginx 會將 /api 請求反向代理到本機後端 localhost:8080
 ```
+
+> **說明**: Nginx 設定中 `proxy_pass http://backend:8080`，`--add-host=backend:host-gateway` 會將 `backend` 解析為本機 IP，讓容器內的 Nginx 能打到 IDE 跑的後端。
 
 #### 步驟 4: 測試
 

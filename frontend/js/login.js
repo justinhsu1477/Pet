@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if already logged in
     const user = sessionStorage.getItem(CONFIG.STORAGE_KEYS.USER);
     if (user) {
-        window.location.href = 'dashboard.html';
+        const u = JSON.parse(user);
+        window.location.href = u.role === 'CUSTOMER' ? 'customer.html' : u.role === 'SITTER' ? 'sitter.html' : 'dashboard.html';
         return;
     }
 
@@ -59,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.log('登入成功:', userData);
 
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
+                // Redirect based on role
+                window.location.href = userData.role === 'CUSTOMER' ? 'customer.html' : userData.role === 'SITTER' ? 'sitter.html' : 'dashboard.html';
             } else {
                 showError(response.message || '登入失敗');
             }

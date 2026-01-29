@@ -165,13 +165,14 @@
                 sessionStorage.setItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN, accessToken);
                 sessionStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(userData));
 
-                // Show success view
-                document.getElementById('successUsername').textContent = userData.username;
+                // Show success view (use LINE display name if available)
+                const displayName = params.get('display_name');
+                document.getElementById('successUsername').textContent = displayName ? decodeURIComponent(displayName) : userData.username;
                 showView('successView');
 
-                // Redirect to dashboard
+                // Redirect based on role
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = userData.role === 'CUSTOMER' ? 'customer.html' : userData.role === 'SITTER' ? 'sitter.html' : 'dashboard.html';
                 }, 1500);
             } catch (e) {
                 showError('Token 解析失敗：' + e.message);
@@ -190,13 +191,15 @@
             showView('loadingView');
 
             try {
+                const displayName = document.getElementById('displayName').textContent || '';
                 const response = await fetch(`${CONFIG.API_BASE_URL}/auth/oauth2/line/complete-registration`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify({
                         token: currentRegistrationToken,
-                        role: role
+                        role: role,
+                        displayName: displayName
                     })
                 });
 

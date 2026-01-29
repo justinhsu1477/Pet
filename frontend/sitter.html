@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Care - 保母工作台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .booking-card {
+            background: var(--color-surface); border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); padding: var(--space-lg);
+            margin-bottom: var(--space-md); display: flex;
+            justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: var(--space-md);
+            transition: box-shadow var(--transition-fast);
+        }
+        .booking-card:hover { box-shadow: var(--shadow-md); }
+        .filter-tabs { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-lg); }
+        .rating-card {
+            background: var(--color-surface); border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); padding: var(--space-lg); margin-bottom: var(--space-md);
+        }
+        .stars-display { display: inline-flex; gap: 2px; color: var(--color-secondary); }
+        .availability-card {
+            background: var(--color-surface); border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); padding: var(--space-lg);
+            margin-bottom: var(--space-md); display: flex;
+            justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: var(--space-md);
+        }
+        .availability-card:hover { box-shadow: var(--shadow-md); }
+        .trend-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.9rem;
+        }
+        .trend-item:last-child { border-bottom: none; }
+        .dist-bar-container {
+            display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);
+        }
+        .dist-bar-label { width: 30px; text-align: right; font-size: 0.9rem; font-weight: 600; }
+        .dist-bar-track { flex: 1; height: 20px; background: var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+        .dist-bar-fill { height: 100%; background: var(--color-secondary); border-radius: var(--radius-sm); transition: width var(--transition-base); }
+        .dist-bar-count { width: 30px; font-size: 0.85rem; color: var(--color-text-muted); }
+        .reply-block {
+            margin-top: var(--space-md); padding: var(--space-md);
+            background: var(--color-accent); border-radius: var(--radius-md);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">🐾</div>
+                <span class="sidebar-logo-text">Pet Care</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="nav-item-icon">📊</span><span>工作總覽</span>
+                </a>
+                <a href="#" class="nav-item" data-page="bookings">
+                    <span class="nav-item-icon">📋</span><span>預約管理</span>
+                </a>
+                <a href="#" class="nav-item" data-page="availability">
+                    <span class="nav-item-icon">🕐</span><span>時間管理</span>
+                </a>
+                <a href="#" class="nav-item" data-page="ratings">
+                    <span class="nav-item-icon">⭐</span><span>我的評價</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="nav-item" id="userInfo">
+                    <div class="avatar avatar-sm" id="userAvatar">U</div>
+                    <span id="userName">使用者</span>
+                </div>
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <span class="nav-item-icon">🚪</span><span>登出</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- 1. Dashboard -->
+            <div id="page-dashboard" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">工作總覽</h1>
+                    <p class="page-subtitle">歡迎回來！這是您的工作概況</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info"><h3>待處理預約數</h3><div class="stat-value" id="stat-pending">-</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info"><h3>本月完成數</h3><div class="stat-value" id="stat-completed">-</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info"><h3>本月收入</h3><div class="stat-value" id="stat-revenue">-</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-info"><h3>平均評分</h3><div class="stat-value" id="stat-rating">-</div></div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title">最近 7 天收入趨勢</h3></div>
+                        <div id="revenue-trend"><p class="text-muted">載入中...</p></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title">今日待處理預約</h3></div>
+                        <div id="today-pending"><p class="text-muted">載入中...</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Bookings -->
+            <div id="page-bookings" class="page" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">預約管理</h1>
+                    <p class="page-subtitle">管理您的預約訂單</p>
+                </div>
+                <div class="filter-tabs">
+                    <button class="btn btn-secondary" id="bf-all" onclick="SitterApp.filterBookings('all')">📋 全部</button>
+                    <button class="btn btn-ghost" id="bf-PENDING" onclick="SitterApp.filterBookings('PENDING')">⏳ 待確認</button>
+                    <button class="btn btn-ghost" id="bf-CONFIRMED" onclick="SitterApp.filterBookings('CONFIRMED')">✅ 已確認</button>
+                    <button class="btn btn-ghost" id="bf-COMPLETED" onclick="SitterApp.filterBookings('COMPLETED')">🎉 已完成</button>
+                    <button class="btn btn-ghost" id="bf-CANCELLED" onclick="SitterApp.filterBookings('CANCELLED')">❌ 已取消</button>
+                </div>
+                <div id="bookings-list"><p class="text-muted">載入中...</p></div>
+
+                <!-- Booking Detail Modal -->
+                <div id="booking-detail-modal" class="modal" style="display:none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width:700px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title">預約詳情</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <div id="booking-detail-content"><p class="text-muted">載入中...</p></div>
+                    </div>
+                </div>
+
+                <!-- Confirm Modal -->
+                <div id="confirm-modal" class="modal" style="display:none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width:500px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title">確認預約</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <p style="margin-bottom:var(--space-md);">確定要接受這筆預約嗎？</p>
+                        <div style="margin-bottom:var(--space-md);">
+                            <label class="form-label">回覆訊息（選填）</label>
+                            <textarea class="form-input" id="confirm-message" rows="3" placeholder="可留言給飼主..."></textarea>
+                        </div>
+                        <input type="hidden" id="confirm-booking-id">
+                        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                            <button class="btn btn-ghost modal-close">取消</button>
+                            <button class="btn btn-primary" onclick="SitterApp.doConfirmBooking()">確認接受</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reject Modal -->
+                <div id="reject-modal" class="modal" style="display:none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width:500px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title">拒絕預約</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <p style="margin-bottom:var(--space-md);">確定要拒絕這筆預約嗎？</p>
+                        <div style="margin-bottom:var(--space-md);">
+                            <label class="form-label">拒絕原因（選填）</label>
+                            <textarea class="form-input" id="reject-reason" rows="3" placeholder="請說明拒絕原因..."></textarea>
+                        </div>
+                        <input type="hidden" id="reject-booking-id">
+                        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                            <button class="btn btn-ghost modal-close">取消</button>
+                            <button class="btn btn-primary" style="background:var(--color-error);" onclick="SitterApp.doRejectBooking()">確認拒絕</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Availability -->
+            <div id="page-availability" class="page" style="display:none;">
+                <div class="page-header flex justify-between items-center">
+                    <div>
+                        <h1 class="page-title">時間管理</h1>
+                        <p class="page-subtitle">管理您的可服務時段</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="SitterApp.openAddAvailabilityModal()">➕ 新增時段</button>
+                </div>
+                <div id="availability-list"><p class="text-muted">載入中...</p></div>
+
+                <!-- Availability Modal -->
+                <div id="availability-modal" class="modal" style="display:none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width:500px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title" id="availability-modal-title">新增時段</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <form id="availability-form" onsubmit="SitterApp.saveAvailability(event)">
+                            <input type="hidden" id="avail-id">
+                            <div style="margin-bottom:1rem;">
+                                <label class="form-label">星期 *</label>
+                                <select class="form-input" id="avail-day" required>
+                                    <option value="">請選擇</option>
+                                    <option value="MONDAY">星期一</option>
+                                    <option value="TUESDAY">星期二</option>
+                                    <option value="WEDNESDAY">星期三</option>
+                                    <option value="THURSDAY">星期四</option>
+                                    <option value="FRIDAY">星期五</option>
+                                    <option value="SATURDAY">星期六</option>
+                                    <option value="SUNDAY">星期日</option>
+                                </select>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                                <div>
+                                    <label class="form-label">開始時間 *</label>
+                                    <input type="time" class="form-input" id="avail-start" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">結束時間 *</label>
+                                    <input type="time" class="form-input" id="avail-end" required>
+                                </div>
+                            </div>
+                            <div style="margin-bottom:1rem;">
+                                <label class="form-label">服務區域</label>
+                                <input type="text" class="form-input" id="avail-area" placeholder="例如：台北市大安區">
+                            </div>
+                            <div style="margin-bottom:1.5rem;">
+                                <label style="display:flex;align-items:center;">
+                                    <input type="checkbox" id="avail-active" checked style="margin-right:0.5rem;">啟用此時段
+                                </label>
+                            </div>
+                            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                                <button type="button" class="btn btn-ghost modal-close">取消</button>
+                                <button type="submit" class="btn btn-primary">儲存</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Ratings -->
+            <div id="page-ratings" class="page" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">我的評價</h1>
+                    <p class="page-subtitle">查看飼主對您的評價</p>
+                </div>
+                <div id="ratings-stats"><p class="text-muted">載入中...</p></div>
+                <div id="ratings-list" style="margin-top:var(--space-xl);"></div>
+
+                <!-- Reply Modal -->
+                <div id="reply-modal" class="modal" style="display:none;">
+                    <div class="modal-backdrop"></div>
+                    <div class="modal-content card" style="max-width:500px;">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title">回覆評價</h3>
+                            <button class="btn btn-ghost modal-close">&times;</button>
+                        </div>
+                        <form id="reply-form" onsubmit="SitterApp.submitReply(event)">
+                            <input type="hidden" id="reply-rating-id">
+                            <div style="margin-bottom:1rem;">
+                                <label class="form-label">回覆內容 *</label>
+                                <textarea class="form-input" id="reply-content" rows="4" placeholder="輸入您的回覆..." required></textarea>
+                            </div>
+                            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                                <button type="button" class="btn btn-ghost modal-close">取消</button>
+                                <button type="submit" class="btn btn-primary">送出回覆</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/sitter.js"></script>
+</body>
+
+</html>

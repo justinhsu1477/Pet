@@ -5,6 +5,7 @@ import com.pet.domain.Booking;
 import com.pet.domain.Dog;
 import com.pet.domain.Pet;
 import com.pet.domain.Sitter;
+import com.pet.domain.Users;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -58,8 +59,13 @@ class LineMessagingServiceTest {
         testSitter.setId(UUID.randomUUID());
         testSitter.setName("王保母");
 
+        Users testUser = new Users();
+        testUser.setId(UUID.randomUUID());
+        testUser.setLineUserId(null); // no LINE ID, will fallback to demo user
+
         testBooking = new Booking();
         testBooking.setId(UUID.randomUUID());
+        testBooking.setUser(testUser);
         testBooking.setPet(testPet);
         testBooking.setSitter(testSitter);
         testBooking.setStartTime(LocalDateTime.of(2026, 2, 1, 10, 0));
@@ -289,6 +295,80 @@ class LineMessagingServiceTest {
 
             assertThat(messageText).contains("完成");
             assertThat(messageText).contains("$800");
+        }
+    }
+
+    @Nested
+    @DisplayName("收件人解析測試")
+    class RecipientResolutionTests {
+
+        @BeforeEach
+        void setUpConfig() {
+            given(config.isEnabled()).willReturn(true);
+            given(config.isConfigured()).willReturn(true);
+            given(config.getChannelToken()).willReturn("test-token");
+        }
+
+        @Test
+        @DisplayName("should send to user LINE ID when available")
+        void shouldSendToUserLineId() {
+            // given
+            testBooking.getUser().setLineUserId("U_REAL_USER");
+            ResponseEntity<String> successResponse = new ResponseEntity<>("{}", HttpStatus.OK);
+            given(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(String.class)))
+                    .willReturn(successResponse);
+
+            // when
+            lineMessagingService.sendBookingConfirmedNotification(testBooking);
+
+            // then
+            ArgumentCaptor<HttpEntity<Map<String, Object>>> captor = ArgumentCaptor.forClass(HttpEntity.class);
+            verify(restTemplate).postForEntity(anyString(), captor.capture(), eq(String.class));
+            Map<String, Object> body = captor.getValue().getBody();
+            assertThat(body.get("to")).isEqualTo("U_REAL_USER");
+        }
+
+        @Test
+        @DisplayName("should fallback to demo user when no LINE ID")
+        void shouldFallbackToDemoUser() {
+            // given
+            given(config.getDemoUserId()).willReturn("U123456789");
+            testBooking.getUser().setLineUserId(null);
+            ResponseEntity<String> successResponse = new ResponseEntity<>("{}", HttpStatus.OK);
+            given(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(String.class)))
+                    .willReturn(successResponse);
+
+            // when
+            lineMessagingService.sendBookingConfirmedNotification(testBooking);
+
+            // then
+            ArgumentCaptor<HttpEntity<Map<String, Object>>> captor = ArgumentCaptor.forClass(HttpEntity.class);
+            verify(restTemplate).postForEntity(anyString(), captor.capture(), eq(String.class));
+            Map<String, Object> body = captor.getValue().getBody();
+            assertThat(body.get("to")).isEqualTo("U123456789");
+        }
+
+        @Test
+        @DisplayName("should send expired notification with correct content")
+        void shouldSendExpiredNotification() {
+            // given
+            given(config.getDemoUserId()).willReturn("U123456789");
+            ResponseEntity<String> successResponse = new ResponseEntity<>("{}", HttpStatus.OK);
+            given(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(String.class)))
+                    .willReturn(successResponse);
+
+            // when
+            lineMessagingService.sendBookingExpiredNotification(testBooking);
+
+            // then
+            ArgumentCaptor<HttpEntity<Map<String, Object>>> captor = ArgumentCaptor.forClass(HttpEntity.class);
+            verify(restTemplate).postForEntity(anyString(), captor.capture(), eq(String.class));
+
+            Map<String, Object> body = captor.getValue().getBody();
+            @SuppressWarnings("unchecked")
+            var messages = (java.util.List<Map<String, String>>) body.get("messages");
+            String messageText = messages.get(0).get("text");
+            assertThat(messageText).contains("過期");
         }
     }
 

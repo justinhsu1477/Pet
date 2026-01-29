@@ -272,7 +272,7 @@ class LineOAuth2ServiceTest {
         savedUser.setRole(UserRole.CUSTOMER);
         when(userRepository.save(any(Users.class))).thenReturn(savedUser);
 
-        Users result = lineOAuth2Service.completeRegistration("token", "CUSTOMER");
+        Users result = lineOAuth2Service.completeRegistration("token", "CUSTOMER", null);
 
         assertNotNull(result);
         assertEquals(UserRole.CUSTOMER, result.getRole());
@@ -291,7 +291,7 @@ class LineOAuth2ServiceTest {
         savedUser.setRole(UserRole.SITTER);
         when(userRepository.save(any(Users.class))).thenReturn(savedUser);
 
-        Users result = lineOAuth2Service.completeRegistration("token", "SITTER");
+        Users result = lineOAuth2Service.completeRegistration("token", "SITTER", null);
 
         assertNotNull(result);
         assertEquals(UserRole.SITTER, result.getRole());
@@ -305,7 +305,7 @@ class LineOAuth2ServiceTest {
         when(userRepository.findByLineUserId("U123")).thenReturn(Optional.of(new Users()));
 
         assertThrows(IllegalStateException.class,
-                () -> lineOAuth2Service.completeRegistration("token", "CUSTOMER"));
+                () -> lineOAuth2Service.completeRegistration("token", "CUSTOMER", null));
         verify(userRepository, never()).save(any(Users.class));
     }
 
@@ -326,7 +326,7 @@ class LineOAuth2ServiceTest {
             return savedUser;
         });
 
-        lineOAuth2Service.completeRegistration("token", "CUSTOMER");
+        lineOAuth2Service.completeRegistration("token", "CUSTOMER", null);
 
         verify(userRepository).save(any(Users.class));
     }

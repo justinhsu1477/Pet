@@ -67,6 +67,12 @@ public class SitterService {
         sitterRepository.deleteById(id);
     }
 
+    public SitterDto getSitterByUserId(UUID userId) {
+        Sitter sitter = sitterRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("保母", "userId", userId));
+        return convertToDto(sitter);
+    }
+
     // 內部方法:用於其他 Service 取得 Sitter Entity
     public Sitter getSitterEntityById(UUID id) {
         return sitterRepository.findById(id)

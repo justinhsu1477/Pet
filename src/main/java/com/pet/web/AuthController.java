@@ -70,7 +70,6 @@ public class AuthController {
 
     /**
      * 刷新 Access Token
-     *
      * 當 Access Token 過期時,使用 Refresh Token 獲取新的 Access Token
      */
     @PostMapping("/jwt/refresh")
@@ -132,20 +131,20 @@ public class AuthController {
      * 1. 設置 Refresh Token Cookie
      * 2. Web 端隱藏 body 中的 refreshToken
      */
-    private JwtAuthenticationResponse issueTokens(
+    private void issueTokens(
             JwtAuthenticationResponse authResponse,
             HttpServletResponse httpResponse,
             HttpServletRequest httpRequest) {
+        // 1. 把 Refresh Token 寫進 HttpOnly Cookie
         setRefreshTokenCookie(httpResponse, authResponse.getRefreshToken());
 
-        // Web 端不應從 body 獲取 refreshToken（已存在 HttpOnly Cookie）
+        // 2. Web 端把 body 裡的 refreshToken 清掉
         if (httpRequest != null) {
             String deviceType = httpRequest.getHeader("X-Device-Type");
             if (deviceType != null && deviceType.equalsIgnoreCase("WEB")) {
                 authResponse.setRefreshToken(null);
             }
         }
-        return authResponse;
     }
 
     /**
@@ -242,7 +241,10 @@ public class AuthController {
                 JwtAuthenticationResponse authResponse =
                         lineOAuth2Service.loginExistingUser(existingUser.get());
                 issueTokens(authResponse, httpResponse, null);
-                return redirectTo(frontendUrl + "?token=" + authResponse.getAccessToken());
+                String dn = profile.displayName() != null
+                        ? profile.displayName() : "LINE 用戶";
+                return redirectTo(frontendUrl + "?token=" + authResponse.getAccessToken()
+                        + "&display_name=" + encode(dn));
             } else {
                 String regToken =
                         lineOAuth2Service.generatePendingRegistrationToken(profile);
@@ -269,7 +271,8 @@ public class AuthController {
                                           HttpServletResponse httpResponse) {
         String token = body.get("token");
         String role = body.get("role");
-        Users user = lineOAuth2Service.completeRegistration(token, role);
+        String displayName = body.get("displayName");
+        Users user = lineOAuth2Service.completeRegistration(token, role, displayName);
         JwtAuthenticationResponse authResponse = lineOAuth2Service.loginExistingUser(user);
         issueTokens(authResponse, httpResponse, null);
         return ResponseEntity.ok(ApiResponse.success(authResponse));

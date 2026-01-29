@@ -118,6 +118,15 @@ const API = {
     },
 
     /**
+     * Customer APIs
+     */
+    customers: {
+        async getByUserId(userId) {
+            return API.request(`/customers/user/${userId}`);
+        }
+    },
+
+    /**
      * Sitter APIs
      */
     sitters: {
@@ -131,6 +140,89 @@ const API = {
 
         async getById(id) {
             return API.request(`/sitters/${id}`);
+        },
+
+        async getAvailable(date, startTime, endTime) {
+            return API.request(`/sitters/available?date=${date}&startTime=${startTime}&endTime=${endTime}`);
+        }
+    },
+
+    /**
+     * Sitter Profile APIs (for logged-in sitters)
+     */
+    sitterProfile: {
+        async getByUserId(userId) {
+            return API.request(`/sitters/user/${userId}`);
+        },
+
+        async getBookings(sitterId) {
+            return API.request(`/sitter/${sitterId}/bookings`);
+        },
+
+        async getPendingBookings(sitterId) {
+            return API.request(`/sitter/${sitterId}/bookings/pending`);
+        },
+
+        async confirmBooking(sitterId, bookingId, response) {
+            return API.request(`/sitter/${sitterId}/bookings/${bookingId}/confirm`, {
+                method: 'POST',
+                body: JSON.stringify({ response })
+            });
+        },
+
+        async rejectBooking(sitterId, bookingId, reason) {
+            return API.request(`/sitter/${sitterId}/bookings/${bookingId}/reject`, {
+                method: 'POST',
+                body: JSON.stringify({ reason })
+            });
+        },
+
+        async completeBooking(sitterId, bookingId) {
+            return API.request(`/sitter/${sitterId}/bookings/${bookingId}/complete`, {
+                method: 'POST'
+            });
+        },
+
+        async cancelBooking(sitterId, bookingId, reason) {
+            return API.request(`/sitter/${sitterId}/bookings/${bookingId}/cancel`, {
+                method: 'POST',
+                body: JSON.stringify(reason)
+            });
+        },
+
+        async getStatistics(sitterId) {
+            return API.request(`/sitter/${sitterId}/statistics`);
+        },
+
+        async getAvailability(sitterId) {
+            return API.request(`/sitter/${sitterId}/availability`);
+        },
+
+        async addAvailability(sitterId, data) {
+            return API.request(`/sitter/${sitterId}/availability`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        },
+
+        async updateAvailability(sitterId, id, data) {
+            return API.request(`/sitter/${sitterId}/availability/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+        },
+
+        async deleteAvailability(sitterId, id) {
+            return API.request(`/sitter/${sitterId}/availability/${id}`, {
+                method: 'DELETE'
+            });
+        },
+
+        async replyToRating(ratingId, sitterId, reply) {
+            return API.request(`/ratings/${ratingId}/reply?sitterId=${sitterId}`, {
+                method: 'POST',
+                body: JSON.stringify(reply)
+            });
         }
     },
 
@@ -223,10 +315,107 @@ const API = {
             return API.request(`/bookings/${id}`);
         },
 
+        async create(data, userId, idempotencyKey) {
+            const opts = {
+                method: 'POST',
+                body: JSON.stringify(data)
+            };
+            if (idempotencyKey) {
+                opts.headers = { 'Idempotency-Key': idempotencyKey };
+            }
+            return API.request(`/bookings?userId=${userId}`, opts);
+        },
+
+        async cancel(id) {
+            return API.request(`/bookings/${id}/cancel`, {
+                method: 'POST'
+            });
+        },
+
         async updateStatus(id, targetStatus, reason = null) {
             return API.request(`/bookings/${id}/status`, {
                 method: 'PUT',
                 body: JSON.stringify({ targetStatus, reason })
+            });
+        }
+    },
+
+    /**
+     * Sitter Profile APIs (sitter-facing)
+     */
+    sitterProfile: {
+        async getByUserId(userId) {
+            return API.request(`/sitters/user/${userId}`);
+        },
+
+        async getStatistics(sitterId) {
+            return API.request(`/sitters/${sitterId}/statistics`);
+        },
+
+        async getBookings(sitterId) {
+            return API.request(`/bookings/sitter/${sitterId}`);
+        },
+
+        async getPendingBookings(sitterId) {
+            return API.request(`/bookings/sitter/${sitterId}/pending`);
+        },
+
+        async confirmBooking(sitterId, bookingId, response) {
+            return API.request(`/bookings/${bookingId}/confirm`, {
+                method: 'POST',
+                body: JSON.stringify({ sitterId, response })
+            });
+        },
+
+        async rejectBooking(sitterId, bookingId, reason) {
+            return API.request(`/bookings/${bookingId}/reject`, {
+                method: 'POST',
+                body: JSON.stringify({ sitterId, reason })
+            });
+        },
+
+        async completeBooking(sitterId, bookingId) {
+            return API.request(`/bookings/${bookingId}/complete`, {
+                method: 'POST',
+                body: JSON.stringify({ sitterId })
+            });
+        },
+
+        async cancelBooking(sitterId, bookingId, reason) {
+            return API.request(`/bookings/${bookingId}/cancel`, {
+                method: 'POST',
+                body: JSON.stringify({ sitterId, reason })
+            });
+        },
+
+        async getAvailability(sitterId) {
+            return API.request(`/sitter/${sitterId}/availability`);
+        },
+
+        async addAvailability(sitterId, data) {
+            return API.request(`/sitter/${sitterId}/availability`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        },
+
+        async updateAvailability(sitterId, id, data) {
+            return API.request(`/sitter/${sitterId}/availability/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+        },
+
+        async deleteAvailability(sitterId, id) {
+            return API.request(`/sitter/${sitterId}/availability/${id}`, {
+                method: 'DELETE'
+            });
+        },
+
+        async replyToRating(ratingId, sitterId, reply) {
+            return API.request(`/ratings/${ratingId}/reply`, {
+                method: 'POST',
+                body: JSON.stringify({ sitterId, reply })
             });
         }
     },
@@ -241,6 +430,21 @@ const API = {
 
         async getStatsBySitter(sitterId) {
             return API.request(`/ratings/sitter/${sitterId}/stats`);
+        },
+
+        async getByBooking(bookingId) {
+            return API.request(`/ratings/booking/${bookingId}`);
+        },
+
+        async getByUser(userId) {
+            return API.request(`/ratings/user/${userId}`);
+        },
+
+        async create(data, userId) {
+            return API.request(`/ratings?userId=${userId}`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
         }
     }
 };

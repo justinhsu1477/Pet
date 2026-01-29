@@ -59,7 +59,7 @@
                         <span style="color: #999; font-size: 0.8rem;">或</span>
                         <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
                     </div>
-                    <a href="/api/auth/oauth2/line"
+                    <a id="lineLoginBtn" href="#"
                        class="btn"
                        style="display:block; background:#06C755; color:white; padding:12px; border-radius:8px; text-decoration:none; font-size:1rem; font-weight:600;">
                         LINE 登入
@@ -76,5 +76,8 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/login.js"></script>
+    <script>
+        document.getElementById('lineLoginBtn').href = CONFIG.API_BASE_URL + '/auth/oauth2/line';
+    </script>
 </body>
 </html>

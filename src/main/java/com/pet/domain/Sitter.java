@@ -65,4 +65,7 @@ public class Sitter {
     @Enumerated(EnumType.STRING)
     @Column(name = "experience_level")
     private ExperienceLevel experienceLevel = ExperienceLevel.STANDARD;
+
+    // Explicit accessor for Kotlin interop
+    public UUID getId() { return id; }
 }

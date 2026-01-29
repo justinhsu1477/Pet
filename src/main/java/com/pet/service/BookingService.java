@@ -368,6 +368,9 @@ public class BookingService {
                 case COMPLETED:
                     lineMessagingService.sendBookingCompletedNotification(booking);
                     break;
+                case EXPIRED:
+                    lineMessagingService.sendBookingExpiredNotification(booking);
+                    break;
                 default:
                     // PENDING 狀態不發通知
                     break;
