@@ -59,4 +59,23 @@ class RateLimiterTest {
         // After consuming 1 from 5, remaining should be 4
         assertEquals(4.0, remaining, 1.0)
     }
+
+    @Test
+    fun `should cleanup old entries after cleanup interval`() {
+        // Use a very short cleanup interval
+        val shortCleanupLimiter = RateLimiter(maxTokens = 5, refillRate = 10.0, cleanupIntervalMs = 1)
+        shortCleanupLimiter.tryConsume("old-key")
+
+        // Sleep to exceed cleanup interval
+        Thread.sleep(50)
+
+        // This call should trigger cleanup, and old-key should be removed
+        // Verify by consuming again - should get full tokens if bucket was cleaned
+        shortCleanupLimiter.tryConsume("trigger-cleanup")
+
+        // old-key should have been cleaned up, so a new consume gets fresh bucket
+        val (allowed, remaining) = shortCleanupLimiter.tryConsume("old-key")
+        assertTrue(allowed)
+        assertEquals(4.0, remaining, 1.0)
+    }
 }

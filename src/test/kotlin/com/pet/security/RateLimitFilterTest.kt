@@ -32,7 +32,7 @@ class RateLimitFilterTest {
         request.remoteAddr = "192.168.1.1"
         val response = MockHttpServletResponse()
 
-        filter.doFilterInternal(request, response, filterChain)
+        filter.doFilter(request, response, filterChain)
 
         verify(filterChain).doFilter(request, response)
         assertNotNull(response.getHeader("X-RateLimit-Limit"))
@@ -45,14 +45,14 @@ class RateLimitFilterTest {
         repeat(60) {
             val req = MockHttpServletRequest("GET", "/api/pets")
             req.remoteAddr = uniqueIp
-            filter.doFilterInternal(req, MockHttpServletResponse(), filterChain)
+            filter.doFilter(req, MockHttpServletResponse(), filterChain)
         }
 
         val request = MockHttpServletRequest("GET", "/api/pets")
         request.remoteAddr = uniqueIp
         val response = MockHttpServletResponse()
 
-        filter.doFilterInternal(request, response, filterChain)
+        filter.doFilter(request, response, filterChain)
 
         assertEquals(429, response.status)
         assertEquals("60", response.getHeader("Retry-After"))
@@ -61,40 +61,68 @@ class RateLimitFilterTest {
     @Test
     fun `should use stricter limit for POST booking endpoint`() {
         val uniqueIp = "10.88.88.${System.nanoTime() % 256}"
-        // Booking limiter has maxTokens=10
         repeat(10) {
             val req = MockHttpServletRequest("POST", "/api/bookings")
             req.remoteAddr = uniqueIp
-            filter.doFilterInternal(req, MockHttpServletResponse(), filterChain)
+            filter.doFilter(req, MockHttpServletResponse(), filterChain)
         }
 
         val request = MockHttpServletRequest("POST", "/api/bookings")
         request.remoteAddr = uniqueIp
         val response = MockHttpServletResponse()
 
-        filter.doFilterInternal(request, response, filterChain)
+        filter.doFilter(request, response, filterChain)
 
         assertEquals(429, response.status)
     }
 
     @Test
-    fun `should extract client IP from X-Forwarded-For header`() {
-        // Use authenticated user to avoid IP collision issues
-        val auth = UsernamePasswordAuthenticationToken("testuser-xff", null, emptyList())
+    fun `should use userId as key when authenticated`() {
+        val auth = UsernamePasswordAuthenticationToken("testuser123", null, emptyList())
         SecurityContextHolder.getContext().authentication = auth
 
+        val request = MockHttpServletRequest("GET", "/api/pets")
+        request.remoteAddr = "127.0.0.1"
+        val response = MockHttpServletResponse()
+
+        filter.doFilter(request, response, filterChain)
+
+        verify(filterChain).doFilter(request, response)
+        assertEquals("60", response.getHeader("X-RateLimit-Limit"))
+
+        SecurityContextHolder.clearContext()
+    }
+
+    @Test
+    fun `should extract client IP from X-Forwarded-For header`() {
+        // Use a unique IP so no collision with other tests
         val request = MockHttpServletRequest("GET", "/api/pets")
         request.addHeader("X-Forwarded-For", "203.0.113.50, 70.41.3.18")
         request.remoteAddr = "127.0.0.1"
         val response = MockHttpServletResponse()
 
-        filter.doFilterInternal(request, response, filterChain)
+        filter.doFilter(request, response, filterChain)
 
-        // The filter should use authenticated user key, but the IP extraction logic
-        // is tested indirectly. Let's verify the request went through.
         verify(filterChain).doFilter(request, response)
-        assertEquals("60", response.getHeader("X-RateLimit-Limit"))
+    }
 
-        SecurityContextHolder.clearContext()
+    @Test
+    fun `should return JSON error body when rate limited`() {
+        val uniqueIp = "10.77.77.${System.nanoTime() % 256}"
+        repeat(60) {
+            val req = MockHttpServletRequest("GET", "/api/pets")
+            req.remoteAddr = uniqueIp
+            filter.doFilter(req, MockHttpServletResponse(), filterChain)
+        }
+
+        val request = MockHttpServletRequest("GET", "/api/pets")
+        request.remoteAddr = uniqueIp
+        val response = MockHttpServletResponse()
+
+        filter.doFilter(request, response, filterChain)
+
+        assertEquals(429, response.status)
+        assertTrue(response.contentAsString.contains("success"))
+        assertTrue(response.contentType!!.startsWith("application/json"))
     }
 }

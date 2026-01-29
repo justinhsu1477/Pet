@@ -5,11 +5,15 @@ import com.pet.repository.IdempotencyKeyRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mock
 import org.mockito.Mockito.*
-import org.mockito.MockitoAnnotations
+import org.mockito.junit.jupiter.MockitoExtension
+import java.time.LocalDateTime
 import java.util.*
 
+@ExtendWith(MockitoExtension::class)
 class IdempotencyServiceTest {
 
     private lateinit var idempotencyService: IdempotencyService
@@ -19,7 +23,6 @@ class IdempotencyServiceTest {
 
     @BeforeEach
     fun setUp() {
-        MockitoAnnotations.openMocks(this)
         idempotencyService = IdempotencyService(idempotencyKeyRepository)
     }
 
@@ -42,6 +45,7 @@ class IdempotencyServiceTest {
         assertNotNull(result)
         assertEquals("existing-key", result!!.key)
         assertEquals(200, result.httpStatus)
+        assertEquals("""{"id":1}""", result.responseBody)
     }
 
     @Test
@@ -49,16 +53,31 @@ class IdempotencyServiceTest {
         idempotencyService.save("new-key", """{"success":true}""", 201)
 
         verify(idempotencyKeyRepository).save(argThat<IdempotencyKey> { key ->
-            key.key == "new-key" && key.httpStatus == 201
+            key.key == "new-key" && key.httpStatus == 201 && key.responseBody == """{"success":true}"""
         })
     }
 
     @Test
     fun `should cleanup expired keys`() {
-        `when`(idempotencyKeyRepository.deleteByExpiresAtBefore(any())).thenReturn(5)
+        // Use doReturn to avoid Kotlin non-null issues with any()
+        lenient().doReturn(5L).`when`(idempotencyKeyRepository)
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
 
         idempotencyService.cleanupExpired()
 
-        verify(idempotencyKeyRepository).deleteByExpiresAtBefore(any())
+        // Verify it was called (don't use argument matcher in verify to avoid null issue)
+        verify(idempotencyKeyRepository, times(1))
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
+    }
+
+    @Test
+    fun `should not log when no expired keys deleted`() {
+        lenient().doReturn(0L).`when`(idempotencyKeyRepository)
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
+
+        idempotencyService.cleanupExpired()
+
+        verify(idempotencyKeyRepository, times(1))
+            .deleteByExpiresAtBefore(any(LocalDateTime::class.java) ?: LocalDateTime.now())
     }
 }

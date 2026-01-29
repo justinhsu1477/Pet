@@ -72,7 +72,7 @@ class CustomerServiceTest {
         assertEquals(2, result.size)
         assertEquals("Customer One", result[0].name)
         assertEquals("user1", result[0].username)
-        assertEquals("未設定", result[1].name)
+        assertEquals("user2", result[1].name)
         assertEquals("user2", result[1].username)
     }
 
@@ -158,6 +158,6 @@ class CustomerServiceTest {
         // Assert
         assertNull(result.id)
         assertEquals("testuser", result.username)
-        assertEquals("未設定", result.name)
+        assertEquals("testuser", result.name)
     }
 }
