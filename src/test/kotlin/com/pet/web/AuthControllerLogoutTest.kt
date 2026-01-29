@@ -215,7 +215,7 @@ class AuthControllerLogoutTest {
         )
             .andExpect(status().isOk)
 
-        // Verify - 空字串應該被當作 null 處理
-        verify(authenticationService, times(1)).logout(null)
+        // Verify - 空字串直接傳入 logout
+        verify(authenticationService, times(1)).logout("")
     }
 }

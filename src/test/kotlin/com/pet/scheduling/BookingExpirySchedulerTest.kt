@@ -25,7 +25,7 @@ class BookingExpirySchedulerTest {
     @Mock
     private lateinit var bookingRepository: BookingRepository
 
-    @Mock(mockMaker = "subclass")
+    @Mock
     private lateinit var lineMessagingService: LineMessagingService
 
     @BeforeEach
