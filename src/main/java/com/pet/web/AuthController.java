@@ -132,20 +132,20 @@ public class AuthController {
      * 1. 設置 Refresh Token Cookie
      * 2. Web 端隱藏 body 中的 refreshToken
      */
-    private JwtAuthenticationResponse issueTokens(
+    private void issueTokens(
             JwtAuthenticationResponse authResponse,
             HttpServletResponse httpResponse,
             HttpServletRequest httpRequest) {
+        // 1. 把 Refresh Token 寫進 HttpOnly Cookie
         setRefreshTokenCookie(httpResponse, authResponse.getRefreshToken());
 
-        // Web 端不應從 body 獲取 refreshToken（已存在 HttpOnly Cookie）
+        // 2. Web 端把 body 裡的 refreshToken 清掉
         if (httpRequest != null) {
             String deviceType = httpRequest.getHeader("X-Device-Type");
             if (deviceType != null && deviceType.equalsIgnoreCase("WEB")) {
                 authResponse.setRefreshToken(null);
             }
         }
-        return authResponse;
     }
 
     /**
