@@ -124,6 +124,7 @@ public class CalendarService {
             case CANCELLED -> "已取消";
             case REJECTED -> "已拒絕";
             case COMPLETED -> "已完成";
+            case EXPIRED -> "已過期";
         };
     }
 

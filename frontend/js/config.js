@@ -8,8 +8,8 @@ const CONFIG = {
 
     // Storage Keys
     STORAGE_KEYS: {
-        USER: 'petcare_admin_user',
-        ACCESS_TOKEN: 'petcare_admin_access_token'
+        USER: 'petcare_user',
+        ACCESS_TOKEN: 'petcare_access_token'
     },
 
     // Device Type

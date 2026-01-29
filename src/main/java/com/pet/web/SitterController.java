@@ -36,6 +36,12 @@ public class SitterController {
         return ResponseEntity.ok(ApiResponse.success(sitter));
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<SitterDto>> getSitterByUserId(@PathVariable UUID userId) {
+        SitterDto sitter = sitterService.getSitterByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(sitter));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SitterDto>> createSitter(@Valid @RequestBody SitterDto sitterDto) {
         SitterDto createdSitter = sitterService.createSitter(sitterDto);

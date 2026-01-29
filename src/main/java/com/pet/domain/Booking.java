@@ -113,6 +113,7 @@ public class Booking {
      * 狀態流轉：
      * PENDING → CONFIRMED (Sitter 接受)
      * PENDING → REJECTED (Sitter 拒絕)
+     * PENDING → EXPIRED (超過24小時未回應，自動過期)
      * CONFIRMED → CANCELLED (飼主或 Sitter 取消)
      * CONFIRMED → COMPLETED (服務完成)
      */
@@ -121,7 +122,8 @@ public class Booking {
         CONFIRMED,    // 已確認
         REJECTED,     // 已拒絕
         CANCELLED,    // 已取消
-        COMPLETED     // 已完成
+        COMPLETED,    // 已完成
+        EXPIRED       // 已過期（超過24小時未回應）
     }
 
     /**
@@ -131,10 +133,11 @@ public class Booking {
         return switch (this.status) {
             case PENDING -> targetStatus == BookingStatus.CONFIRMED ||
                            targetStatus == BookingStatus.REJECTED ||
-                           targetStatus == BookingStatus.CANCELLED;
+                           targetStatus == BookingStatus.CANCELLED ||
+                           targetStatus == BookingStatus.EXPIRED;
             case CONFIRMED -> targetStatus == BookingStatus.CANCELLED ||
                              targetStatus == BookingStatus.COMPLETED;
-            case REJECTED, CANCELLED, COMPLETED -> false; // 終態，不可轉換
+            case REJECTED, CANCELLED, COMPLETED, EXPIRED -> false; // 終態，不可轉換
         };
     }
 }

@@ -45,7 +45,7 @@ class BookingControllerCalendarTest {
 
     @BeforeEach
     void setUp() {
-        bookingController = new BookingController(bookingService, calendarService);
+        bookingController = new BookingController(bookingService, calendarService, null, null);
         testBookingId = UUID.randomUUID();
     }
 

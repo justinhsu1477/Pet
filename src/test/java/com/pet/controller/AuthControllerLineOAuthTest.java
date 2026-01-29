@@ -161,7 +161,7 @@ class AuthControllerLineOAuthTest {
     @Test
     void shouldCompleteRegistrationAndReturnJson() {
         Users newUser = createTestUser();
-        when(lineOAuth2Service.completeRegistration("reg-token", "CUSTOMER")).thenReturn(newUser);
+        when(lineOAuth2Service.completeRegistration("reg-token", "CUSTOMER", null)).thenReturn(newUser);
 
         JwtAuthenticationResponse authResponse = JwtAuthenticationResponse.builder()
                 .accessToken("new-jwt")
@@ -169,7 +169,9 @@ class AuthControllerLineOAuthTest {
                 .build();
         when(lineOAuth2Service.loginExistingUser(newUser)).thenReturn(authResponse);
 
-        Map<String, String> body = Map.of("token", "reg-token", "role", "CUSTOMER");
+        Map<String, String> body = new java.util.HashMap<>();
+        body.put("token", "reg-token");
+        body.put("role", "CUSTOMER");
         ResponseEntity<ApiResponse<JwtAuthenticationResponse>> response =
                 authController.lineOAuthCompleteRegistration(body, httpServletResponse);
 
@@ -180,7 +182,7 @@ class AuthControllerLineOAuthTest {
     @Test
     void shouldCompleteRegistrationAsSitter() {
         Users newUser = createTestUser();
-        when(lineOAuth2Service.completeRegistration("reg-token", "SITTER")).thenReturn(newUser);
+        when(lineOAuth2Service.completeRegistration("reg-token", "SITTER", null)).thenReturn(newUser);
 
         JwtAuthenticationResponse authResponse = JwtAuthenticationResponse.builder()
                 .accessToken("sitter-jwt")

@@ -70,7 +70,6 @@ public class AuthController {
 
     /**
      * 刷新 Access Token
-     *
      * 當 Access Token 過期時,使用 Refresh Token 獲取新的 Access Token
      */
     @PostMapping("/jwt/refresh")
@@ -269,7 +268,8 @@ public class AuthController {
                                           HttpServletResponse httpResponse) {
         String token = body.get("token");
         String role = body.get("role");
-        Users user = lineOAuth2Service.completeRegistration(token, role);
+        String displayName = body.get("displayName");
+        Users user = lineOAuth2Service.completeRegistration(token, role, displayName);
         JwtAuthenticationResponse authResponse = lineOAuth2Service.loginExistingUser(user);
         issueTokens(authResponse, httpResponse, null);
         return ResponseEntity.ok(ApiResponse.success(authResponse));

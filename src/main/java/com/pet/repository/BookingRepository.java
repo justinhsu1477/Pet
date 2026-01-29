@@ -126,6 +126,19 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             @Param("now") LocalDateTime now,
             @Param("endTime") LocalDateTime endTime);
 
+    /**
+     * 查詢指定狀態且建立時間早於指定時間的預約（用於自動過期）
+     */
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.user " +
+           "JOIN FETCH b.pet " +
+           "JOIN FETCH b.sitter " +
+           "WHERE b.status = :status " +
+           "AND b.createdAt < :cutoffTime")
+    List<Booking> findByStatusAndCreatedAtBefore(
+            @Param("status") BookingStatus status,
+            @Param("cutoffTime") LocalDateTime cutoffTime);
+
     // ============================================
     // 統計相關查詢方法
     // ============================================

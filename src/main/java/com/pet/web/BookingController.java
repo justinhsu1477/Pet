@@ -1,10 +1,13 @@
 package com.pet.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pet.domain.IdempotencyKey;
 import com.pet.dto.BookingDto;
 import com.pet.dto.BookingStatusUpdateDto;
 import com.pet.dto.response.ApiResponse;
 import com.pet.service.BookingService;
 import com.pet.service.CalendarService;
+import com.pet.service.IdempotencyService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,10 +28,15 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final CalendarService calendarService;
+    private final IdempotencyService idempotencyService;
+    private final ObjectMapper objectMapper;
 
-    public BookingController(BookingService bookingService, CalendarService calendarService) {
+    public BookingController(BookingService bookingService, CalendarService calendarService,
+                             IdempotencyService idempotencyService, ObjectMapper objectMapper) {
         this.bookingService = bookingService;
         this.calendarService = calendarService;
+        this.idempotencyService = idempotencyService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -48,10 +56,39 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<ApiResponse<BookingDto>> createBooking(
             @Valid @RequestBody BookingDto bookingDto,
-            @RequestParam UUID userId) {
+            @RequestParam UUID userId,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+
+        // 冪等性檢查：若相同 key 已處理過，直接回傳快取結果
+        if (idempotencyKey != null) {
+            IdempotencyKey existing = idempotencyService.checkExisting(idempotencyKey);
+            if (existing != null) {
+                try {
+                    ApiResponse<BookingDto> cachedResponse = objectMapper.readValue(
+                            existing.getResponseBody(),
+                            objectMapper.getTypeFactory().constructParametricType(
+                                    ApiResponse.class, BookingDto.class));
+                    return ResponseEntity.status(existing.getHttpStatus()).body(cachedResponse);
+                } catch (Exception e) {
+                    // 反序列化失敗則重新建立
+                }
+            }
+        }
+
         BookingDto created = bookingService.createBooking(bookingDto, userId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("預約建立成功，等待保母確認", created));
+        ApiResponse<BookingDto> response = ApiResponse.success("預約建立成功，等待保母確認", created);
+
+        // 儲存冪等性 key
+        if (idempotencyKey != null) {
+            try {
+                String responseBody = objectMapper.writeValueAsString(response);
+                idempotencyService.save(idempotencyKey, responseBody, HttpStatus.CREATED.value());
+            } catch (Exception e) {
+                // 儲存失敗不影響主流程
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
