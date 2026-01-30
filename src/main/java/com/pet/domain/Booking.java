@@ -108,6 +108,26 @@ public class Booking {
         return id;
     }
 
+    public Pet getPet() {
+        return pet;
+    }
+
+    public Sitter getSitter() {
+        return sitter;
+    }
+
+    public Users getUser() {
+        return user;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
     /**
      * 預約狀態枚舉
      * 狀態流轉：

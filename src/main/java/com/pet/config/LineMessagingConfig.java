@@ -17,6 +17,7 @@ public class LineMessagingConfig {
     private boolean enabled = true;
 
     private String baseUrl;
+    private String frontendUrl;
 
     public boolean hasBaseUrl() {
         return baseUrl != null && !baseUrl.isEmpty();
@@ -27,4 +28,11 @@ public class LineMessagingConfig {
         return channelToken != null && !channelToken.isEmpty()
             && demoUserId != null && !demoUserId.isEmpty();
     }
+
+    // Explicit getters for Kotlin interop
+    public String getChannelToken() { return channelToken; }
+    public String getChannelSecret() { return channelSecret; }
+    public String getDemoUserId() { return demoUserId; }
+    public String getBaseUrl() { return baseUrl; }
+    public String getFrontendUrl() { return frontendUrl; }
 }

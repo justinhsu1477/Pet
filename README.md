@@ -438,11 +438,352 @@ docker logs pet-backend-qas 2>&1 | grep "Primary  DB URL"
 ```
 
 
+## HTTPS / ngrok 設定 🔒
+
+本專案支援 HTTPS，透過環境變數切換，**不需改程式碼**。
+
+### 開發環境：使用 ngrok（LINE Webhook 需要 HTTPS）
+
+```bash
+# 1. 安裝 ngrok
+brew install ngrok
+
+# 2. 首次設定（只需一次）
+ngrok config add-authtoken <你的token>
+
+# 3. 啟動 ngrok（每次開發時執行）
+ngrok http 3000
+
+# 會產生類似：https://abc123.ngrok-free.app
+```
+
+**設定 LINE Developers Console：**
+- Webhook URL → `https://abc123.ngrok-free.app/api/line/webhook`
+- LINE Login Callback → `https://abc123.ngrok-free.app/api/auth/oauth2/callback/line`
+
+**更新 `.env`（或 `.env.dev` / `.env.qas`，看你用哪個環境）：**
+```bash
+# 必改：LINE 相關 URL 改為 ngrok 網址
+LINE_BASE_URL=https://abc123.ngrok-free.app
+LINE_FRONTEND_URL=https://abc123.ngrok-free.app
+
+# 必改：CORS 加入 ngrok 網址
+CORS_ORIGINS=https://abc123.ngrok-free.app,http://localhost:3000,http://localhost
+
+# 注意：ngrok 開發時 COOKIE_SECURE 保持註解（不要啟用）
+# 因為你本機仍是 HTTP，ngrok 到你的電腦這段是 HTTP
+```
+
+> ⚠️ 免費版每次重啟 ngrok 網址會變，需重新設定 LINE Console 和 `.env`。
+
+### 使用 ngrok 時的 `.env` 修改清單
+
+| 變數 | 原本 | 改成 |
+|------|------|------|
+| `LINE_BASE_URL` | `http://localhost:8080` | `https://xxx.ngrok-free.dev` |
+| `LINE_FRONTEND_URL` | `http://localhost:3000` | `https://xxx.ngrok-free.dev` |
+| `CORS_ORIGINS` | `http://localhost,...` | 加入 `https://xxx.ngrok-free.dev` |
+| `COOKIE_SECURE` | 註解 | **不要動**（保持註解） |
+
+### 正式環境：啟用 HTTPS
+
+1. **準備 SSL 憑證**（Let's Encrypt 或自簽），放到 `./ssl/` 目錄
+2. **取消 Nginx 註解**：打開 `frontend/nginx.conf`，取消 HTTPS server block 和 HTTP→HTTPS redirect
+3. **設定環境變數**：
+   ```bash
+   COOKIE_SECURE=true
+   CORS_ORIGINS=https://your-domain.com
+   LINE_BASE_URL=https://your-domain.com
+   LINE_FRONTEND_URL=https://your-domain.com
+   ```
+4. **Docker Compose 掛載 SSL**：
+   ```yaml
+   frontend:
+     ports:
+       - "443:443"
+       - "80:80"
+     volumes:
+       - ./ssl:/etc/nginx/ssl:ro
+   ```
+
+### HTTPS 相關改動檔案
+
+| 檔案 | 改動內容 |
+|------|---------|
+| `frontend/nginx.conf` | WebSocket `/ws` 反向代理、`X-Forwarded-Proto`、註解 HTTPS server block |
+| `docker/nginx/nginx.conf` | 同上（混合模式用） |
+| `application.yml` | `forward-headers-strategy: native`、`app.cookie.secure`、`cors.allowed-origins` |
+| `AuthController.java` | Cookie `secure` 屬性改為讀取 `COOKIE_SECURE` 環境變數 |
+| `docker-compose.dev.yml` | 註解 HTTPS 環境變數（`COOKIE_SECURE`、`CORS_ORIGINS`） |
+| `docker-compose.qas.yml` | 同上 |
+
+---
+
+## WebSocket 即時通知 🔔
+
+系統使用 STOMP over WebSocket 實現即時通知，預約狀態變更時自動推播給飼主和保母。
+
+### 架構
+
+```
+Browser ──SockJS──▶ /ws (STOMP endpoint)
+                        │
+                        ▼
+              WebSocketAuthInterceptor (JWT 驗證)
+                        │
+                        ▼
+              WebSocketNotificationService
+                        │
+                        ▼
+              /user/queue/notifications (點對點推播)
+```
+
+### 相關檔案
+
+| 檔案 | 說明 |
+|------|------|
+| `WebSocketConfig.kt` | STOMP + SockJS 配置 |
+| `WebSocketAuthInterceptor.kt` | STOMP CONNECT 時 JWT 驗證 |
+| `WebSocketNotificationService.kt` | 發送通知到指定用戶 |
+| `BookingService.java` | 交易提交後觸發 WebSocket + LINE 通知 |
+| `api.js` | 前端 WebSocket 連線（含斷線重連） |
+
+---
+
+## LINE 整合 📱
+
+### LINE 功能一覽
+
+| 功能 | 說明 |
+|------|------|
+| LINE Login (OAuth 2.0) | 透過 LINE 帳號登入/註冊，自動選擇角色 (飼主/保母) |
+| LINE Webhook | 接收 LINE 訊息事件（照片上傳、Postback） |
+| LINE Rich Menu | 角色化選單：保母(上傳照片/預約)、飼主(寵物/預約)、未註冊(登入) |
+| LINE 即時通知 | 預約狀態變更時推播 LINE 訊息給飼主/保母 |
+| 照片上傳 (Quick Reply) | 保母透過 Rich Menu 選擇寵物 → 拍照 → 自動關聯寵物 |
+
+### LINE Developers Console 設定
+
+需要建立 **2 個 Channel**（同一個 Provider）：
+
+| Channel 類型 | 用途 | 需設定 |
+|-------------|------|--------|
+| **Messaging API** | Webhook、Rich Menu、推播 | Webhook URL |
+| **LINE Login** | OAuth 登入 | Callback URL |
+
+**Callback URL 設定：**
+```
+# LINE Login → Callback URL
+https://你的網址/api/auth/oauth2/callback/line
+
+# Messaging API → Webhook URL
+https://你的網址/api/line/webhook
+```
+
+> **重要**：兩個 Channel 必須在 **同一個 Provider** 下，這樣 userId 才會一致。
+
+### 環境變數 (.env)
+
+```bash
+# === LINE Messaging API ===
+LINE_CHANNEL_TOKEN=你的_Channel_Access_Token
+LINE_CHANNEL_SECRET=你的_Channel_Secret
+
+# === LINE Login ===
+LINE_LOGIN_CHANNEL_ID=你的_Login_Channel_ID
+LINE_LOGIN_CHANNEL_SECRET=你的_Login_Channel_Secret
+
+# === URL（本機開發預設值，ngrok 時自動更新） ===
+LINE_BASE_URL=http://localhost:8080
+LINE_FRONTEND_URL=http://localhost:3000
+
+# === CORS ===
+CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+```
+
+---
+
+## ngrok 開發流程 🔗
+
+使用 LINE 功能時需要 HTTPS 公開 URL，開發階段用 ngrok 實現。
+
+### 快速啟動
+
+```bash
+# 一鍵啟動 ngrok + 自動更新所有設定
+./ngrok-start.sh
+
+# 腳本會自動：
+# 1. 啟動 ngrok (tunnel 到 port 3000)
+# 2. 更新 .env / .env.dev / .env.qas 的 LINE_BASE_URL、LINE_FRONTEND_URL、CORS_ORIGINS
+# 3. 更新 LINE Messaging API 的 Webhook URL
+# 4. 重建 Rich Menu（更新選單內的 URL）
+```
+
+### 手動步驟（首次或 ngrok-start.sh 不適用時）
+
+```bash
+# 1. 啟動 ngrok
+ngrok http 3000
+
+# 2. 取得 ngrok URL（例如 https://abc123.ngrok-free.dev）
+
+# 3. 更新 LINE Developers Console
+#    - LINE Login → Callback URL: https://abc123.ngrok-free.dev/api/auth/oauth2/callback/line
+#    - Messaging API → Webhook URL: https://abc123.ngrok-free.dev/api/line/webhook
+```
+
+### IDE 開發注意事項
+
+> ⚠️ **IntelliJ IDEA 不會自動讀取 `.env` 檔案！**
+
+如果你用 **IDE 跑後端 + Docker 跑前端**，有兩種方式讓 LINE 功能正常：
+
+**方式 A：使用動態 URL 推導（推薦，已內建）**
+
+系統已內建透過 `X-Forwarded-Host` header 動態推導 URL 的機制：
+- OAuth callback URL → 自動從 request header 推導
+- 前端 redirect URL → 自動從 request header 推導
+- CORS → 已加入 `*.ngrok-free.app` 和 `*.ngrok-free.dev` 萬用字元
+
+只要 nginx 正確轉發 header（已設定好），**不需要手動設定 IDE 環境變數**。
+
+**方式 B：手動設定 IntelliJ 環境變數**
+
+如果方式 A 出問題，在 IntelliJ Run Configuration → Environment variables 加入：
+```
+LINE_BASE_URL=https://你的ngrok.ngrok-free.dev
+LINE_FRONTEND_URL=https://你的ngrok.ngrok-free.dev
+CORS_ORIGINS=https://你的ngrok.ngrok-free.dev,http://localhost:3000,http://localhost:8080
+```
+
+### 架構圖：ngrok + nginx + IDE 混合模式
+
+```
+手機/瀏覽器
+    │
+    ▼
+ngrok (HTTPS) ── 設定 X-Forwarded-Host / X-Forwarded-Proto
+    │
+    ▼
+Docker nginx (port 3000)
+    ├── 靜態檔案 (/*.html, /js/*, /css/*) → 直接回傳
+    └── /api/* → proxy_pass http://backend:8080 → IDE 後端
+                  (--add-host=backend:host-gateway)
+```
+
+### ngrok 常見問題
+
+| 問題 | 原因 | 解決 |
+|------|------|------|
+| Rich Menu 按鈕按了沒反應 | Rich Menu 內的 URL 是舊的 ngrok URL | 執行 `./ngrok-start.sh` 或呼叫 `POST /api/line/richmenu/recreate` |
+| LINE 登入 400 Bad Request | LINE Console 的 Callback URL 與後端 redirect_uri 不一致 | 更新 LINE Login → Callback URL 為新 ngrok URL |
+| 註冊失敗 "Invalid CORS request" | CORS 沒有允許 ngrok origin | 系統已自動允許 `*.ngrok-free.app/dev`，重啟後端即可 |
+| 登入後被導回首頁 | redirect URL 指向 localhost，手機連不到 | 已透過 X-Forwarded-Host 自動修正 |
+
+### 停止 ngrok
+
+```bash
+./ngrok-stop.sh
+# 會清除 .env 中的 ngrok URL
+```
+
+---
+
+## LINE Rich Menu 🎨
+
+系統會根據使用者角色自動顯示不同的 Rich Menu：
+
+| 角色 | 選單內容 | 自動綁定時機 |
+|------|---------|-------------|
+| 未註冊 | 「前往登入 / 註冊」 | 加入好友時 (follow event) |
+| 保母 (SITTER) | 「📷 上傳照片」+「📋 我的預約」 | LINE 登入 / 註冊完成後 |
+| 飼主 (CUSTOMER) | 「🐾 我的寵物」+「📋 我的預約」 | LINE 登入 / 註冊完成後 |
+
+### Rich Menu API
+
+```bash
+# 手動重建所有 Rich Menu（ngrok URL 變更後使用）
+curl -X POST http://localhost:8080/api/line/richmenu/recreate
+```
+
+### 相關檔案
+
+| 檔案 | 說明 |
+|------|------|
+| `LineRichMenuService.kt` | Rich Menu 建立、圖片生成、角色綁定 |
+| `LineWebhookService.kt` | Webhook 事件處理（Postback、Follow、照片） |
+| `LineContentService.kt` | LINE API 封裝（Reply、Push、Quick Reply） |
+| `LineOAuth2Service.java` | LINE Login OAuth 2.0 流程 |
+| `SitterPetSelectionCache.kt` | 保母照片上傳的寵物選擇暫存 |
+| `AuthController.java` | OAuth callback、動態 URL 推導 |
+| `CorsConfig.java` | CORS 設定（含 ngrok 萬用字元） |
+| `docker/nginx/nginx.conf` | nginx 反向代理 + X-Forwarded-Host 轉發 |
+
+---
+
+## 換電腦 / 新環境設定清單 📋
+
+### 必裝軟體
+
+- [ ] **JDK 17**（推薦 JetBrains Runtime 或 Eclipse Temurin）
+- [ ] **Docker Desktop**
+- [ ] **IntelliJ IDEA**（或 Eclipse）
+- [ ] **ngrok**（`brew install ngrok`）
+- [ ] **Git**
+
+### 首次設定步驟
+
+1. **Clone 專案**
+   ```bash
+   git clone <repo-url>
+   cd pet
+   ```
+
+2. **建立 `.env` 檔案**（從範本複製）
+   ```bash
+   cp .env.example .env  # 如果有範本
+   # 或手動建立，填入 LINE Channel 資訊
+   ```
+
+3. **LINE Developers Console**
+   - 確認 Messaging API Channel 和 LINE Login Channel 在同一 Provider
+   - 取得 Channel Token、Secret、Channel ID
+   - 填入 `.env`
+
+4. **設定 ngrok**
+   ```bash
+   ngrok config add-authtoken <你的token>
+   ```
+
+5. **啟動開發環境**
+   ```bash
+   # 啟動前端 Docker
+   docker build -t pet-frontend -f docker/Dockerfile.frontend .
+   docker run -d -p 3000:80 --add-host=backend:host-gateway pet-frontend
+
+   # 啟動 ngrok
+   ./ngrok-start.sh
+
+   # 更新 LINE Developers Console 的 LINE Login Callback URL
+   # （Webhook URL 由腳本自動更新，但 Login Callback URL 需手動）
+
+   # 在 IntelliJ 啟動後端
+   # VM options: -Dspring.profiles.active=dev
+   ```
+
+6. **驗證**
+   - 開啟 ngrok URL → 看到登入頁面
+   - 點 LINE 登入 → 跳轉到 LINE 授權 → 回到角色選擇
+   - 手機開 LINE → 加入官方帳號 → 看到 Rich Menu
+
+---
+
 ## 作者 ✍️
 
 **Justin**
 
 ---
 
-**Last Updated**: 2026-01-25
-**Version**: 2.0 (Multi-Environment Support)
+**Last Updated**: 2026-01-30
+**Version**: 4.0 (LINE Rich Menu + OAuth + ngrok 動態 URL)

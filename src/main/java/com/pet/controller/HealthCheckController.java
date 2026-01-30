@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -124,4 +125,7 @@ public class HealthCheckController {
         }
         return ComponentHealth.up(message);
     }
+
+
 }
+

@@ -1,3 +1,8 @@
+server:
+  # 信任反向代理傳入的 X-Forwarded-* headers
+  # 讓 Spring Boot 知道前面有 Nginx，正確產生 redirect URL（https）
+  forward-headers-strategy: native
+
 spring:
   application:
     name: petSystem
@@ -10,6 +15,14 @@ spring:
 # Application Info
 app:
   version: ${APP_VERSION:1.0.0}
+  cookie:
+    # Cookie Secure 屬性：正式環境（HTTPS）設 true
+    secure: ${COOKIE_SECURE:false}
+
+# CORS Configuration
+# 正式環境改為 https://your-domain.com
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:8080}
 
 # Logging Configuration
 logging:
@@ -29,6 +42,12 @@ jwt:
   # Token 發行者
   issuer: ${JWT_ISSUER:pet-care-system}
 
+# File Storage Configuration
+file:
+  storage:
+    base-path: ${FILE_STORAGE_PATH:./uploads/photos}
+    max-file-size: 10485760  # 10MB
+
 # LINE Messaging API Configuration
 line:
   messaging:
@@ -37,6 +56,7 @@ line:
     # Demo mode: all notifications go to this user (for interview demo)
     demo-user-id: ${LINE_DEMO_USER_ID:}
     base-url: ${LINE_BASE_URL:http://localhost:8080}
+    frontend-url: ${LINE_FRONTEND_URL:http://localhost:3000}
     enabled: true
   login:
     channel-id: ${LINE_LOGIN_CHANNEL_ID:}

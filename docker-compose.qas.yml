@@ -57,6 +57,12 @@ services:
       - LINE_LOGIN_CHANNEL_ID=${LINE_LOGIN_CHANNEL_ID}
       - LINE_LOGIN_CHANNEL_SECRET=${LINE_LOGIN_CHANNEL_SECRET}
       - LINE_FRONTEND_URL=${LINE_FRONTEND_URL:-http://localhost}
+      # HTTPS 環境啟用（正式部署時取消註解）
+      # - COOKIE_SECURE=true
+      # - CORS_ORIGINS=https://your-domain.com
+    volumes:
+      # 寵物照片儲存
+      - uploads-data:/app/uploads
     ports:
       - "${SERVER_PORT:-8080}:8080"
     depends_on:
@@ -94,3 +100,4 @@ networks:
 
 volumes:
   mssql-data:
+  uploads-data:

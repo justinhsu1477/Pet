@@ -41,6 +41,11 @@ public abstract class Pet {
      */
     public abstract String getPetTypeName();
 
+    // Explicit getters for Kotlin interop
+    public UUID getId() { return id; }
+    public String getName() { return name; }
+    public Users getOwner() { return owner; }
+
     public enum Gender {
         MALE, FEMALE
     }

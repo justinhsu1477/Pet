@@ -421,6 +421,87 @@ const API = {
     },
 
     /**
+     * WebSocket (STOMP over SockJS)
+     * 支援斷線自動重連（指數退避）
+     */
+    ws: {
+        stompClient: null,
+        onNotification: null,
+        reconnectAttempts: 0,
+        maxReconnectAttempts: 10,
+        reconnectTimer: null,
+        connected: false,
+
+        connect(onNotification) {
+            this.onNotification = onNotification;
+            this.reconnectAttempts = 0;
+            this._doConnect();
+        },
+
+        _doConnect() {
+            const token = sessionStorage.getItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+            if (!token) return;
+
+            const socket = new SockJS(CONFIG.API_BASE_URL.replace('/api', '') + '/ws');
+            this.stompClient = Stomp.over(socket);
+            // 關閉 STOMP debug log
+            this.stompClient.debug = null;
+
+            const self = this;
+            this.stompClient.connect(
+                { 'Authorization': 'Bearer ' + token },
+                // 連線成功
+                function () {
+                    self.connected = true;
+                    self.reconnectAttempts = 0;
+                    console.log('WebSocket 已連線');
+                    self.stompClient.subscribe('/user/queue/notifications', function (msg) {
+                        if (self.onNotification) {
+                            try {
+                                self.onNotification(JSON.parse(msg.body));
+                            } catch (e) {
+                                console.error('處理通知失敗:', e);
+                            }
+                        }
+                    });
+                },
+                // 連線失敗或斷線
+                function () {
+                    self.connected = false;
+                    console.warn('WebSocket 斷線');
+                    self._scheduleReconnect();
+                }
+            );
+        },
+
+        _scheduleReconnect() {
+            if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                console.warn('WebSocket 已達最大重連次數，停止重連');
+                return;
+            }
+            // 指數退避：1s, 2s, 4s, 8s, 16s... 最大 30s
+            const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+            this.reconnectAttempts++;
+            console.log(`WebSocket 將在 ${delay / 1000} 秒後重連 (第 ${this.reconnectAttempts} 次)`);
+            this.reconnectTimer = setTimeout(() => this._doConnect(), delay);
+        },
+
+        disconnect() {
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+                this.reconnectTimer = null;
+            }
+            this.reconnectAttempts = this.maxReconnectAttempts; // 防止斷線後再重連
+            if (this.stompClient && this.connected) {
+                this.stompClient.disconnect(() => {
+                    console.log('WebSocket 已斷線');
+                });
+                this.connected = false;
+            }
+        }
+    },
+
+    /**
      * Rating APIs
      */
     ratings: {

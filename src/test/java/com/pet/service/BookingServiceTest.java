@@ -60,6 +60,9 @@ class BookingServiceTest {
     @Mock
     private LineMessagingService lineMessagingService;
 
+    @Mock
+    private WebSocketNotificationService webSocketNotificationService;
+
     @InjectMocks
     private BookingService bookingService;
 

@@ -13,6 +13,8 @@ import com.pet.repository.BookingRepository;
 import com.pet.repository.PetRepository;
 import com.pet.repository.SitterRepository;
 import com.pet.repository.UserRepository;
+import com.pet.service.NotificationMessage;
+import com.pet.service.WebSocketNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -46,19 +48,22 @@ public class BookingService {
     private final UserRepository userRepository;
     private final BookingLogService bookingLogService;
     private final LineMessagingService lineMessagingService;
+    private final WebSocketNotificationService webSocketNotificationService;
 
     public BookingService(BookingRepository bookingRepository,
                           PetRepository petRepository,
                           SitterRepository sitterRepository,
                           UserRepository userRepository,
                           BookingLogService bookingLogService,
-                          LineMessagingService lineMessagingService) {
+                          LineMessagingService lineMessagingService,
+                          WebSocketNotificationService webSocketNotificationService) {
         this.bookingRepository = bookingRepository;
         this.petRepository = petRepository;
         this.sitterRepository = sitterRepository;
         this.userRepository = userRepository;
         this.bookingLogService = bookingLogService;
         this.lineMessagingService = lineMessagingService;
+        this.webSocketNotificationService = webSocketNotificationService;
     }
 
     /**
@@ -337,15 +342,31 @@ public class BookingService {
     // ============ Private Methods ============
 
     /**
-     * 註冊 afterCommit callback 發送 LINE 通知
+     * 註冊 afterCommit callback 發送 LINE + WebSocket 通知
      * 確保只在 transaction 成功 commit 後才發送通知
      * 避免 rollback 時用戶收到錯誤的通知
+     *
+     * 重點：在 transactional 方法內先取出所有需要的值（userId、petName 等），
+     * 用閉包傳入 afterCommit，因為 afterCommit 時 Transaction 已關閉，
+     * Hibernate Proxy 無法再 lazy load
      */
     private void registerAfterCommitLineNotification(Booking booking, String reason) {
+        // 在 transaction 內先取出需要的值
+        String bookingId = booking.getId().toString();
+        String customerUserId = booking.getUser() != null ? booking.getUser().getId().toString() : null;
+        String sitterUserId = booking.getSitter() != null && booking.getSitter().getUser() != null
+                ? booking.getSitter().getUser().getId().toString() : null;
+        String petName = booking.getPet() != null ? booking.getPet().getName() : "寵物";
+        String sitterName = booking.getSitter() != null ? booking.getSitter().getName() : "保母";
+        BookingStatus status = booking.getStatus();
+
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
+                // LINE 通知
                 sendLineNotification(booking, reason);
+                // WebSocket 即時通知（雙方都通知）
+                sendWebSocketNotification(bookingId, customerUserId, sitterUserId, petName, sitterName, status, reason);
             }
         });
     }
@@ -378,6 +399,58 @@ public class BookingService {
         } catch (Exception e) {
             // LINE 通知失敗不影響主流程
             logger.error("LINE 通知發送失敗: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 根據預約狀態發送 WebSocket 即時通知
+     * 通知雙方：飼主（customer）+ 保母（sitter）
+     */
+    private void sendWebSocketNotification(String bookingId, String customerUserId,
+                                            String sitterUserId, String petName,
+                                            String sitterName, BookingStatus status, String reason) {
+        String type = "BOOKING_" + status.name();
+        String title;
+        String customerMessage;
+        String sitterMessage;
+
+        switch (status) {
+            case CONFIRMED:
+                title = "預約已確認";
+                customerMessage = sitterName + " 已確認您的預約（" + petName + "）";
+                sitterMessage = "您已確認 " + petName + " 的預約";
+                break;
+            case CANCELLED:
+                title = "預約已取消";
+                customerMessage = petName + " 的預約已取消" + (reason != null ? "：" + reason : "");
+                sitterMessage = petName + " 的預約已被取消" + (reason != null ? "：" + reason : "");
+                break;
+            case REJECTED:
+                title = "預約已拒絕";
+                customerMessage = sitterName + " 已拒絕您的預約（" + petName + "）" + (reason != null ? "：" + reason : "");
+                sitterMessage = "您已拒絕 " + petName + " 的預約";
+                break;
+            case COMPLETED:
+                title = "預約已完成";
+                customerMessage = petName + " 的照顧服務已完成，歡迎評價！";
+                sitterMessage = petName + " 的照顧服務已標記為完成";
+                break;
+            case EXPIRED:
+                title = "預約已過期";
+                customerMessage = petName + " 的預約已自動過期";
+                sitterMessage = petName + " 的預約已自動過期";
+                break;
+            default:
+                return;
+        }
+
+        if (customerUserId != null) {
+            webSocketNotificationService.sendNotification(customerUserId,
+                    new NotificationMessage(type, title, customerMessage, bookingId));
+        }
+        if (sitterUserId != null) {
+            webSocketNotificationService.sendNotification(sitterUserId,
+                    new NotificationMessage(type, title, sitterMessage, bookingId));
         }
     }
 

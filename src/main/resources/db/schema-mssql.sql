@@ -2,6 +2,7 @@
 -- This script is for initial setup only, not for every restart
 
 -- Drop tables in correct order (FK constraints)
+IF OBJECT_ID('pet_photo', 'U') IS NOT NULL DROP TABLE pet_photo;
 IF OBJECT_ID('sitter_rating', 'U') IS NOT NULL DROP TABLE sitter_rating;
 IF OBJECT_ID('booking', 'U') IS NOT NULL DROP TABLE booking;
 IF OBJECT_ID('sitter_availability', 'U') IS NOT NULL DROP TABLE sitter_availability;
@@ -205,6 +206,26 @@ CREATE TABLE sitter_rating (
     FOREIGN KEY (sitter_id) REFERENCES sitter(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- ============================================
+-- PetPhoto table (寵物照片，LINE/Web 上傳)
+-- ============================================
+CREATE TABLE pet_photo (
+    id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+    pet_id UNIQUEIDENTIFIER,
+    sitter_id UNIQUEIDENTIFIER NOT NULL,
+    photo_url NVARCHAR(500) NOT NULL,
+    message_id VARCHAR(100),
+    upload_source VARCHAR(20) NOT NULL DEFAULT 'LINE',
+    caption NVARCHAR(500),
+    uploaded_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (pet_id) REFERENCES pet(id) ON DELETE SET NULL,
+    FOREIGN KEY (sitter_id) REFERENCES sitter(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_pet_photo_pet ON pet_photo(pet_id);
+CREATE INDEX idx_pet_photo_sitter ON pet_photo(sitter_id);
+CREATE INDEX idx_pet_photo_uploaded_at ON pet_photo(uploaded_at DESC);
 
 -- ============================================
 -- BookingLog table (預約日誌，用於報表/分析)

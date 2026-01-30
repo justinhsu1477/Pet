@@ -52,7 +52,38 @@ const CustomerApp = {
             console.error('Failed to load customer profile for display name:', error);
         }
 
+        // 連接 WebSocket 接收即時通知
+        API.ws.connect((notification) => {
+            this.showToast(notification.title, notification.message, notification.type);
+            // 收到通知時刷新當前頁面資料
+            if (this.currentPage === 'dashboard') this.loadDashboard();
+            else if (this.currentPage === 'bookings') this.loadBookings();
+        });
+
         this.loadDashboard();
+    },
+
+    showToast(title, message, type) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const colors = {
+            'BOOKING_CONFIRMED': '#22c55e',
+            'BOOKING_CANCELLED': '#ef4444',
+            'BOOKING_REJECTED': '#f59e0b',
+            'BOOKING_COMPLETED': '#3b82f6',
+            'BOOKING_EXPIRED': '#6b7280'
+        };
+        const color = colors[type] || '#3b82f6';
+        const toast = document.createElement('div');
+        toast.style.cssText = `background:${color};color:#fff;padding:14px 20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:280px;max-width:380px;animation:slideIn 0.3s ease;`;
+        toast.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${title}</div><div style="font-size:0.9em;opacity:0.95;">${message}</div>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     },
 
     // ==================== Navigation ====================
@@ -89,6 +120,7 @@ const CustomerApp = {
     setupLogout() {
         document.getElementById('logoutBtn').addEventListener('click', async (e) => {
             e.preventDefault();
+            API.ws.disconnect();
             try { await API.auth.logout(); } catch (_) {}
             sessionStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
             sessionStorage.removeItem(CONFIG.STORAGE_KEYS.ACCESS_TOKEN);

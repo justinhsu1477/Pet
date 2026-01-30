@@ -43,6 +43,14 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtProperties jwtProperties;
     private final LineOAuth2Service lineOAuth2Service;
+
+    /**
+     * Cookie Secure 屬性
+     * - true: Cookie 只在 HTTPS 傳送（正式環境設 COOKIE_SECURE=true）
+     * - false: 允許 HTTP 傳送（本機開發預設）
+     */
+    @org.springframework.beans.factory.annotation.Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
     private final LineLoginConfig lineLoginConfig;
 
     /**
@@ -154,15 +162,15 @@ public class AuthController {
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)        // JavaScript 無法讀取
-                .secure(false)         // HTTP 環境（面試展示用）
+                .secure(cookieSecure)  // HTTPS 時設 true（環境變數 COOKIE_SECURE）
                 .path("/")             // 所有路徑都可用
                 .maxAge(jwtProperties.getRefreshTokenExpiration() / 1000)  // 7 天
                 .sameSite("Lax")       // 允許同站點請求
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        log.debug("Set refresh token cookie - maxAge: {} seconds",
-                jwtProperties.getRefreshTokenExpiration() / 1000);
+        log.debug("Set refresh token cookie - maxAge: {} seconds, secure: {}",
+                jwtProperties.getRefreshTokenExpiration() / 1000, cookieSecure);
     }
 
     /**
@@ -171,7 +179,7 @@ public class AuthController {
     private void clearRefreshTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(0)            // 立即過期
                 .sameSite("Lax")
@@ -204,8 +212,10 @@ public class AuthController {
      * 重導向到 LINE 授權頁面
      */
     @GetMapping("/oauth2/line")
-    public ResponseEntity<Void> lineOAuthLogin() {
-        String authUrl = lineOAuth2Service.buildAuthorizationUrl();
+    public ResponseEntity<Void> lineOAuthLogin(HttpServletRequest httpRequest) {
+        // 動態推導 callback URL，讓 ngrok/正式環境都能正確回呼
+        String callbackUrl = resolveOAuthCallbackUrl(httpRequest);
+        String authUrl = lineOAuth2Service.buildAuthorizationUrl(callbackUrl);
         return ResponseEntity.status(302)
                 .header("Location", authUrl)
                 .build();
@@ -221,19 +231,24 @@ public class AuthController {
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String state,
             @RequestParam(required = false) String error,
+            HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String frontendUrl = lineLoginConfig.getFrontendCallbackUrl();
+        // 動態推導前端 URL：優先用請求的 origin（經 nginx 反向代理時正確）
+        String frontendUrl = resolveFrontendCallbackUrl(httpRequest);
         try {
             if (error != null) {
                 return redirectTo(frontendUrl + "?error="
                         + encode("您已取消 LINE 授權"));
             }
-            if (state == null || !lineOAuth2Service.validateState(state)) {
+
+            // validateState 同時取回當初發起授權時的 callbackUrl（確保跟 LINE 一致）
+            String callbackUrl = lineOAuth2Service.validateStateAndGetCallbackUrl(state);
+            if (callbackUrl == null) {
                 return redirectTo(frontendUrl + "?error="
                         + encode("授權已過期，請重新登入"));
             }
 
-            String accessToken = lineOAuth2Service.exchangeCodeForAccessToken(code);
+            String accessToken = lineOAuth2Service.exchangeCodeForAccessToken(code, callbackUrl);
             LineUserProfile profile = lineOAuth2Service.getUserProfile(accessToken);
             var existingUser = lineOAuth2Service.findExistingUser(profile.userId());
 
@@ -276,6 +291,55 @@ public class AuthController {
         JwtAuthenticationResponse authResponse = lineOAuth2Service.loginExistingUser(user);
         issueTokens(authResponse, httpResponse, null);
         return ResponseEntity.ok(ApiResponse.success(authResponse));
+    }
+
+    /**
+     * 動態推導 OAuth callback URL（後端接收 LINE 回呼的 URL）
+     * 確保送給 LINE 的 redirect_uri 跟 LINE Console 註冊的一致
+     * 經 nginx 反向代理時，使用 X-Forwarded-Proto/Host 還原真實 origin
+     * 瀏覽器 → ngrok (HTTPS) → nginx (HTTP, port 3000) → backend (8080)
+     */
+    private String resolveOAuthCallbackUrl(HttpServletRequest request) {
+        String configuredUrl = lineLoginConfig.getCallbackUrl();
+
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+
+        if (forwardedHost != null && !forwardedHost.isEmpty()) {
+            String proto = (forwardedProto != null && !forwardedProto.isEmpty()) ? forwardedProto : "https";
+            String origin = proto + "://" + forwardedHost;
+            String callbackUrl = origin + "/api/auth/oauth2/callback/line";
+            log.info("LINE OAuth login: 使用 forwarded callback URL={}", callbackUrl);
+            return callbackUrl;
+        }
+
+        log.info("LINE OAuth login: 使用設定檔 callback URL={}", configuredUrl);
+        return configuredUrl;
+    }
+
+    /**
+     * 動態推導前端 callback URL
+     * 當請求經過 nginx 反向代理時，使用 X-Forwarded-Proto/Host 還原真實 origin
+     * 這樣不管是 localhost、ngrok 還是正式環境，都能正確 redirect
+     */
+    private String resolveFrontendCallbackUrl(HttpServletRequest request) {
+        String configuredUrl = lineLoginConfig.getFrontendCallbackUrl();
+
+        // 嘗試從 request header 推導 origin
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+        String host = request.getHeader("Host");
+
+        if (forwardedHost != null && !forwardedHost.isEmpty()) {
+            String proto = (forwardedProto != null && !forwardedProto.isEmpty()) ? forwardedProto : "http";
+            String origin = proto + "://" + forwardedHost;
+            log.info("LINE OAuth callback: 使用 forwarded origin={} (X-Forwarded-Host={})", origin, forwardedHost);
+            return origin + "/line-callback.html";
+        }
+
+        // fallback: 用設定檔的值
+        log.info("LINE OAuth callback: 使用設定檔 frontendCallbackUrl={}", configuredUrl);
+        return configuredUrl;
     }
 
     private ResponseEntity<Void> redirectTo(String url) {
