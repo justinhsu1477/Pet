@@ -13,8 +13,14 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# 預設值
-PORT=${1:-3000}
+# 支援環境名稱或直接指定 port
+# 用法: ./ngrok-start.sh [dev|qas|port]
+INPUT=${1:-dev}
+case "$INPUT" in
+    dev)  PORT=3000 ;;
+    qas)  PORT=80 ;;
+    *)    PORT=$INPUT ;;
+esac
 ENV_FILE=".env"
 
 echo -e "${CYAN}🚀 啟動 ngrok (port: $PORT)...${NC}"

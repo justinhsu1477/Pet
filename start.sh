@@ -48,6 +48,12 @@ echo -e "  Compose file: ${COMPOSE_FILE}"
 echo -e "  Env file:     ${ENV_FILE}"
 echo ""
 
+# Build images (only rebuilds if source changed, thanks to Docker cache)
+echo -e "${YELLOW}🔨 Building Docker images...${NC}"
+docker-compose -f "$COMPOSE_FILE" build backend frontend
+echo -e "${GREEN}✓ Build complete${NC}"
+echo ""
+
 # Load environment variables
 if [ -f "$ENV_FILE" ]; then
     export $(cat "$ENV_FILE" | grep -v '^#' | xargs)

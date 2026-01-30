@@ -14,6 +14,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,12 @@ import java.util.Map;
         transactionManagerRef = "primaryTransactionManager"
 )
 public class PrimaryDataSourceConfig {
+
+    @Value("${spring.jpa.hibernate.ddl-auto:create-drop}")
+    private String ddlAuto;
+
+    @Value("${spring.jpa.database-platform:#{null}}")
+    private String dialect;
 
     @Primary
     @Bean
@@ -53,8 +61,10 @@ public class PrimaryDataSourceConfig {
             @Qualifier("primaryDataSource") DataSource dataSource) {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "create-drop");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+        properties.put("hibernate.hbm2ddl.auto", ddlAuto);
+        if (dialect != null) {
+            properties.put("hibernate.dialect", dialect);
+        }
 
         return builder
                 .dataSource(dataSource)

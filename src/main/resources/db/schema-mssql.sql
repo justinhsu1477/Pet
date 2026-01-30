@@ -2,21 +2,24 @@
 -- This script is for initial setup only, not for every restart
 
 -- Drop tables in correct order (FK constraints)
-IF OBJECT_ID('pet_photo', 'U') IS NOT NULL DROP TABLE pet_photo;
-IF OBJECT_ID('sitter_rating', 'U') IS NOT NULL DROP TABLE sitter_rating;
-IF OBJECT_ID('booking', 'U') IS NOT NULL DROP TABLE booking;
-IF OBJECT_ID('sitter_availability', 'U') IS NOT NULL DROP TABLE sitter_availability;
-IF OBJECT_ID('pet_activity', 'U') IS NOT NULL DROP TABLE pet_activity;
-IF OBJECT_ID('sitter_record', 'U') IS NOT NULL DROP TABLE sitter_record;
-IF OBJECT_ID('dog', 'U') IS NOT NULL DROP TABLE dog;
-IF OBJECT_ID('cat', 'U') IS NOT NULL DROP TABLE cat;
-IF OBJECT_ID('pet', 'U') IS NOT NULL DROP TABLE pet;
-IF OBJECT_ID('customer', 'U') IS NOT NULL DROP TABLE customer;
-IF OBJECT_ID('sitter', 'U') IS NOT NULL DROP TABLE sitter;
-IF OBJECT_ID('refresh_tokens', 'U') IS NOT NULL DROP TABLE refresh_tokens;
-IF OBJECT_ID('users', 'U') IS NOT NULL DROP TABLE users;
+-- 使用 MSSQL 2016+ 語法，相容 Spring ScriptUtils 分號分割
+DROP TABLE IF EXISTS pet_photo;
+DROP TABLE IF EXISTS sitter_rating;
+DROP TABLE IF EXISTS booking;
+DROP TABLE IF EXISTS sitter_availability;
+DROP TABLE IF EXISTS pet_activity;
+DROP TABLE IF EXISTS sitter_record;
+DROP TABLE IF EXISTS dog;
+DROP TABLE IF EXISTS cat;
+DROP TABLE IF EXISTS pet;
+DROP TABLE IF EXISTS customer;
+DROP TABLE IF EXISTS sitter;
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS idempotency_keys;
+DROP TABLE IF EXISTS users;
 
 -- Users table
+-- MSSQL UNIQUE 約束只允許一個 NULL，改用 filtered unique index 允許多個 NULL
 CREATE TABLE users (
     id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -24,8 +27,9 @@ CREATE TABLE users (
     email VARCHAR(100),
     phone VARCHAR(20),
     role VARCHAR(20),
-    line_user_id VARCHAR(100) UNIQUE
+    line_user_id VARCHAR(100)
 );
+CREATE UNIQUE INDEX idx_users_line_user_id ON users(line_user_id) WHERE line_user_id IS NOT NULL;
 
 -- RefreshToken table (JWT 認證用)
 CREATE TABLE refresh_tokens (
@@ -46,6 +50,15 @@ CREATE TABLE refresh_tokens (
 CREATE INDEX idx_token_hash ON refresh_tokens(token_hash);
 CREATE INDEX idx_user_device ON refresh_tokens(user_id, device_type);
 CREATE INDEX idx_expiry ON refresh_tokens(expiry_date);
+
+-- Idempotency keys table (防止重複提交)
+CREATE TABLE idempotency_keys (
+    idempotency_key VARCHAR(64) PRIMARY KEY,
+    response_body TEXT,
+    http_status INT DEFAULT 200,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    expires_at DATETIME2
+);
 
 -- Customer table (一般用戶/飼主詳細資料)
 CREATE TABLE customer (

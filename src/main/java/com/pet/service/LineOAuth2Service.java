@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pet.config.LineLoginConfig;
 import com.pet.domain.*;
 import com.pet.dto.JwtAuthenticationResponse;
+import com.pet.repository.SitterAvailabilityRepository;
 import com.pet.dto.LineUserProfile;
 import com.pet.repository.CustomerRepository;
 import com.pet.repository.SitterRepository;
@@ -24,6 +25,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,6 +43,7 @@ public class LineOAuth2Service {
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
     private final LineRichMenuService lineRichMenuService;
+    private final SitterAvailabilityRepository sitterAvailabilityRepository;
 
     private static final String LINE_AUTH_URL = "https://access.line.me/oauth2/v2.1/authorize";
     private static final String LINE_TOKEN_URL = "https://api.line.me/oauth2/v2.1/token";
@@ -216,6 +220,7 @@ public class LineOAuth2Service {
             sitter.setUser(savedUser);
             sitter.setName(entityName);
             sitterRepository.save(sitter);
+            createDefaultAvailability(sitter);
         } else {
             Customer customer = new Customer();
             customer.setUser(savedUser);
@@ -233,6 +238,26 @@ public class LineOAuth2Service {
         }
 
         return savedUser;
+    }
+
+    /**
+     * 為新註冊的保母建立預設可預約時段（週一至週五 09:00-18:00）
+     */
+    private void createDefaultAvailability(Sitter sitter) {
+        DayOfWeek[] weekdays = {
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
+        };
+        for (DayOfWeek day : weekdays) {
+            SitterAvailability availability = new SitterAvailability();
+            availability.setSitter(sitter);
+            availability.setDayOfWeek(day);
+            availability.setStartTime(LocalTime.of(9, 0));
+            availability.setEndTime(LocalTime.of(18, 0));
+            availability.setIsActive(true);
+            sitterAvailabilityRepository.save(availability);
+        }
+        log.info("已為保母 {} 建立預設可預約時段（週一至週五 09:00-18:00）", sitter.getName());
     }
 
     private void cleanExpiredStates() {

@@ -13,6 +13,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,12 @@ import java.util.Map;
         transactionManagerRef = "logTransactionManager"
 )
 public class LogDataSourceConfig {
+
+    @Value("${spring.jpa.log.hibernate.ddl-auto:update}")
+    private String ddlAuto;
+
+    @Value("${spring.jpa.log.database-platform:#{null}}")
+    private String dialect;
 
     @Bean
     @ConfigurationProperties("spring.datasource.log")
@@ -50,8 +58,10 @@ public class LogDataSourceConfig {
             @Qualifier("logDataSource") DataSource dataSource) {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "update");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        properties.put("hibernate.hbm2ddl.auto", ddlAuto);
+        if (dialect != null) {
+            properties.put("hibernate.dialect", dialect);
+        }
 
         return builder
                 .dataSource(dataSource)
