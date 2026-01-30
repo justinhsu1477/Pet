@@ -46,3 +46,4 @@ line:
     # 本機開發：http://192.168.x.x:8080（同 WiFi 下手機可存取）
     # 使用 ngrok：https://xxx.ngrok.io
     base-url: ${LINE_BASE_URL:}
+    frontend-url: ${LINE_FRONTEND_URL:http://localhost:3000}

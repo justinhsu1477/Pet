@@ -30,9 +30,13 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 設定允許的來源（從設定檔讀取）
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
+
+        // 使用 allowedOriginPatterns 統一管理（支援萬用字元，且與 allowCredentials 相容）
+        List<String> patterns = new java.util.ArrayList<>(Arrays.asList(allowedOrigins.split(",")));
+        // 允許所有 ngrok URL（開發用，避免每次重啟 ngrok 都要改設定）
+        patterns.add("https://*.ngrok-free.app");
+        patterns.add("https://*.ngrok-free.dev");
+        configuration.setAllowedOriginPatterns(patterns);
 
         // 允許的 HTTP 方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

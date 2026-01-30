@@ -39,6 +39,7 @@ public class LineOAuth2Service {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
+    private final LineRichMenuService lineRichMenuService;
 
     private static final String LINE_AUTH_URL = "https://access.line.me/oauth2/v2.1/authorize";
     private static final String LINE_TOKEN_URL = "https://api.line.me/oauth2/v2.1/token";
@@ -46,46 +47,55 @@ public class LineOAuth2Service {
 
     private final HttpClient httpClient;
 
-    // state -> CSRF protection (production should use Redis)
-    private final Map<String, Long> stateStore = new ConcurrentHashMap<>();
+    // state -> (timestamp, callbackUrl) for CSRF protection (production should use Redis)
+    private record StateInfo(long timestamp, String callbackUrl) {}
+    private final Map<String, StateInfo> stateStore = new ConcurrentHashMap<>();
 
     /**
      * 產生 LINE 授權 URL
+     * @param callbackUrl 動態推導的 callback URL（經 nginx/ngrok 反向代理時使用真實 origin）
      */
-    public String buildAuthorizationUrl() {
+    public String buildAuthorizationUrl(String callbackUrl) {
         String state = UUID.randomUUID().toString();
-        stateStore.put(state, System.currentTimeMillis());
+        stateStore.put(state, new StateInfo(System.currentTimeMillis(), callbackUrl));
         cleanExpiredStates();
+
+        log.info("LINE OAuth: 產生授權 URL, redirect_uri={}", callbackUrl);
 
         return LINE_AUTH_URL
                 + "?response_type=code"
                 + "&client_id=" + lineLoginConfig.getChannelId()
-                + "&redirect_uri=" + URLEncoder.encode(lineLoginConfig.getCallbackUrl(), StandardCharsets.UTF_8)
+                + "&redirect_uri=" + URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8)
                 + "&state=" + state
                 + "&scope=profile%20openid%20email";
     }
 
     /**
-     * 驗證 state 參數（防 CSRF）
+     * 驗證 state 參數（防 CSRF），並回傳當時的 callbackUrl
+     * @return callbackUrl if valid, null if invalid
      */
-    public boolean validateState(String state) {
+    public String validateStateAndGetCallbackUrl(String state) {
         if (state == null) {
-            return false;
+            return null;
         }
-        Long timestamp = stateStore.remove(state);
-        if (timestamp == null) {
-            return false;
+        StateInfo info = stateStore.remove(state);
+        if (info == null) {
+            return null;
         }
-        return (System.currentTimeMillis() - timestamp) < 600_000;
+        if ((System.currentTimeMillis() - info.timestamp()) >= 600_000) {
+            return null;
+        }
+        return info.callbackUrl();
     }
 
     /**
      * 用 authorization code 換取 access token
+     * @param callbackUrl 必須跟 buildAuthorizationUrl 時用的一模一樣
      */
-    public String exchangeCodeForAccessToken(String code) throws Exception {
+    public String exchangeCodeForAccessToken(String code, String callbackUrl) throws Exception {
         String body = "grant_type=authorization_code"
                 + "&code=" + URLEncoder.encode(code, StandardCharsets.UTF_8)
-                + "&redirect_uri=" + URLEncoder.encode(lineLoginConfig.getCallbackUrl(), StandardCharsets.UTF_8)
+                + "&redirect_uri=" + URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8)
                 + "&client_id=" + lineLoginConfig.getChannelId()
                 + "&client_secret=" + lineLoginConfig.getChannelSecret();
 
@@ -158,6 +168,14 @@ public class LineOAuth2Service {
         response.setRole(user.getRole().name());
 
         log.info("LINE OAuth 登入成功: username={}, lineUserId={}", user.getUsername(), user.getLineUserId());
+
+        // 綁定角色對應的 Rich Menu
+        try {
+            lineRichMenuService.assignMenuToUser(user.getLineUserId(), user.getRole());
+        } catch (Exception e) {
+            log.debug("Rich Menu 綁定失敗（不影響登入）: {}", e.getMessage());
+        }
+
         return response;
     }
 
@@ -206,11 +224,19 @@ public class LineOAuth2Service {
         }
 
         log.info("LINE OAuth 註冊成功: username={}, role={}, lineUserId={}", username, userRole, lineUserId);
+
+        // 註冊後綁定角色對應的 Rich Menu
+        try {
+            lineRichMenuService.assignMenuToUser(lineUserId, userRole);
+        } catch (Exception e) {
+            log.debug("Rich Menu 綁定失敗（不影響註冊）: {}", e.getMessage());
+        }
+
         return savedUser;
     }
 
     private void cleanExpiredStates() {
         long now = System.currentTimeMillis();
-        stateStore.entrySet().removeIf(e -> (now - e.getValue()) > 600_000);
+        stateStore.entrySet().removeIf(e -> (now - e.getValue().timestamp()) > 600_000);
     }
 }

@@ -46,3 +46,4 @@ line:
     enabled: true
     # 系統公開網址（用於 LINE 訊息中的行事曆連結）
     base-url: ${LINE_BASE_URL:}
+    frontend-url: ${LINE_FRONTEND_URL:http://localhost:3000}

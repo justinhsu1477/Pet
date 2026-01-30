@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Map;
@@ -46,23 +47,28 @@ class AuthControllerLineOAuthTest {
     private AuthController authController;
 
     @Mock
+    private HttpServletRequest httpServletRequest;
+
+    @Mock
     private HttpServletResponse httpServletResponse;
 
     private static final String FRONTEND_URL = "http://localhost:3000/line-callback.html";
+    private static final String CALLBACK_URL = "http://localhost:8080/api/auth/oauth2/callback/line";
 
     @BeforeEach
     void setUp() {
         lenient().when(lineLoginConfig.getFrontendCallbackUrl()).thenReturn(FRONTEND_URL);
+        lenient().when(lineLoginConfig.getCallbackUrl()).thenReturn(CALLBACK_URL);
     }
 
     // ==================== lineOAuthLogin ====================
 
     @Test
     void shouldRedirectToLineAuthorizationUrl() {
-        when(lineOAuth2Service.buildAuthorizationUrl())
+        when(lineOAuth2Service.buildAuthorizationUrl(anyString()))
                 .thenReturn("https://access.line.me/oauth2/v2.1/authorize?test=1");
 
-        ResponseEntity<Void> response = authController.lineOAuthLogin();
+        ResponseEntity<Void> response = authController.lineOAuthLogin(httpServletRequest);
 
         assertEquals(302, response.getStatusCode().value());
         assertEquals("https://access.line.me/oauth2/v2.1/authorize?test=1",
@@ -73,7 +79,7 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithErrorWhenErrorParam() {
-        ResponseEntity<Void> response = authController.lineOAuthCallback(null, null, "access_denied", httpServletResponse);
+        ResponseEntity<Void> response = authController.lineOAuthCallback(null, null, "access_denied", httpServletRequest, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -82,9 +88,9 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithErrorWhenInvalidState() {
-        when(lineOAuth2Service.validateState("bad-state")).thenReturn(false);
+        when(lineOAuth2Service.validateStateAndGetCallbackUrl("bad-state")).thenReturn(null);
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "bad-state", null, httpServletResponse);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "bad-state", null, httpServletRequest, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -93,7 +99,7 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithErrorWhenNullState() {
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", null, null, httpServletResponse);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", null, null, httpServletRequest, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -102,8 +108,8 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithTokenForExistingUser() throws Exception {
-        when(lineOAuth2Service.validateState("valid-state")).thenReturn(true);
-        when(lineOAuth2Service.exchangeCodeForAccessToken("code123")).thenReturn("access-token");
+        when(lineOAuth2Service.validateStateAndGetCallbackUrl("valid-state")).thenReturn(CALLBACK_URL);
+        when(lineOAuth2Service.exchangeCodeForAccessToken("code123", CALLBACK_URL)).thenReturn("access-token");
 
         LineUserProfile profile = new LineUserProfile("U123", "TestUser", null, null);
         when(lineOAuth2Service.getUserProfile("access-token")).thenReturn(profile);
@@ -117,7 +123,7 @@ class AuthControllerLineOAuthTest {
                 .build();
         when(lineOAuth2Service.loginExistingUser(existingUser)).thenReturn(authResponse);
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletResponse);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletRequest, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -127,15 +133,15 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithRegistrationTokenForNewUser() throws Exception {
-        when(lineOAuth2Service.validateState("valid-state")).thenReturn(true);
-        when(lineOAuth2Service.exchangeCodeForAccessToken("code123")).thenReturn("access-token");
+        when(lineOAuth2Service.validateStateAndGetCallbackUrl("valid-state")).thenReturn(CALLBACK_URL);
+        when(lineOAuth2Service.exchangeCodeForAccessToken("code123", CALLBACK_URL)).thenReturn("access-token");
 
         LineUserProfile profile = new LineUserProfile("U999", "NewUser", null, null);
         when(lineOAuth2Service.getUserProfile("access-token")).thenReturn(profile);
         when(lineOAuth2Service.findExistingUser("U999")).thenReturn(Optional.empty());
         when(lineOAuth2Service.generatePendingRegistrationToken(profile)).thenReturn("reg-token");
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletResponse);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletRequest, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");
@@ -145,11 +151,11 @@ class AuthControllerLineOAuthTest {
 
     @Test
     void shouldRedirectWithErrorOnException() throws Exception {
-        when(lineOAuth2Service.validateState("valid-state")).thenReturn(true);
-        when(lineOAuth2Service.exchangeCodeForAccessToken("code123"))
+        when(lineOAuth2Service.validateStateAndGetCallbackUrl("valid-state")).thenReturn(CALLBACK_URL);
+        when(lineOAuth2Service.exchangeCodeForAccessToken("code123", CALLBACK_URL))
                 .thenThrow(new RuntimeException("Token exchange failed"));
 
-        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletResponse);
+        ResponseEntity<Void> response = authController.lineOAuthCallback("code123", "valid-state", null, httpServletRequest, httpServletResponse);
 
         assertEquals(302, response.getStatusCode().value());
         String location = response.getHeaders().getFirst("Location");

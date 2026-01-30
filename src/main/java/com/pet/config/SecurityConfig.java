@@ -95,6 +95,13 @@ public class SecurityConfig {
                                 // WebSocket handshake 放行（認證在 STOMP 層處理）
                                 .requestMatchers("/ws/**").permitAll()
 
+                                // LINE Webhook 放行（LINE 無法帶 JWT，用簽名驗證）
+                                .requestMatchers("/api/line/webhook").permitAll()
+                                .requestMatchers("/api/line/richmenu/recreate").permitAll()
+
+                                // 寵物照片靜態存取（img 標籤無法帶 Authorization header）
+                                .requestMatchers("/api/pet-photos/image/**").permitAll()
+
                                 // 行事曆頁面與下載（LINE 訊息連結，不需登入）
                                 .requestMatchers("/api/bookings/*/calendar", "/api/bookings/*/calendar/download").permitAll()
 

@@ -43,14 +43,15 @@ class LineOAuth2ServiceTest {
     @InjectMocks
     private LineOAuth2Service lineOAuth2Service;
 
+    private static final String CALLBACK_URL = "http://localhost:8080/api/auth/oauth2/callback/line";
+
     // ==================== buildAuthorizationUrl ====================
 
     @Test
     void shouldBuildAuthorizationUrl() {
         when(lineLoginConfig.getChannelId()).thenReturn("12345");
-        when(lineLoginConfig.getCallbackUrl()).thenReturn("http://localhost:8080/api/auth/oauth2/callback/line");
 
-        String url = lineOAuth2Service.buildAuthorizationUrl();
+        String url = lineOAuth2Service.buildAuthorizationUrl(CALLBACK_URL);
 
         assertTrue(url.startsWith("https://access.line.me/oauth2/v2.1/authorize"));
         assertTrue(url.contains("client_id=12345"));
@@ -62,46 +63,45 @@ class LineOAuth2ServiceTest {
     @Test
     void shouldEncodeCallbackUrlInAuthorizationUrl() {
         when(lineLoginConfig.getChannelId()).thenReturn("12345");
-        when(lineLoginConfig.getCallbackUrl()).thenReturn("http://localhost:8080/api/auth/oauth2/callback/line");
 
-        String url = lineOAuth2Service.buildAuthorizationUrl();
+        String url = lineOAuth2Service.buildAuthorizationUrl(CALLBACK_URL);
 
         assertTrue(url.contains("redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fapi%2Fauth%2Foauth2%2Fcallback%2Fline"));
     }
 
-    // ==================== validateState ====================
+    // ==================== validateStateAndGetCallbackUrl ====================
 
     @Test
     void shouldValidateState() {
         when(lineLoginConfig.getChannelId()).thenReturn("12345");
-        when(lineLoginConfig.getCallbackUrl()).thenReturn("http://localhost:8080/callback");
 
-        String url = lineOAuth2Service.buildAuthorizationUrl();
+        String url = lineOAuth2Service.buildAuthorizationUrl(CALLBACK_URL);
         String state = extractStateFromUrl(url);
 
-        assertTrue(lineOAuth2Service.validateState(state));
+        String result = lineOAuth2Service.validateStateAndGetCallbackUrl(state);
+        assertNotNull(result);
+        assertEquals(CALLBACK_URL, result);
     }
 
     @Test
     void shouldRejectStateOnSecondUse() {
         when(lineLoginConfig.getChannelId()).thenReturn("12345");
-        when(lineLoginConfig.getCallbackUrl()).thenReturn("http://localhost:8080/callback");
 
-        String url = lineOAuth2Service.buildAuthorizationUrl();
+        String url = lineOAuth2Service.buildAuthorizationUrl(CALLBACK_URL);
         String state = extractStateFromUrl(url);
 
-        lineOAuth2Service.validateState(state);
-        assertFalse(lineOAuth2Service.validateState(state));
+        lineOAuth2Service.validateStateAndGetCallbackUrl(state);
+        assertNull(lineOAuth2Service.validateStateAndGetCallbackUrl(state));
     }
 
     @Test
     void shouldRejectInvalidState() {
-        assertFalse(lineOAuth2Service.validateState("invalid-state"));
+        assertNull(lineOAuth2Service.validateStateAndGetCallbackUrl("invalid-state"));
     }
 
     @Test
     void shouldRejectNullState() {
-        assertFalse(lineOAuth2Service.validateState(null));
+        assertNull(lineOAuth2Service.validateStateAndGetCallbackUrl(null));
     }
 
     // ==================== exchangeCodeForAccessToken ====================
@@ -109,7 +109,6 @@ class LineOAuth2ServiceTest {
     @SuppressWarnings("unchecked")
     @Test
     void shouldExchangeCodeForAccessToken() throws Exception {
-        when(lineLoginConfig.getCallbackUrl()).thenReturn("http://localhost:8080/callback");
         when(lineLoginConfig.getChannelId()).thenReturn("12345");
         when(lineLoginConfig.getChannelSecret()).thenReturn("secret");
 
@@ -125,7 +124,7 @@ class LineOAuth2ServiceTest {
         when(jsonNode.get("access_token")).thenReturn(tokenNode);
         when(objectMapper.readTree("{\"access_token\":\"test-token\"}")).thenReturn(jsonNode);
 
-        String token = lineOAuth2Service.exchangeCodeForAccessToken("auth-code");
+        String token = lineOAuth2Service.exchangeCodeForAccessToken("auth-code", CALLBACK_URL);
 
         assertEquals("test-token", token);
     }
@@ -133,7 +132,6 @@ class LineOAuth2ServiceTest {
     @SuppressWarnings("unchecked")
     @Test
     void shouldThrowWhenTokenExchangeFails() throws Exception {
-        when(lineLoginConfig.getCallbackUrl()).thenReturn("http://localhost:8080/callback");
         when(lineLoginConfig.getChannelId()).thenReturn("12345");
         when(lineLoginConfig.getChannelSecret()).thenReturn("secret");
 
@@ -144,7 +142,7 @@ class LineOAuth2ServiceTest {
                 .thenReturn(mockResponse);
 
         assertThrows(RuntimeException.class,
-                () -> lineOAuth2Service.exchangeCodeForAccessToken("bad-code"));
+                () -> lineOAuth2Service.exchangeCodeForAccessToken("bad-code", CALLBACK_URL));
     }
 
     // ==================== getUserProfile ====================

@@ -66,6 +66,8 @@ public class Sitter {
     @Column(name = "experience_level")
     private ExperienceLevel experienceLevel = ExperienceLevel.STANDARD;
 
-    // Explicit accessor for Kotlin interop
+    // Explicit accessors for Kotlin interop
     public UUID getId() { return id; }
+    public String getName() { return name; }
+    public Users getUser() { return user; }
 }

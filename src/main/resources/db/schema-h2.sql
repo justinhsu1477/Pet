@@ -1,4 +1,5 @@
 -- 刪除舊表（注意順序，先刪除有 FK 的表）
+DROP TABLE IF EXISTS pet_photo;
 DROP TABLE IF EXISTS sitter_rating;
 DROP TABLE IF EXISTS booking;
 DROP TABLE IF EXISTS sitter_availability;
@@ -200,6 +201,26 @@ CREATE TABLE IF NOT EXISTS sitter_rating (
     FOREIGN KEY (sitter_id) REFERENCES sitter(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- ============================================
+-- PetPhoto 表 (寵物照片，LINE/Web 上傳)
+-- ============================================
+CREATE TABLE IF NOT EXISTS pet_photo (
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    pet_id UUID,
+    sitter_id UUID NOT NULL,
+    photo_url VARCHAR(500) NOT NULL,
+    message_id VARCHAR(100),
+    upload_source VARCHAR(20) NOT NULL DEFAULT 'LINE',
+    caption VARCHAR(500),
+    uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pet_id) REFERENCES pet(id) ON DELETE SET NULL,
+    FOREIGN KEY (sitter_id) REFERENCES sitter(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_pet_photo_pet ON pet_photo(pet_id);
+CREATE INDEX IF NOT EXISTS idx_pet_photo_sitter ON pet_photo(sitter_id);
+CREATE INDEX IF NOT EXISTS idx_pet_photo_uploaded_at ON pet_photo(uploaded_at DESC);
 
 -- ============================================
 -- BookingLog 表 (預約日誌，用於報表/分析)
